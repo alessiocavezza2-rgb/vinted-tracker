@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#141112">
 <title>Vinted Tracker</title>
 <style>
   :root {
     color-scheme: light;
-    --page: #f3f5f4; --surface: #ffffff; --surface-2: #eef2f1; --ink: #101413; --ink-2: #4c5553; --muted: #7f8987;
-    --grid: #e3e8e6; --border: rgba(16,20,19,.08);
-    --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: #d7f0ec;
-    --s1: #2a78d6; --s2: #eb6834; --good: #0a7a2f; --warn: #b45309; --bad: #c2410c;
-    --shadow: 0 1px 2px rgba(16,20,19,.05), 0 6px 18px rgba(16,20,19,.06);
+    --page: #efebe6; --surface: #faf8f5; --surface-2: #ede8e2; --ink: #141112; --ink-2: #4f4845; --muted: #8a817b;
+    --grid: #e0dad3; --border: rgba(20,17,18,.09);
+    --accent: #7a1c2b; --accent-ink: #ffffff; --accent-soft: #f1dfe0; --red: #c8102e;
+    --s1: #a11a2f; --s2: #a89c93; --good: #0a7a2f; --warn: #a3520b; --bad: #c8102e;
+    --shadow: 0 1px 2px rgba(20,17,18,.05), 0 6px 18px rgba(20,17,18,.07);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --page: #0e1211; --surface: #181d1c; --surface-2: #222827; --ink: #f4f6f5; --ink-2: #c1c8c6; --muted: #8a9491;
-      --grid: #2b3231; --border: rgba(255,255,255,.08);
-      --accent: #2dd4bf; --accent-ink: #062b27; --accent-soft: #143733;
-      --s1: #3987e5; --s2: #d95926; --good: #34d399; --warn: #fbbf24; --bad: #fb923c;
+      --page: #121011; --surface: #1c1819; --surface-2: #272223; --ink: #f5f1ee; --ink-2: #c9c1bc; --muted: #8f8681;
+      --grid: #322c2d; --border: rgba(255,255,255,.08);
+      --accent: #e3213f; --accent-ink: #ffffff; --accent-soft: #3a1a20; --red: #ff3b52;
+      --s1: #e3213f; --s2: #8f8681; --good: #34d399; --warn: #fbbf24; --bad: #ff6b6b;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3);
     }
   }
@@ -31,19 +31,19 @@
   .wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; }
   header.top { padding: 18px 0 8px; display: flex; align-items: center; gap: 10px; }
   header.top h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
-  header.top .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: var(--accent-ink);
+  header.top .logo { width: 34px; height: 34px; border-radius: 10px; background: #141112; color: var(--red);
     display: grid; place-items: center; font-weight: 800; font-size: 16px; }
   header.top .sub { color: var(--muted); font-size: 12px; margin: 0; }
   .view { display: none; }
   .view.active { display: block; }
 
   /* bottom nav */
-  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--border);
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: #141112; border-top: 1px solid rgba(255,255,255,.08);
     display: flex; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); z-index: 5; }
-  nav.tabs button { flex: 1; max-width: 160px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 11px;
+  nav.tabs button { flex: 1; max-width: 160px; border: 0; background: none; color: #9a908a; font: inherit; font-size: 11px;
     display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; cursor: pointer; border-radius: 10px; }
   nav.tabs button svg { width: 24px; height: 24px; }
-  nav.tabs button[aria-current="page"] { color: var(--accent); }
+  nav.tabs button[aria-current="page"] { color: var(--red); }
 
   /* generic */
   .card { background: var(--surface); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }

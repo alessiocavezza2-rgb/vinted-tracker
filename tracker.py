@@ -52,6 +52,7 @@ def parse_iso(s):
 def log(msg):
     line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
     print(line, flush=True)
+    (ROOT / "logs").mkdir(exist_ok=True)
     with open(ROOT / "logs" / "tracker.log", "a", encoding="utf-8") as f:
         f.write(line + "\n")
 

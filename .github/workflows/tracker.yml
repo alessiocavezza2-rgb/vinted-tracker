@@ -1,0 +1,40 @@
+name: Vinted tracker
+
+on:
+  schedule:
+    - cron: "30 1 * * *"   # ogni giorno alle 01:30 UTC (03:30 ora italiana estiva)
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/tracker.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tracker
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install requests
+
+      - name: Raccolta e dashboard
+        run: python tracker.py run
+
+      - name: Commit e push dei dati
+        run: |
+          git config user.name "vinted-tracker-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add vinted.db docs
+          git diff --cached --quiet || git commit -m "dati $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push

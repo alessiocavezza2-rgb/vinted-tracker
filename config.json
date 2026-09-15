@@ -1,0 +1,23 @@
+{
+  "site": "https://www.vinted.it",
+  "pages_per_query": 4,
+  "delay_seconds": [2.0, 4.5],
+  "fast_days": 7,
+  "price_bucket": 10,
+  "price_cap": 150,
+  "queries": [
+    { "key": "carhartt_giacche_uomo", "brand": "Carhartt", "category": "Giacche uomo", "brand_ids": [362], "catalog_ids": [2052] },
+    { "key": "carhartt_felpe_uomo", "brand": "Carhartt", "category": "Felpe uomo", "brand_ids": [362], "catalog_ids": [267] },
+    { "key": "carhartt_jeans_uomo", "brand": "Carhartt", "category": "Jeans uomo", "brand_ids": [362], "catalog_ids": [257] },
+    { "key": "nike_giacche_uomo", "brand": "Nike", "category": "Giacche uomo", "brand_ids": [53], "catalog_ids": [2052] },
+    { "key": "nike_felpe_uomo", "brand": "Nike", "category": "Felpe uomo", "brand_ids": [53], "catalog_ids": [267] },
+    { "key": "nike_tshirt_uomo", "brand": "Nike", "category": "T-shirt uomo", "brand_ids": [53], "catalog_ids": [77] },
+    { "key": "adidas_giacche_uomo", "brand": "adidas", "category": "Giacche uomo", "brand_ids": [14], "catalog_ids": [2052] },
+    { "key": "adidas_felpe_uomo", "brand": "adidas", "category": "Felpe uomo", "brand_ids": [14], "catalog_ids": [267] },
+    { "key": "adidas_tshirt_uomo", "brand": "adidas", "category": "T-shirt uomo", "brand_ids": [14], "catalog_ids": [77] },
+    { "key": "levis_jeans_uomo", "brand": "Levi's", "category": "Jeans uomo", "brand_ids": [10], "catalog_ids": [257] },
+    { "key": "levis_jeans_donna", "brand": "Levi's", "category": "Jeans donna", "brand_ids": [10], "catalog_ids": [183] },
+    { "key": "levis_giacche_denim_uomo", "brand": "Levi's", "category": "Giacche denim uomo", "brand_ids": [10], "catalog_ids": [1224] },
+    { "key": "tnf_giacche_uomo", "brand": "The North Face", "category": "Giacche uomo", "brand_ids": [2319], "catalog_ids": [2052] }
+  ]
+}

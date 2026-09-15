@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vinted Tracker</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10);
+    --s1: #2a78d6; --s2: #eb6834; --good: #006300; --warn: #b45309;
+    --chip: #ededea; --chip-on: #0b0b0b; --chip-on-ink: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+      --s1: #3987e5; --s2: #d95926; --good: #0ca30c; --warn: #fab219;
+      --chip: #2a2a28; --chip-on: #ffffff; --chip-on-ink: #0b0b0b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+         padding-block: 16px 48px; padding-inline: 16px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { color: var(--ink-2); font-size: 13px; margin: 0 0 14px; }
+  .notice { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--warn);
+            border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; color: var(--ink-2); }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 0; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+          background: var(--chip); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--chip-on); color: var(--chip-on-ink); }
+  select { font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border);
+           background: var(--surface); color: var(--ink); margin-left: auto; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .card-head { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }
+  .card-head .brand { font-weight: 700; }
+  .card-head .cat { color: var(--ink-2); }
+  .card-head .arrow { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .kpi { min-width: 0; }
+  .kpi .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  .kpi .val { font-size: 22px; font-weight: 700; line-height: 1.15; }
+  .kpi .val small { font-size: 12px; font-weight: 400; color: var(--ink-2); }
+  .kpi .rng { font-size: 12px; color: var(--ink-2); }
+  .detail { display: none; margin-top: 12px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  .card.open .detail { display: block; }
+  .card.open .arrow { transform: rotate(180deg); display: inline-block; }
+  h3 { font-size: 13px; margin: 12px 0 6px; color: var(--ink-2); font-weight: 600; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); margin: 4px 0 2px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+  svg.chart text { font-size: 10px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  svg.chart .bar { transition: opacity .1s; }
+  svg.chart .hit:hover ~ .bar, svg.chart g:hover .bar { opacity: .8; }
+  .tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--page); font-size: 12px;
+         padding: 6px 8px; border-radius: 6px; display: none; z-index: 10; white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+  td.num, th.num { text-align: right; }
+  .tbl-wrap { overflow-x: auto; }
+  .sold-list { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+  .sold-list li { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--grid); }
+  .sold-list .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sold-list .p { font-weight: 600; }
+  .sold-list .d { color: var(--muted); }
+  a { color: var(--s1); }
+  .foot { font-size: 12px; color: var(--muted); margin-top: 20px; }
+  .empty { color: var(--muted); font-size: 13px; }
+  .view-table { display: none; }
+  body.table .view-cards { display: none; }
+  body.table .view-table { display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Vinted Tracker</h1>
+  <p class="sub" id="sub"></p>
+  <div class="notice" id="notice" hidden></div>
+  <div class="controls">
+    <div class="chips" id="brands"></div>
+    <select id="sort">
+      <option value="fast">Ordina: prezzo di vendita</option>
+      <option value="pct">Ordina: % venduti veloci</option>
+      <option value="active">Ordina: prezzo richiesto</option>
+      <option value="comp">Ordina: meno concorrenza</option>
+      <option value="name">Ordina: nome</option>
+    </select>
+  </div>
+  <div class="controls">
+    <button class="chip" id="viewCards" aria-pressed="true">Schede</button>
+    <button class="chip" id="viewTable" aria-pressed="false">Tabella</button>
+  </div>
+  <div class="view-cards" id="cards"></div>
+  <div class="view-table card tbl-wrap" id="table"></div>
+  <p class="foot" id="foot"></p>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const DATA = /*__DATA__*/null;
+const $ = (s, el = document) => el.querySelector(s);
+const eur = v => v == null ? '—' : v.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+const state = { brand: 'Tutti', sort: 'fast' };
+
+function init() {
+  if (!DATA) { $('#cards').innerHTML = '<p class="empty">Nessun dato ancora: esegui il tracker.</p>'; return; }
+  const gen = new Date(DATA.generated);
+  $('#sub').textContent = `Aggiornato ${gen.toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })} · ${DATA.days_collected} giorni di raccolta · ${DATA.n_items_total} annunci tracciati`;
+  if (DATA.days_collected <= DATA.fast_days) {
+    const n = $('#notice'); n.hidden = false;
+    n.textContent = `I prezzi di vendita ("venduti in ≤${DATA.fast_days} gg") diventano affidabili dopo ${DATA.fast_days + 1} giorni di raccolta: per ora guarda soprattutto i prezzi richiesti e la concorrenza.`;
+  }
+  const brands = ['Tutti', ...new Set(DATA.queries.map(q => q.brand))];
+  $('#brands').innerHTML = brands.map(b => `<button class="chip" data-b="${b}" aria-pressed="${b === state.brand}">${b}</button>`).join('');
+  $('#brands').addEventListener('click', e => {
+    const b = e.target.dataset.b; if (!b) return;
+    state.brand = b; render();
+  });
+  $('#sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+  $('#viewCards').onclick = () => setView(false);
+  $('#viewTable').onclick = () => setView(true);
+  $('#foot').textContent = `Prezzi in € (esclusa Protezione acquisti). "Venduti ≤${DATA.fast_days} gg" = annunci spariti dal catalogo entro ${DATA.fast_days} giorni dalla pubblicazione: include una piccola quota di annunci ritirati. Dati raccolti dal ${new Date(DATA.first_run).toLocaleDateString('it-IT')}.`;
+  render();
+}
+
+function setView(table) {
+  document.body.classList.toggle('table', table);
+  $('#viewCards').setAttribute('aria-pressed', !table);
+  $('#viewTable').setAttribute('aria-pressed', table);
+}
+
+function sorted() {
+  let qs = DATA.queries.filter(q => state.brand === 'Tutti' || q.brand === state.brand);
+  const v = (x) => x == null ? -1 : x;
+  const cmp = {
+    fast: (a, b) => v(b.fast && b.fast.med) - v(a.fast && a.fast.med) || v(b.active && b.active.med) - v(a.active && a.active.med),
+    pct: (a, b) => v(b.pct_fast) - v(a.pct_fast),
+    active: (a, b) => v(b.active && b.active.med) - v(a.active && a.active.med),
+    comp: (a, b) => a.n_active - b.n_active,
+    name: (a, b) => (a.brand + a.category).localeCompare(b.brand + b.category),
+  }[state.sort];
+  return qs.sort(cmp);
+}
+
+function render() {
+  document.querySelectorAll('#brands .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.b === state.brand));
+  const qs = sorted();
+  const open = new Set([...document.querySelectorAll('.card.open')].map(c => c.dataset.key));
+  $('#cards').innerHTML = qs.map(q => card(q, open.has(q.key))).join('');
+  $('#table').innerHTML = table(qs);
+  document.querySelectorAll('.card-head').forEach(h => h.onclick = () => h.parentElement.classList.toggle('open'));
+  bindTips();
+}
+
+function card(q, isOpen) {
+  const f = q.fast, a = q.active;
+  return `<div class="card ${isOpen ? 'open' : ''}" data-key="${q.key}">
+    <div class="card-head"><span class="brand">${q.brand}</span><span class="cat">${q.category}</span><span class="arrow">▼</span></div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Venduto ≤${DATA.fast_days} gg</div>
+        <div class="val">${f ? eur(f.med) : '—'} <small>n=${q.n_fast}</small></div>
+        <div class="rng">${f ? `${eur(f.p25)} – ${eur(f.p75)}` : 'in raccolta'}</div></div>
+      <div class="kpi"><div class="lbl">Venduti in ${DATA.fast_days} gg</div>
+        <div class="val">${q.pct_fast == null ? '—' : q.pct_fast + '%'} <small>su ${q.n_cohort}</small></div>
+        <div class="rng">${q.median_days_gone != null ? `sparisce in ${q.median_days_gone} gg (mediana)` : ''}</div></div>
+      <div class="kpi"><div class="lbl">In vendita ora</div>
+        <div class="val">${q.n_active} <small>annunci</small></div>
+        <div class="rng">chiesto ${a ? eur(a.med) : '—'}${a ? ` (${eur(a.p25)}–${eur(a.p75)})` : ''}</div></div>
+    </div>
+    <div class="detail">
+      <h3>Distribuzione prezzi</h3>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Venduti ≤${DATA.fast_days} gg</span><span><i style="background:var(--s2)"></i>In vendita ora</span></div>
+      ${chart(q)}
+      ${q.pct_discounted_fast != null ? `<p class="empty">${q.pct_discounted_fast}% dei venduti veloci aveva ribassato il prezzo prima di sparire.</p>` : ''}
+      <h3>Per condizione</h3>${groupTable(q.by_condition)}
+      <h3>Per taglia</h3>${groupTable(q.by_size)}
+      <h3>Ultimi venduti veloci</h3>
+      ${q.recent_fast.length ? `<ul class="sold-list">${q.recent_fast.map(r =>
+        `<li><span class="t"><a href="https://www.vinted.it/items/${r.id}" target="_blank" rel="noopener">${esc(r.title)}</a> <span class="d">${esc(r.size)} · ${esc(r.condition)}</span></span><span class="d">${r.days} gg</span><span class="p">${eur(r.price)}</span></li>`).join('')}</ul>`
+        : '<p class="empty">Ancora nessuno.</p>'}
+      <p class="empty"><a href="${q.url}" target="_blank" rel="noopener">Apri la ricerca su Vinted ↗</a></p>
+    </div>
+  </div>`;
+}
+
+function groupTable(rows) {
+  if (!rows || !rows.length) return '<p class="empty">—</p>';
+  return `<div class="tbl-wrap"><table><thead><tr><th></th><th class="num">Venduto</th><th class="num">n</th><th class="num">Chiesto</th><th class="num">attivi</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${esc(r.name)}</td><td class="num">${r.fast ? eur(r.fast.med) : '—'}</td><td class="num">${r.n_fast}</td><td class="num">${r.active ? eur(r.active.med) : '—'}</td><td class="num">${r.n_active}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+function table(qs) {
+  return `<table><thead><tr><th>Brand</th><th>Categoria</th><th class="num">Venduto ≤${DATA.fast_days}gg</th><th class="num">n</th><th class="num">% in ${DATA.fast_days}gg</th><th class="num">Chiesto</th><th class="num">Attivi</th></tr></thead><tbody>${
+    qs.map(q => `<tr><td>${q.brand}</td><td>${q.category}</td><td class="num">${q.fast ? eur(q.fast.med) : '—'}</td><td class="num">${q.n_fast}</td><td class="num">${q.pct_fast == null ? '—' : q.pct_fast + '%'}</td><td class="num">${q.active ? eur(q.active.med) : '—'}</td><td class="num">${q.n_active}</td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+function chart(q) {
+  const step = DATA.price_bucket, n = q.hist_active.length;
+  const W = 360, H = 150, padL = 26, padB = 18, padT = 6;
+  const max = Math.max(1, ...q.hist_active, ...q.hist_fast);
+  const gw = (W - padL) / n, bw = Math.max(3, (gw - 6) / 2);
+  const y = v => padT + (H - padB - padT) * (1 - v / max);
+  const ticks = [0, Math.round(max / 2), max];
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Istogramma prezzi">`;
+  ticks.forEach(t => { s += `<line x1="${padL}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${padL - 4}" y="${y(t) + 3}" text-anchor="end">${t}</text>`; });
+  s += `<line x1="${padL}" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--axis)"/>`;
+  for (let i = 0; i < n; i++) {
+    const x0 = padL + i * gw + 3, lbl = i === n - 1 ? `${i * step}+` : `${i * step}–${(i + 1) * step}`;
+    const tip = `${lbl} €: ${q.hist_fast[i]} venduti · ${q.hist_active[i]} in vendita`;
+    s += `<g data-tip="${tip}"><rect class="hit" x="${padL + i * gw}" y="0" width="${gw}" height="${H - padB}" fill="transparent"/>`;
+    s += bar(x0, y(q.hist_fast[i]), bw, y(0) - y(q.hist_fast[i]), 'var(--s1)');
+    s += bar(x0 + bw + 2, y(q.hist_active[i]), bw, y(0) - y(q.hist_active[i]), 'var(--s2)');
+    if (i % 2 === 0) s += `<text x="${padL + i * gw}" y="${H - 4}">${i * step}</text>`;
+    s += `</g>`;
+  }
+  s += `<text x="${W}" y="${H - 4}" text-anchor="end">€</text></svg>`;
+  return s;
+}
+function bar(x, y, w, h, fill) {
+  if (h <= 0) return '';
+  const r = Math.min(4, h, w / 2);
+  return `<path class="bar" fill="${fill}" d="M${x},${y + h} V${y + r} a${r},${r} 0 0 1 ${r},-${r} H${x + w - r} a${r},${r} 0 0 1 ${r},${r} V${y + h} Z"/>`;
+}
+function bindTips() {
+  const tip = $('#tip');
+  document.querySelectorAll('svg.chart g[data-tip]').forEach(g => {
+    const show = e => { tip.textContent = g.dataset.tip; tip.style.display = 'block';
+      const p = e.touches ? e.touches[0] : e; tip.style.left = Math.min(p.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (p.clientY - 36) + 'px'; };
+    g.addEventListener('pointermove', show); g.addEventListener('pointerenter', show);
+    g.addEventListener('pointerleave', () => tip.style.display = 'none');
+  });
+}
+function esc(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+init();
+</script>
+</body>
+</html>

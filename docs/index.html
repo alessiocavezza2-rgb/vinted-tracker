@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vinted Tracker</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10);
+    --s1: #2a78d6; --s2: #eb6834; --good: #006300; --warn: #b45309;
+    --chip: #ededea; --chip-on: #0b0b0b; --chip-on-ink: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+      --s1: #3987e5; --s2: #d95926; --good: #0ca30c; --warn: #fab219;
+      --chip: #2a2a28; --chip-on: #ffffff; --chip-on-ink: #0b0b0b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+         padding-block: 16px 48px; padding-inline: 16px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { color: var(--ink-2); font-size: 13px; margin: 0 0 14px; }
+  .notice { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--warn);
+            border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; color: var(--ink-2); }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 0; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+          background: var(--chip); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--chip-on); color: var(--chip-on-ink); }
+  select { font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border);
+           background: var(--surface); color: var(--ink); margin-left: auto; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .card-head { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }
+  .card-head .brand { font-weight: 700; }
+  .card-head .cat { color: var(--ink-2); }
+  .card-head .arrow { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .kpi { min-width: 0; }
+  .kpi .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  .kpi .val { font-size: 22px; font-weight: 700; line-height: 1.15; }
+  .kpi .val small { font-size: 12px; font-weight: 400; color: var(--ink-2); }
+  .kpi .rng { font-size: 12px; color: var(--ink-2); }
+  .detail { display: none; margin-top: 12px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  .card.open .detail { display: block; }
+  .card.open .arrow { transform: rotate(180deg); display: inline-block; }
+  h3 { font-size: 13px; margin: 12px 0 6px; color: var(--ink-2); font-weight: 600; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); margin: 4px 0 2px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+  svg.chart text { font-size: 10px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  svg.chart .bar { transition: opacity .1s; }
+  svg.chart .hit:hover ~ .bar, svg.chart g:hover .bar { opacity: .8; }
+  .tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--page); font-size: 12px;
+         padding: 6px 8px; border-radius: 6px; display: none; z-index: 10; white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+  td.num, th.num { text-align: right; }
+  .tbl-wrap { overflow-x: auto; }
+  .sold-list { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+  .sold-list li { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--grid); }
+  .sold-list .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sold-list .p { font-weight: 600; }
+  .sold-list .d { color: var(--muted); }
+  a { color: var(--s1); }
+  .foot { font-size: 12px; color: var(--muted); margin-top: 20px; }
+  .empty { color: var(--muted); font-size: 13px; }
+  .view-table { display: none; }
+  body.table .view-cards { display: none; }
+  body.table .view-table { display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Vinted Tracker</h1>
+  <p class="sub" id="sub"></p>
+  <div class="notice" id="notice" hidden></div>
+  <div class="controls">
+    <div class="chips" id="brands"></div>
+    <select id="sort">
+      <option value="fast">Ordina: prezzo di vendita</option>
+      <option value="pct">Ordina: % venduti veloci</option>
+      <option value="active">Ordina: prezzo richiesto</option>
+      <option value="comp">Ordina: meno concorrenza</option>
+      <option value="name">Ordina: nome</option>
+    </select>
+  </div>
+  <div class="controls">
+    <button class="chip" id="viewCards" aria-pressed="true">Schede</button>
+    <button class="chip" id="viewTable" aria-pressed="false">Tabella</button>
+  </div>
+  <div class="view-cards" id="cards"></div>
+  <div class="view-table card tbl-wrap" id="table"></div>
+  <p class="foot" id="foot"></p>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const DATA = {"generated": "2026-09-15T11:38:45+00:00", "first_run": "2026-09-15T11:33:04+00:00", "days_collected": 1, "fast_days": 7, "price_bucket": 10, "price_cap": 150, "n_items_total": 4940, "queries": [{"key": "carhartt_giacche_uomo", "brand": "Carhartt", "category": "Giacche uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=362&catalog[]=2052", "n_active": 380, "active": {"p25": 45.0, "med": 59.0, "p75": 80.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [0, 3, 17, 36, 58, 87, 52, 17, 29, 20, 11, 10, 7, 4, 4, 25], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 263, "active": {"p25": 47.0, "med": 59.0, "p75": 87.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 60, "active": {"p25": 53.6, "med": 65.0, "p75": 85.2}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 44, "active": {"p25": 34.2, "med": 44.5, "p75": 60.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 9, "active": {"p25": 70.0, "med": 85.0, "p75": 150.0}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 4, "active": {"p25": 18.8, "med": 22.5, "p75": 27.8}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 128, "active": {"p25": 47.8, "med": 60.0, "p75": 86.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 92, "active": {"p25": 45.0, "med": 59.5, "p75": 81.2}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 74, "active": {"p25": 40.0, "med": 55.0, "p75": 67.2}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 54, "active": {"p25": 47.5, "med": 61.5, "p75": 97.5}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 15, "active": {"p25": 53.5, "med": 60.0, "p75": 90.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 14, "active": {"p25": 32.8, "med": 42.5, "p75": 58.8}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 2, "active": {"p25": 58.8, "med": 82.5, "p75": 106.2}, "n_fast": 0, "fast": null}, {"name": "Taglia unica", "n_active": 1, "active": {"p25": 20.0, "med": 20.0, "p75": 20.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "carhartt_felpe_uomo", "brand": "Carhartt", "category": "Felpe uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=362&catalog[]=267", "n_active": 382, "active": {"p25": 20.0, "med": 25.0, "p75": 35.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [3, 79, 136, 80, 45, 23, 9, 4, 1, 0, 0, 1, 1, 0, 0, 0], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 241, "active": {"p25": 22.0, "med": 28.0, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 64, "active": {"p25": 17.5, "med": 20.0, "p75": 25.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 55, "active": {"p25": 24.0, "med": 35.0, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 12, "active": {"p25": 46.0, "med": 53.0, "p75": 56.2}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 10, "active": {"p25": 12.8, "med": 17.5, "p75": 18.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 130, "active": {"p25": 24.0, "med": 28.0, "p75": 39.9}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 100, "active": {"p25": 18.0, "med": 25.0, "p75": 36.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 68, "active": {"p25": 20.0, "med": 29.9, "p75": 40.0}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 38, "active": {"p25": 19.2, "med": 25.2, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 37, "active": {"p25": 18.0, "med": 25.0, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 8, "active": {"p25": 23.8, "med": 29.0, "p75": 36.2}, "n_fast": 0, "fast": null}, {"name": "Taglia unica", "n_active": 1, "active": {"p25": 128.0, "med": 128.0, "p75": 128.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "carhartt_jeans_uomo", "brand": "Carhartt", "category": "Jeans uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=362&catalog[]=257", "n_active": 379, "active": {"p25": 20.0, "med": 29.0, "p75": 37.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [5, 69, 130, 95, 46, 18, 8, 3, 3, 0, 0, 0, 0, 0, 2, 0], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 255, "active": {"p25": 20.0, "med": 27.0, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 53, "active": {"p25": 15.0, "med": 24.5, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 53, "active": {"p25": 30.0, "med": 35.0, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 10, "active": {"p25": 46.0, "med": 50.0, "p75": 53.8}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 8, "active": {"p25": 15.0, "med": 17.0, "p75": 21.2}, "n_fast": 0, "fast": null}], "by_size": [{"name": "IT 38 | W29", "n_active": 45, "active": {"p25": 20.0, "med": 25.4, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "IT 40 | W30", "n_active": 42, "active": {"p25": 20.0, "med": 26.0, "p75": 32.9}, "n_fast": 0, "fast": null}, {"name": "IT 40 | W31", "n_active": 35, "active": {"p25": 22.4, "med": 30.0, "p75": 39.5}, "n_fast": 0, "fast": null}, {"name": "IT 42 | W32", "n_active": 31, "active": {"p25": 17.0, "med": 25.0, "p75": 31.0}, "n_fast": 0, "fast": null}, {"name": "IT 38 | W28", "n_active": 29, "active": {"p25": 23.0, "med": 28.8, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "M", "n_active": 26, "active": {"p25": 20.8, "med": 27.4, "p75": 40.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 24, "active": {"p25": 22.8, "med": 29.5, "p75": 40.0}, "n_fast": 0, "fast": null}, {"name": "IT 44 | W34", "n_active": 23, "active": {"p25": 25.0, "med": 29.0, "p75": 35.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "nike_giacche_uomo", "brand": "Nike", "category": "Giacche uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=53&catalog[]=2052", "n_active": 380, "active": {"p25": 20.0, "med": 30.0, "p75": 50.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [10, 67, 100, 68, 39, 30, 21, 15, 11, 5, 4, 1, 1, 0, 1, 7], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 232, "active": {"p25": 20.0, "med": 29.9, "p75": 40.5}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 64, "active": {"p25": 27.2, "med": 40.0, "p75": 60.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 43, "active": {"p25": 40.0, "med": 55.0, "p75": 70.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 36, "active": {"p25": 15.0, "med": 23.0, "p75": 29.9}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 5, "active": {"p25": 5.0, "med": 8.8, "p75": 12.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 128, "active": {"p25": 22.7, "med": 34.5, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 89, "active": {"p25": 22.0, "med": 30.0, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 68, "active": {"p25": 20.0, "med": 30.0, "p75": 50.0}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 62, "active": {"p25": 17.2, "med": 30.0, "p75": 50.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 16, "active": {"p25": 22.2, "med": 37.5, "p75": 58.7}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 14, "active": {"p25": 20.8, "med": 24.0, "p75": 27.4}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 3, "active": {"p25": 35.0, "med": 40.0, "p75": 55.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "nike_felpe_uomo", "brand": "Nike", "category": "Felpe uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=53&catalog[]=267", "n_active": 380, "active": {"p25": 10.0, "med": 15.0, "p75": 23.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [94, 147, 78, 28, 11, 5, 3, 7, 3, 2, 1, 0, 0, 0, 0, 1], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 245, "active": {"p25": 10.0, "med": 15.0, "p75": 21.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 65, "active": {"p25": 6.0, "med": 10.0, "p75": 15.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 50, "active": {"p25": 15.0, "med": 22.5, "p75": 35.8}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 10, "active": {"p25": 32.8, "med": 38.0, "p75": 63.8}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 10, "active": {"p25": 5.5, "med": 8.0, "p75": 10.8}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 124, "active": {"p25": 8.0, "med": 14.0, "p75": 23.2}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 101, "active": {"p25": 8.0, "med": 14.0, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 98, "active": {"p25": 10.0, "med": 15.0, "p75": 24.9}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 31, "active": {"p25": 10.0, "med": 15.0, "p75": 23.9}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 12, "active": {"p25": 9.5, "med": 15.0, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 12, "active": {"p25": 17.2, "med": 19.9, "p75": 27.5}, "n_fast": 0, "fast": null}, {"name": "4XL", "n_active": 1, "active": {"p25": 70.0, "med": 70.0, "p75": 70.0}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 1, "active": {"p25": 50.0, "med": 50.0, "p75": 50.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "nike_tshirt_uomo", "brand": "Nike", "category": "T-shirt uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=53&catalog[]=77", "n_active": 381, "active": {"p25": 5.0, "med": 8.0, "p75": 15.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [203, 127, 35, 11, 4, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 219, "active": {"p25": 5.0, "med": 8.0, "p75": 13.5}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 71, "active": {"p25": 4.0, "med": 5.5, "p75": 10.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 53, "active": {"p25": 6.0, "med": 10.0, "p75": 15.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 34, "active": {"p25": 11.0, "med": 16.5, "p75": 24.8}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 4, "active": {"p25": 5.0, "med": 6.0, "p75": 7.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 104, "active": {"p25": 5.0, "med": 8.2, "p75": 14.9}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 99, "active": {"p25": 5.0, "med": 7.0, "p75": 11.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 87, "active": {"p25": 5.7, "med": 9.0, "p75": 13.2}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 52, "active": {"p25": 6.0, "med": 10.0, "p75": 18.5}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 22, "active": {"p25": 4.0, "med": 8.0, "p75": 14.2}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 14, "active": {"p25": 6.1, "med": 9.5, "p75": 14.2}, "n_fast": 0, "fast": null}, {"name": "Taglia unica", "n_active": 2, "active": {"p25": 16.8, "med": 24.5, "p75": 32.2}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 1, "active": {"p25": 12.0, "med": 12.0, "p75": 12.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "adidas_giacche_uomo", "brand": "adidas", "category": "Giacche uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=14&catalog[]=2052", "n_active": 379, "active": {"p25": 18.0, "med": 25.0, "p75": 35.5}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [14, 114, 112, 51, 28, 19, 15, 5, 6, 5, 1, 3, 2, 0, 2, 2], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 249, "active": {"p25": 18.0, "med": 25.0, "p75": 34.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 47, "active": {"p25": 20.0, "med": 30.0, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 45, "active": {"p25": 12.0, "med": 17.0, "p75": 26.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 32, "active": {"p25": 27.0, "med": 51.0, "p75": 67.5}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 6, "active": {"p25": 10.5, "med": 12.0, "p75": 15.8}, "n_fast": 0, "fast": null}], "by_size": [{"name": "L", "n_active": 116, "active": {"p25": 19.4, "med": 25.0, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "M", "n_active": 98, "active": {"p25": 18.0, "med": 25.0, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 74, "active": {"p25": 15.2, "med": 24.5, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 55, "active": {"p25": 18.0, "med": 28.0, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 17, "active": {"p25": 12.5, "med": 20.0, "p75": 25.0}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 16, "active": {"p25": 18.0, "med": 24.9, "p75": 36.2}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 1, "active": {"p25": 1.0, "med": 1.0, "p75": 1.0}, "n_fast": 0, "fast": null}, {"name": "8XL", "n_active": 1, "active": {"p25": 15.0, "med": 15.0, "p75": 15.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "adidas_felpe_uomo", "brand": "adidas", "category": "Felpe uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=14&catalog[]=267", "n_active": 381, "active": {"p25": 9.0, "med": 12.0, "p75": 20.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [118, 152, 72, 19, 9, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 244, "active": {"p25": 9.0, "med": 15.0, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 70, "active": {"p25": 6.0, "med": 10.0, "p75": 12.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 44, "active": {"p25": 10.0, "med": 12.8, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 18, "active": {"p25": 28.0, "med": 35.0, "p75": 40.0}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 5, "active": {"p25": 4.5, "med": 8.0, "p75": 9.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 129, "active": {"p25": 9.0, "med": 12.0, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 88, "active": {"p25": 9.0, "med": 12.2, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 82, "active": {"p25": 6.2, "med": 11.5, "p75": 18.7}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 46, "active": {"p25": 10.5, "med": 16.5, "p75": 28.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 20, "active": {"p25": 6.8, "med": 10.0, "p75": 15.0}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 13, "active": {"p25": 9.0, "med": 18.0, "p75": 22.0}, "n_fast": 0, "fast": null}, {"name": "4XL", "n_active": 1, "active": {"p25": 22.0, "med": 22.0, "p75": 22.0}, "n_fast": 0, "fast": null}, {"name": "Taglia unica", "n_active": 1, "active": {"p25": 6.0, "med": 6.0, "p75": 6.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "adidas_tshirt_uomo", "brand": "adidas", "category": "T-shirt uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=14&catalog[]=77", "n_active": 381, "active": {"p25": 5.0, "med": 7.0, "p75": 12.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [237, 104, 29, 4, 2, 2, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 233, "active": {"p25": 5.0, "med": 7.0, "p75": 10.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 66, "active": {"p25": 4.0, "med": 5.0, "p75": 7.9}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 49, "active": {"p25": 6.0, "med": 10.0, "p75": 15.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 27, "active": {"p25": 11.0, "med": 15.0, "p75": 23.5}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 6, "active": {"p25": 2.0, "med": 2.5, "p75": 3.8}, "n_fast": 0, "fast": null}], "by_size": [{"name": "L", "n_active": 111, "active": {"p25": 5.0, "med": 8.5, "p75": 13.0}, "n_fast": 0, "fast": null}, {"name": "M", "n_active": 109, "active": {"p25": 4.0, "med": 6.0, "p75": 10.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 75, "active": {"p25": 5.0, "med": 7.9, "p75": 12.0}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 44, "active": {"p25": 5.9, "med": 9.5, "p75": 15.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 29, "active": {"p25": 4.0, "med": 6.0, "p75": 10.0}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 11, "active": {"p25": 6.0, "med": 6.0, "p75": 8.0}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 1, "active": {"p25": 15.0, "med": 15.0, "p75": 15.0}, "n_fast": 0, "fast": null}, {"name": "Taglia unica", "n_active": 1, "active": {"p25": 2.99, "med": 2.99, "p75": 2.99}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "levis_jeans_uomo", "brand": "Levi's", "category": "Jeans uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=10&catalog[]=257", "n_active": 376, "active": {"p25": 15.0, "med": 20.0, "p75": 29.2}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [28, 149, 111, 50, 18, 6, 9, 2, 3, 0, 0, 0, 0, 0, 0, 0], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 277, "active": {"p25": 15.0, "med": 20.0, "p75": 29.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 58, "active": {"p25": 10.0, "med": 15.5, "p75": 25.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 24, "active": {"p25": 17.0, "med": 22.5, "p75": 45.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 11, "active": {"p25": 32.5, "med": 42.0, "p75": 57.5}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 6, "active": {"p25": 15.0, "med": 16.0, "p75": 17.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "IT 42 | W32", "n_active": 57, "active": {"p25": 15.0, "med": 20.0, "p75": 25.9}, "n_fast": 0, "fast": null}, {"name": "IT 44 | W34", "n_active": 46, "active": {"p25": 16.2, "med": 24.9, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "IT 46 | W36", "n_active": 37, "active": {"p25": 15.0, "med": 22.0, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "IT 40 | W30", "n_active": 35, "active": {"p25": 18.4, "med": 25.0, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "IT 40 | W31", "n_active": 32, "active": {"p25": 16.5, "med": 24.9, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "IT 42 | W33", "n_active": 25, "active": {"p25": 15.0, "med": 18.0, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "M", "n_active": 24, "active": {"p25": 10.0, "med": 15.0, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "IT 38 | W29", "n_active": 19, "active": {"p25": 13.5, "med": 20.0, "p75": 30.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "levis_jeans_donna", "brand": "Levi's", "category": "Jeans donna", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=10&catalog[]=183", "n_active": 379, "active": {"p25": 12.0, "med": 18.0, "p75": 25.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [46, 160, 87, 45, 11, 17, 8, 2, 3, 0, 0, 0, 0, 0, 0, 0], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 278, "active": {"p25": 13.0, "med": 18.0, "p75": 25.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 53, "active": {"p25": 10.0, "med": 15.0, "p75": 20.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 32, "active": {"p25": 12.0, "med": 20.0, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 16, "active": {"p25": 37.2, "med": 39.0, "p75": 59.2}, "n_fast": 0, "fast": null}], "by_size": [{"name": "S / IT 40 / EU 36", "n_active": 108, "active": {"p25": 12.0, "med": 18.4, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "M / IT 42 / EU 38", "n_active": 92, "active": {"p25": 14.8, "med": 18.0, "p75": 25.0}, "n_fast": 0, "fast": null}, {"name": "XS / IT 38 / EU 34", "n_active": 67, "active": {"p25": 12.0, "med": 18.9, "p75": 26.5}, "n_fast": 0, "fast": null}, {"name": "L / IT 44 / EU 40", "n_active": 45, "active": {"p25": 15.0, "med": 20.0, "p75": 30.0}, "n_fast": 0, "fast": null}, {"name": "XL / IT 46 / EU 42", "n_active": 19, "active": {"p25": 14.5, "med": 25.0, "p75": 35.0}, "n_fast": 0, "fast": null}, {"name": "Altro", "n_active": 16, "active": {"p25": 11.8, "med": 14.5, "p75": 21.2}, "n_fast": 0, "fast": null}, {"name": "XXS / IT 36 / EU 32", "n_active": 9, "active": {"p25": 8.9, "med": 15.0, "p75": 17.0}, "n_fast": 0, "fast": null}, {"name": "XXL / IT 48 / EU 44", "n_active": 6, "active": {"p25": 14.2, "med": 17.4, "p75": 20.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "levis_giacche_denim_uomo", "brand": "Levi's", "category": "Giacche denim uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=10&catalog[]=1224", "n_active": 381, "active": {"p25": 25.0, "med": 36.0, "p75": 50.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [1, 37, 90, 72, 56, 45, 28, 16, 14, 4, 6, 3, 1, 2, 2, 4], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 263, "active": {"p25": 25.0, "med": 35.0, "p75": 50.0}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 55, "active": {"p25": 33.5, "med": 50.0, "p75": 80.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 48, "active": {"p25": 25.0, "med": 31.0, "p75": 45.8}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 12, "active": {"p25": 43.0, "med": 46.5, "p75": 87.5}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 3, "active": {"p25": 16.5, "med": 18.0, "p75": 19.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 128, "active": {"p25": 25.0, "med": 42.5, "p75": 59.9}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 86, "active": {"p25": 25.0, "med": 35.0, "p75": 50.0}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 73, "active": {"p25": 27.0, "med": 40.0, "p75": 59.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 66, "active": {"p25": 22.8, "med": 35.0, "p75": 50.0}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 19, "active": {"p25": 30.0, "med": 35.0, "p75": 48.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 6, "active": {"p25": 30.5, "med": 35.0, "p75": 37.2}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 3, "active": {"p25": 37.5, "med": 50.0, "p75": 65.0}, "n_fast": 0, "fast": null}], "recent_fast": []}, {"key": "tnf_giacche_uomo", "brand": "The North Face", "category": "Giacche uomo", "url": "https://www.vinted.it/catalog?order=newest_first&brand_ids[]=2319&catalog[]=2052", "n_active": 381, "active": {"p25": 30.0, "med": 43.9, "p75": 70.0}, "n_fast": 0, "fast": null, "pct_fast": null, "n_cohort": 0, "median_days_gone": null, "pct_discounted_fast": null, "hist_active": [3, 25, 64, 81, 44, 38, 26, 17, 18, 7, 14, 4, 10, 4, 0, 26], "hist_fast": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "by_condition": [{"name": "Ottime", "n_active": 246, "active": {"p25": 30.0, "med": 40.0, "p75": 63.8}, "n_fast": 0, "fast": null}, {"name": "Nuovo senza cartellino", "n_active": 56, "active": {"p25": 40.0, "med": 64.5, "p75": 100.0}, "n_fast": 0, "fast": null}, {"name": "Buone", "n_active": 46, "active": {"p25": 20.0, "med": 28.0, "p75": 45.7}, "n_fast": 0, "fast": null}, {"name": "Nuovo con cartellino", "n_active": 24, "active": {"p25": 60.0, "med": 69.0, "p75": 150.0}, "n_fast": 0, "fast": null}, {"name": "Discrete", "n_active": 9, "active": {"p25": 15.0, "med": 15.0, "p75": 24.0}, "n_fast": 0, "fast": null}], "by_size": [{"name": "M", "n_active": 118, "active": {"p25": 32.2, "med": 45.0, "p75": 80.0}, "n_fast": 0, "fast": null}, {"name": "L", "n_active": 90, "active": {"p25": 28.5, "med": 39.5, "p75": 68.0}, "n_fast": 0, "fast": null}, {"name": "S", "n_active": 84, "active": {"p25": 30.0, "med": 42.0, "p75": 64.2}, "n_fast": 0, "fast": null}, {"name": "XL", "n_active": 62, "active": {"p25": 30.0, "med": 45.5, "p75": 70.0}, "n_fast": 0, "fast": null}, {"name": "XS", "n_active": 15, "active": {"p25": 32.5, "med": 40.0, "p75": 61.3}, "n_fast": 0, "fast": null}, {"name": "XXL", "n_active": 10, "active": {"p25": 22.5, "med": 39.5, "p75": 46.0}, "n_fast": 0, "fast": null}, {"name": "Taglia unica", "n_active": 1, "active": {"p25": 27.5, "med": 27.5, "p75": 27.5}, "n_fast": 0, "fast": null}, {"name": "XXXL", "n_active": 1, "active": {"p25": 39.99, "med": 39.99, "p75": 39.99}, "n_fast": 0, "fast": null}], "recent_fast": []}]};
+const $ = (s, el = document) => el.querySelector(s);
+const eur = v => v == null ? '—' : v.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+const state = { brand: 'Tutti', sort: 'fast' };
+
+function init() {
+  if (!DATA) { $('#cards').innerHTML = '<p class="empty">Nessun dato ancora: esegui il tracker.</p>'; return; }
+  const gen = new Date(DATA.generated);
+  $('#sub').textContent = `Aggiornato ${gen.toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })} · ${DATA.days_collected} giorni di raccolta · ${DATA.n_items_total} annunci tracciati`;
+  if (DATA.days_collected <= DATA.fast_days) {
+    const n = $('#notice'); n.hidden = false;
+    n.textContent = `I prezzi di vendita ("venduti in ≤${DATA.fast_days} gg") diventano affidabili dopo ${DATA.fast_days + 1} giorni di raccolta: per ora guarda soprattutto i prezzi richiesti e la concorrenza.`;
+  }
+  const brands = ['Tutti', ...new Set(DATA.queries.map(q => q.brand))];
+  $('#brands').innerHTML = brands.map(b => `<button class="chip" data-b="${b}" aria-pressed="${b === state.brand}">${b}</button>`).join('');
+  $('#brands').addEventListener('click', e => {
+    const b = e.target.dataset.b; if (!b) return;
+    state.brand = b; render();
+  });
+  $('#sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+  $('#viewCards').onclick = () => setView(false);
+  $('#viewTable').onclick = () => setView(true);
+  $('#foot').textContent = `Prezzi in € (esclusa Protezione acquisti). "Venduti ≤${DATA.fast_days} gg" = annunci spariti dal catalogo entro ${DATA.fast_days} giorni dalla pubblicazione: include una piccola quota di annunci ritirati. Dati raccolti dal ${new Date(DATA.first_run).toLocaleDateString('it-IT')}.`;
+  render();
+}
+
+function setView(table) {
+  document.body.classList.toggle('table', table);
+  $('#viewCards').setAttribute('aria-pressed', !table);
+  $('#viewTable').setAttribute('aria-pressed', table);
+}
+
+function sorted() {
+  let qs = DATA.queries.filter(q => state.brand === 'Tutti' || q.brand === state.brand);
+  const v = (x) => x == null ? -1 : x;
+  const cmp = {
+    fast: (a, b) => v(b.fast && b.fast.med) - v(a.fast && a.fast.med) || v(b.active && b.active.med) - v(a.active && a.active.med),
+    pct: (a, b) => v(b.pct_fast) - v(a.pct_fast),
+    active: (a, b) => v(b.active && b.active.med) - v(a.active && a.active.med),
+    comp: (a, b) => a.n_active - b.n_active,
+    name: (a, b) => (a.brand + a.category).localeCompare(b.brand + b.category),
+  }[state.sort];
+  return qs.sort(cmp);
+}
+
+function render() {
+  document.querySelectorAll('#brands .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.b === state.brand));
+  const qs = sorted();
+  const open = new Set([...document.querySelectorAll('.card.open')].map(c => c.dataset.key));
+  $('#cards').innerHTML = qs.map(q => card(q, open.has(q.key))).join('');
+  $('#table').innerHTML = table(qs);
+  document.querySelectorAll('.card-head').forEach(h => h.onclick = () => h.parentElement.classList.toggle('open'));
+  bindTips();
+}
+
+function card(q, isOpen) {
+  const f = q.fast, a = q.active;
+  return `<div class="card ${isOpen ? 'open' : ''}" data-key="${q.key}">
+    <div class="card-head"><span class="brand">${q.brand}</span><span class="cat">${q.category}</span><span class="arrow">▼</span></div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Venduto ≤${DATA.fast_days} gg</div>
+        <div class="val">${f ? eur(f.med) : '—'} <small>n=${q.n_fast}</small></div>
+        <div class="rng">${f ? `${eur(f.p25)} – ${eur(f.p75)}` : 'in raccolta'}</div></div>
+      <div class="kpi"><div class="lbl">Venduti in ${DATA.fast_days} gg</div>
+        <div class="val">${q.pct_fast == null ? '—' : q.pct_fast + '%'} <small>su ${q.n_cohort}</small></div>
+        <div class="rng">${q.median_days_gone != null ? `sparisce in ${q.median_days_gone} gg (mediana)` : ''}</div></div>
+      <div class="kpi"><div class="lbl">In vendita ora</div>
+        <div class="val">${q.n_active} <small>annunci</small></div>
+        <div class="rng">chiesto ${a ? eur(a.med) : '—'}${a ? ` (${eur(a.p25)}–${eur(a.p75)})` : ''}</div></div>
+    </div>
+    <div class="detail">
+      <h3>Distribuzione prezzi</h3>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Venduti ≤${DATA.fast_days} gg</span><span><i style="background:var(--s2)"></i>In vendita ora</span></div>
+      ${chart(q)}
+      ${q.pct_discounted_fast != null ? `<p class="empty">${q.pct_discounted_fast}% dei venduti veloci aveva ribassato il prezzo prima di sparire.</p>` : ''}
+      <h3>Per condizione</h3>${groupTable(q.by_condition)}
+      <h3>Per taglia</h3>${groupTable(q.by_size)}
+      <h3>Ultimi venduti veloci</h3>
+      ${q.recent_fast.length ? `<ul class="sold-list">${q.recent_fast.map(r =>
+        `<li><span class="t"><a href="https://www.vinted.it/items/${r.id}" target="_blank" rel="noopener">${esc(r.title)}</a> <span class="d">${esc(r.size)} · ${esc(r.condition)}</span></span><span class="d">${r.days} gg</span><span class="p">${eur(r.price)}</span></li>`).join('')}</ul>`
+        : '<p class="empty">Ancora nessuno.</p>'}
+      <p class="empty"><a href="${q.url}" target="_blank" rel="noopener">Apri la ricerca su Vinted ↗</a></p>
+    </div>
+  </div>`;
+}
+
+function groupTable(rows) {
+  if (!rows || !rows.length) return '<p class="empty">—</p>';
+  return `<div class="tbl-wrap"><table><thead><tr><th></th><th class="num">Venduto</th><th class="num">n</th><th class="num">Chiesto</th><th class="num">attivi</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${esc(r.name)}</td><td class="num">${r.fast ? eur(r.fast.med) : '—'}</td><td class="num">${r.n_fast}</td><td class="num">${r.active ? eur(r.active.med) : '—'}</td><td class="num">${r.n_active}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+function table(qs) {
+  return `<table><thead><tr><th>Brand</th><th>Categoria</th><th class="num">Venduto ≤${DATA.fast_days}gg</th><th class="num">n</th><th class="num">% in ${DATA.fast_days}gg</th><th class="num">Chiesto</th><th class="num">Attivi</th></tr></thead><tbody>${
+    qs.map(q => `<tr><td>${q.brand}</td><td>${q.category}</td><td class="num">${q.fast ? eur(q.fast.med) : '—'}</td><td class="num">${q.n_fast}</td><td class="num">${q.pct_fast == null ? '—' : q.pct_fast + '%'}</td><td class="num">${q.active ? eur(q.active.med) : '—'}</td><td class="num">${q.n_active}</td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+function chart(q) {
+  const step = DATA.price_bucket, n = q.hist_active.length;
+  const W = 360, H = 150, padL = 26, padB = 18, padT = 6;
+  const max = Math.max(1, ...q.hist_active, ...q.hist_fast);
+  const gw = (W - padL) / n, bw = Math.max(3, (gw - 6) / 2);
+  const y = v => padT + (H - padB - padT) * (1 - v / max);
+  const ticks = [0, Math.round(max / 2), max];
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Istogramma prezzi">`;
+  ticks.forEach(t => { s += `<line x1="${padL}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${padL - 4}" y="${y(t) + 3}" text-anchor="end">${t}</text>`; });
+  s += `<line x1="${padL}" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--axis)"/>`;
+  for (let i = 0; i < n; i++) {
+    const x0 = padL + i * gw + 3, lbl = i === n - 1 ? `${i * step}+` : `${i * step}–${(i + 1) * step}`;
+    const tip = `${lbl} €: ${q.hist_fast[i]} venduti · ${q.hist_active[i]} in vendita`;
+    s += `<g data-tip="${tip}"><rect class="hit" x="${padL + i * gw}" y="0" width="${gw}" height="${H - padB}" fill="transparent"/>`;
+    s += bar(x0, y(q.hist_fast[i]), bw, y(0) - y(q.hist_fast[i]), 'var(--s1)');
+    s += bar(x0 + bw + 2, y(q.hist_active[i]), bw, y(0) - y(q.hist_active[i]), 'var(--s2)');
+    if (i % 2 === 0) s += `<text x="${padL + i * gw}" y="${H - 4}">${i * step}</text>`;
+    s += `</g>`;
+  }
+  s += `<text x="${W}" y="${H - 4}" text-anchor="end">€</text></svg>`;
+  return s;
+}
+function bar(x, y, w, h, fill) {
+  if (h <= 0) return '';
+  const r = Math.min(4, h, w / 2);
+  return `<path class="bar" fill="${fill}" d="M${x},${y + h} V${y + r} a${r},${r} 0 0 1 ${r},-${r} H${x + w - r} a${r},${r} 0 0 1 ${r},${r} V${y + h} Z"/>`;
+}
+function bindTips() {
+  const tip = $('#tip');
+  document.querySelectorAll('svg.chart g[data-tip]').forEach(g => {
+    const show = e => { tip.textContent = g.dataset.tip; tip.style.display = 'block';
+      const p = e.touches ? e.touches[0] : e; tip.style.left = Math.min(p.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (p.clientY - 36) + 'px'; };
+    g.addEventListener('pointermove', show); g.addEventListener('pointerenter', show);
+    g.addEventListener('pointerleave', () => tip.style.display = 'none');
+  });
+}
+function esc(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+init();
+</script>
+</body>
+</html>

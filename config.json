@@ -18,6 +18,9 @@
     { "key": "levis_jeans_uomo", "brand": "Levi's", "category": "Jeans uomo", "brand_ids": [10], "catalog_ids": [257] },
     { "key": "levis_jeans_donna", "brand": "Levi's", "category": "Jeans donna", "brand_ids": [10], "catalog_ids": [183] },
     { "key": "levis_giacche_denim_uomo", "brand": "Levi's", "category": "Giacche denim uomo", "brand_ids": [10], "catalog_ids": [1224] },
-    { "key": "tnf_giacche_uomo", "brand": "The North Face", "category": "Giacche uomo", "brand_ids": [2319], "catalog_ids": [2052] }
+    { "key": "tnf_giacche_uomo", "brand": "The North Face", "category": "Giacche uomo", "brand_ids": [2319], "catalog_ids": [2052] },
+    { "key": "wrangler_jeans_uomo", "brand": "Wrangler", "category": "Jeans uomo", "brand_ids": [259], "catalog_ids": [257] },
+    { "key": "wrangler_jeans_donna", "brand": "Wrangler", "category": "Jeans donna", "brand_ids": [259], "catalog_ids": [183] },
+    { "key": "wrangler_giacche_denim_uomo", "brand": "Wrangler", "category": "Giacche denim uomo", "brand_ids": [259], "catalog_ids": [1224] }
   ]
 }

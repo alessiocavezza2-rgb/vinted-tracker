@@ -29,12 +29,15 @@ jobs:
       - run: pip install requests
 
       - name: Raccolta e dashboard
-        run: python tracker.py run
+        run: |
+          : > last_run.log
+          python tracker.py run
 
       - name: Commit e push dei dati
+        if: always()
         run: |
           git config user.name "vinted-tracker-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add vinted.db docs
+          git add vinted.db docs last_run.log
           git diff --cached --quiet || git commit -m "dati $(date -u +'%Y-%m-%d %H:%M') UTC"
           git push

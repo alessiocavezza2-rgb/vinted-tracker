@@ -64,12 +64,21 @@ def days_between(a, b):
     return (parse_iso(b) - parse_iso(a)).total_seconds() / 86400
 
 
+LAST_RUN = ROOT / "last_run.log"     # log dell'ultima esecuzione, committato dal workflow
+
+
 def log(msg):
     line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
     print(line, flush=True)
     (ROOT / "logs").mkdir(exist_ok=True)
-    with open(ROOT / "logs" / "tracker.log", "a", encoding="utf-8") as f:
-        f.write(line + "\n")
+    for path in (ROOT / "logs" / "tracker.log", LAST_RUN):
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+
+def snippet(text):
+    """Testo visibile di una pagina, compresso, per diagnosticare blocchi/captcha."""
+    return re.sub(r"\s+", " ", re.sub(r"<script.*?</script>|<style.*?</style>|<[^>]+>", " ", text, flags=re.S))[:300]
 
 
 def sleep(rng):
@@ -143,11 +152,13 @@ def fetch_query(s, q):
             params.append(("search_text", q["search_text"]))
         r = s.get(f"{CONFIG['site']}/catalog", params=params, timeout=60)
         if r.status_code != 200:
-            log(f"  {q['key']} pagina {page}: HTTP {r.status_code}, mi fermo")
+            log(f"  {q['key']} pagina {page}: HTTP {r.status_code} | {snippet(r.text)}")
             break
         page_items = parse_items(r.text)
         pages += 1
         if not page_items:
+            if page == 1:
+                log(f"  {q['key']} pagina 1 vuota (HTTP 200, {len(r.text)} byte) | {snippet(r.text)}")
             break
         found.update(page_items)
         sleep(CONFIG["delay_seconds"])
@@ -159,15 +170,26 @@ def fetch_query(s, q):
 def cmd_fetch():
     s = session()
     con = db()
+    empty = 0
     for q in CONFIG["queries"]:
         ts = iso(now())
-        try:
-            found, pages = fetch_query(s, q)
-        except requests.RequestException as e:
-            log(f"  {q['key']}: errore rete {e}")
-            continue
+        found, pages = {}, 0
+        for attempt in range(3):
+            try:
+                found, pages = fetch_query(s, q)
+            except requests.RequestException as e:
+                log(f"  {q['key']}: errore rete {e}")
+            if found:
+                break
+            log(f"  {q['key']}: nessun annuncio (tentativo {attempt + 1}), attendo 90 s e rinnovo la sessione")
+            time.sleep(90)
+            s = session()
         if not found:
-            log(f"  {q['key']}: nessun annuncio, salto")
+            empty += 1
+            if empty >= 3:
+                log("fetch: Vinted non risponde con dati, interrompo (probabile blocco dell'IP)")
+                con.close()
+                sys.exit(2)
             continue
         prev = con.execute("SELECT max_id FROM runs WHERE query_key=? AND n_items>0 ORDER BY id DESC LIMIT 1",
                            (q["key"],)).fetchone()

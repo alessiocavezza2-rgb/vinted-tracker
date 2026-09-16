@@ -219,7 +219,7 @@ def upsert(con, key, ts, found, prev_max):
     # campione: i piu' nuovi tra i nuovi (eta' minima), seguiti nel tempo
     new_ids.sort(reverse=True)
     sampled = new_ids[:CONFIG["sample_per_query"]]
-    first_check = iso(parse_iso(ts) + timedelta(days=CONFIG["check_days"][0]))
+    first_check = iso(parse_iso(ts) + timedelta(days=CONFIG["check_days"][0], hours=-6))
     for iid in sampled:
         con.execute("UPDATE items SET sample=1, next_check=? WHERE id=? AND query_key=?", (first_check, iid, key))
     return len(new_ids), len(sampled)
@@ -291,7 +291,7 @@ def cmd_check():
         checks = row["checks"] + 1
         nxt = None
         if status in ("active", "reserved", "unknown") and checks < len(CONFIG["check_days"]):
-            nxt = iso(parse_iso(row["first_seen"]) + timedelta(days=CONFIG["check_days"][checks]))
+            nxt = iso(parse_iso(row["first_seen"]) + timedelta(days=CONFIG["check_days"][checks], hours=-6))
         if status == "unknown":
             status = row["status"]           # pagina non leggibile: mantengo lo stato precedente
         con.execute("UPDATE items SET status=?, status_at=?, checks=?, next_check=?, price=COALESCE(?, price), "

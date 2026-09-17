@@ -1,121 +1,21 @@
-[2026-09-17 06:31:45] === fetch ===
-[2026-09-17 06:32:00]   carhartt_giacche_uomo: 377 annunci su 4 pagine, nuovi 342, campionati 20
-[2026-09-17 06:32:19]   carhartt_felpe_uomo: 380 annunci su 4 pagine, nuovi 195, campionati 20
-[2026-09-17 06:32:36]   carhartt_jeans_uomo: 381 annunci su 4 pagine, nuovi 201, campionati 20
-[2026-09-17 06:32:54]   nike_giacche_uomo: 379 annunci su 4 pagine, nuovi 364, campionati 20
-[2026-09-17 06:33:09]   nike_felpe_uomo: 379 annunci su 4 pagine, nuovi 371, campionati 20
-[2026-09-17 06:33:26]   nike_tshirt_uomo: 383 annunci su 4 pagine, nuovi 378, campionati 20
-[2026-09-17 06:33:44]   adidas_giacche_uomo: 381 annunci su 4 pagine, nuovi 359, campionati 20
-[2026-09-17 06:34:01]   adidas_felpe_uomo: 378 annunci su 4 pagine, nuovi 344, campionati 20
-[2026-09-17 06:34:19]   adidas_tshirt_uomo: 381 annunci su 4 pagine, nuovi 373, campionati 20
-[2026-09-17 06:34:38]   levis_jeans_uomo: 382 annunci su 4 pagine, nuovi 357, campionati 20
-[2026-09-17 06:34:54]   levis_jeans_donna: 379 annunci su 4 pagine, nuovi 366, campionati 20
-[2026-09-17 06:35:09]   levis_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 188, campionati 20
-[2026-09-17 06:35:24]   tnf_giacche_uomo: 381 annunci su 4 pagine, nuovi 364, campionati 20
-[2026-09-17 06:35:42]   wrangler_jeans_uomo: 379 annunci su 4 pagine, nuovi 239, campionati 20
-[2026-09-17 06:35:59]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 44, campionati 20
-[2026-09-17 06:36:17]   wrangler_giacche_denim_uomo: 378 annunci su 4 pagine, nuovi 7, campionati 7
-[2026-09-17 06:36:17] === check ===
-[2026-09-17 06:36:17] check: nessun annuncio da verificare
-[2026-09-17 06:36:17] dashboard generata: 16 ricerche, 16617 annunci, 786 seguiti, 0 venduti, 3 giorni di dati
-[2026-09-17 16:49:40] === check ===
-[2026-09-17 16:49:40] check: 159 annunci da verificare
-[2026-09-17 16:55:29]   10011826792: HTTP 403, salto
-[2026-09-17 16:55:35]   10011824824: HTTP 403, salto
-[2026-09-17 16:55:40]   10011824854: HTTP 403, salto
-[2026-09-17 16:55:45]   10011823335: HTTP 403, salto
-[2026-09-17 16:55:51]   10011822407: HTTP 403, salto
-[2026-09-17 16:55:55]   10011820150: HTTP 403, salto
-[2026-09-17 16:56:00]   10011819088: HTTP 403, salto
-[2026-09-17 16:56:04]   10011816577: HTTP 403, salto
-[2026-09-17 16:56:08]   10011813181: HTTP 403, salto
-[2026-09-17 16:56:13]   10011862312: HTTP 403, salto
-[2026-09-17 16:56:17]   10011861517: HTTP 403, salto
-[2026-09-17 16:56:23]   10011860277: HTTP 403, salto
-[2026-09-17 16:56:28]   10011857926: HTTP 403, salto
-[2026-09-17 16:56:34]   10011815175: HTTP 403, salto
-[2026-09-17 16:56:39]   10011813489: HTTP 403, salto
-[2026-09-17 16:56:45]   10011807083: HTTP 403, salto
-[2026-09-17 16:56:49]   10011803781: HTTP 403, salto
-[2026-09-17 16:56:54]   10011802723: HTTP 403, salto
-[2026-09-17 16:56:59]   10011800857: HTTP 403, salto
-[2026-09-17 16:57:04]   10011863676: HTTP 403, salto
-[2026-09-17 16:57:09]   10011862755: HTTP 403, salto
-[2026-09-17 16:57:14]   10011859420: HTTP 403, salto
-[2026-09-17 16:57:19]   10011844048: HTTP 403, salto
-[2026-09-17 16:57:25]   10011823722: HTTP 403, salto
-[2026-09-17 16:57:30]   10011811372: HTTP 403, salto
-[2026-09-17 16:57:35]   10011805579: HTTP 403, salto
-[2026-09-17 16:57:41]   10011802000: HTTP 403, salto
-[2026-09-17 16:57:45]   10011867985: HTTP 403, salto
-[2026-09-17 16:57:49]   10011854914: HTTP 403, salto
-[2026-09-17 16:57:54]   10011849363: HTTP 403, salto
-[2026-09-17 16:57:59]   10011842605: HTTP 403, salto
-[2026-09-17 16:58:05]   10011840087: HTTP 403, salto
-[2026-09-17 16:58:10]   10011838734: HTTP 403, salto
-[2026-09-17 16:58:15]   10011828393: HTTP 403, salto
-[2026-09-17 16:58:20]   10011816923: HTTP 403, salto
-[2026-09-17 16:58:25]   10011807319: HTTP 403, salto
-[2026-09-17 16:58:29]   10011803478: HTTP 403, salto
-[2026-09-17 16:58:34]   10011878651: HTTP 403, salto
-[2026-09-17 16:58:39]   10011873119: HTTP 403, salto
-[2026-09-17 16:58:43]   10011872839: HTTP 403, salto
-[2026-09-17 16:58:49]   10011869748: HTTP 403, salto
-[2026-09-17 16:58:55]   10011871351: HTTP 403, salto
-[2026-09-17 16:59:00]   10011871980: HTTP 403, salto
-[2026-09-17 16:59:05]   10011869506: HTTP 403, salto
-[2026-09-17 16:59:10]   10011868144: HTTP 403, salto
-[2026-09-17 16:59:14]   10011864700: HTTP 403, salto
-[2026-09-17 16:59:19]   10011858924: HTTP 403, salto
-[2026-09-17 16:59:23]   10011863227: HTTP 403, salto
-[2026-09-17 16:59:28]   10011861155: HTTP 403, salto
-[2026-09-17 16:59:34]   10011858878: HTTP 403, salto
-[2026-09-17 16:59:38]   10011856649: HTTP 403, salto
-[2026-09-17 16:59:42]   10011855635: HTTP 403, salto
-[2026-09-17 16:59:47]   10011853987: HTTP 403, salto
-[2026-09-17 16:59:52]   10011849150: HTTP 403, salto
-[2026-09-17 16:59:57]   10011852567: HTTP 403, salto
-[2026-09-17 17:00:02]   10011846981: HTTP 403, salto
-[2026-09-17 17:00:06]   10011846737: HTTP 403, salto
-[2026-09-17 17:00:12]   10011883507: HTTP 403, salto
-[2026-09-17 17:00:18]   10011882028: HTTP 403, salto
-[2026-09-17 17:00:22]   10011880766: HTTP 403, salto
-[2026-09-17 17:00:27]   10011878253: HTTP 403, salto
-[2026-09-17 17:00:32]   10011878099: HTTP 403, salto
-[2026-09-17 17:00:36]   10011873055: HTTP 403, salto
-[2026-09-17 17:00:41]   10011874618: HTTP 403, salto
-[2026-09-17 17:00:47]   10011874336: HTTP 403, salto
-[2026-09-17 17:00:52]   10011873675: HTTP 403, salto
-[2026-09-17 17:00:58]   10011870998: HTTP 403, salto
-[2026-09-17 17:01:03]   10011869593: HTTP 403, salto
-[2026-09-17 17:01:07]   10011869445: HTTP 403, salto
-[2026-09-17 17:01:13]   10011869305: HTTP 403, salto
-[2026-09-17 17:01:19]   10011869410: HTTP 403, salto
-[2026-09-17 17:01:24]   10011868879: HTTP 403, salto
-[2026-09-17 17:01:29]   10011867530: HTTP 403, salto
-[2026-09-17 17:01:35]   10011865355: HTTP 403, salto
-[2026-09-17 17:01:39]   10011862329: HTTP 403, salto
-[2026-09-17 17:01:43]   10011858623: HTTP 403, salto
-[2026-09-17 17:01:49]   10011858563: HTTP 403, salto
-[2026-09-17 17:01:53]   10011886550: HTTP 403, salto
-[2026-09-17 17:01:58]   10011881184: HTTP 403, salto
-[2026-09-17 17:02:03]   10011874745: HTTP 403, salto
-[2026-09-17 17:02:07]   10011854661: HTTP 403, salto
-[2026-09-17 17:02:11]   10011841786: HTTP 403, salto
-[2026-09-17 17:02:16]   10011833880: HTTP 403, salto
-[2026-09-17 17:02:21]   10011829872: HTTP 403, salto
-[2026-09-17 17:02:26]   10011883032: HTTP 403, salto
-[2026-09-17 17:02:31]   10011875779: HTTP 403, salto
-[2026-09-17 17:02:35]   10011866603: HTTP 403, salto
-[2026-09-17 17:02:40]   10011851845: HTTP 403, salto
-[2026-09-17 17:02:45]   10011850754: HTTP 403, salto
-[2026-09-17 17:02:49]   10011850765: HTTP 403, salto
-[2026-09-17 17:02:54]   10011846661: HTTP 403, salto
-[2026-09-17 17:02:59]   10011826083: HTTP 403, salto
-[2026-09-17 17:03:04]   10011822584: HTTP 403, salto
-[2026-09-17 17:03:09]   10011821436: HTTP 403, salto
-[2026-09-17 17:03:13]   10011885039: HTTP 403, salto
-[2026-09-17 17:03:18]   10011860719: HTTP 403, salto
-[2026-09-17 17:03:22]   10011835982: HTTP 403, salto
-[2026-09-17 17:03:27] check: esiti {'active': 41, 'sold': 16, 'deleted': 5}
-[2026-09-17 17:03:28] dashboard generata: 16 ricerche, 16617 annunci, 786 seguiti, 16 venduti, 3 giorni di dati
+[2026-09-17 15:04:07] === fetch ===
+[2026-09-17 15:04:35]   carhartt_giacche_uomo: 378 annunci su 4 pagine, nuovi 355, campionati 15
+[2026-09-17 15:04:59]   carhartt_felpe_uomo: 378 annunci su 4 pagine, nuovi 197, campionati 15
+[2026-09-17 15:05:19]   carhartt_jeans_uomo: 383 annunci su 4 pagine, nuovi 253, campionati 15
+[2026-09-17 15:05:37]   nike_giacche_uomo: 378 annunci su 4 pagine, nuovi 356, campionati 15
+[2026-09-17 15:05:55]   nike_felpe_uomo: 378 annunci su 4 pagine, nuovi 371, campionati 15
+[2026-09-17 15:06:13]   nike_tshirt_uomo: 381 annunci su 4 pagine, nuovi 372, campionati 15
+[2026-09-17 15:06:29]   adidas_giacche_uomo: 379 annunci su 4 pagine, nuovi 363, campionati 15
+[2026-09-17 15:06:50]   adidas_felpe_uomo: 381 annunci su 4 pagine, nuovi 360, campionati 15
+[2026-09-17 15:07:11]   adidas_tshirt_uomo: 380 annunci su 4 pagine, nuovi 370, campionati 15
+[2026-09-17 15:07:35]   levis_jeans_uomo: 378 annunci su 4 pagine, nuovi 355, campionati 15
+[2026-09-17 15:07:56]   levis_jeans_donna: 378 annunci su 4 pagine, nuovi 369, campionati 15
+[2026-09-17 15:08:14]   levis_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 233, campionati 15
+[2026-09-17 15:08:32]   tnf_giacche_uomo: 379 annunci su 4 pagine, nuovi 358, campionati 15
+[2026-09-17 15:08:53]   wrangler_jeans_uomo: 375 annunci su 4 pagine, nuovi 226, campionati 15
+[2026-09-17 15:09:14]   wrangler_jeans_donna: 379 annunci su 4 pagine, nuovi 61, campionati 15
+[2026-09-17 15:09:35]   wrangler_giacche_denim_uomo: 374 annunci su 4 pagine, nuovi 17, campionati 15
+[2026-09-17 15:09:35] === check ===
+[2026-09-17 15:09:35] check: 97 annunci da verificare
+[2026-09-17 15:44:44] check: esiti {'active': 74, 'sold': 17, 'unknown': 1, 'deleted': 5}
+[2026-09-17 15:44:44] dashboard generata: 16 ricerche, 21404 annunci, 1026 seguiti, 33 venduti, 3 giorni di dati

@@ -278,6 +278,9 @@ def cmd_check():
                     break
             if r.status_code == 404:
                 status, price = "deleted", None
+            elif r.status_code == 403:
+                log(f"  403 (blocco anti-bot) dopo {n - 1} controlli: interrompo i controlli per oggi | {snippet(r.text)[:120]}")
+                break
             elif r.status_code != 200:
                 log(f"  {row['id']}: HTTP {r.status_code}, salto")
                 sleep(CONFIG["item_delay_seconds"])

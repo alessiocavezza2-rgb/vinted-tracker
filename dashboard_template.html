@@ -92,6 +92,8 @@
   .kpi .rng { font-size: 11px; color: var(--ink-2); }
   .kpi.hi { background: var(--accent-soft); }
   .kpi.hi .val { color: var(--accent); }
+  .kpi.weak .val { color: var(--muted); }
+  .kpi.weak::after { content: "provvisorio (<20 casi)"; display: block; font-size: 10px; color: var(--warn); }
   .detail { display: none; margin-top: 12px; border-top: 1px solid var(--grid); padding-top: 8px; }
   .mcard.open .detail { display: block; }
   .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); margin: 4px 0 2px; }
@@ -307,9 +309,9 @@ function marketCard(q, isOpen) {
       <div class="kpi hi"><div class="lbl">Venduto ≤${DATA.fast_days}gg</div>
         <div class="val">${f ? eur(f.med) : '—'} <small>n=${q.n_fast}</small></div>
         <div class="rng">${f ? `${eur(f.p25)} – ${eur(f.p75)}` : 'in raccolta'}</div></div>
-      <div class="kpi"><div class="lbl">Venduti in ${DATA.fast_days}gg</div>
-        <div class="val">${q.pct_fast == null ? '—' : q.pct_fast + '%'} <small>su ${q.n_cohort}</small></div>
-        <div class="rng">${q.pct_quick != null ? `${q.pct_quick}% già entro ${q.quick_days} gg` : `${q.n_followed} seguiti`}</div></div>
+      <div class="kpi ${q.n_cohort && q.n_cohort < 20 ? 'weak' : ''}"><div class="lbl">Venduti in ${DATA.fast_days}gg</div>
+        <div class="val">${q.pct_fast == null ? '—' : q.pct_fast + '%'} <small>${q.ci_fast != null ? '±' + q.ci_fast : ''} su ${q.n_cohort}</small></div>
+        <div class="rng">${q.pct_quick != null ? `${q.pct_quick}% ±${q.ci_quick} entro ${q.quick_days} gg (su ${q.n_cohort_quick})` : `${q.n_followed} seguiti`}</div></div>
       <div class="kpi"><div class="lbl">In vendita</div>
         <div class="val">${q.n_active} <small>annunci</small></div>
         <div class="rng">chiesto ${a ? eur(a.med) : '—'}</div></div>
@@ -334,8 +336,8 @@ function groupTable(rows) {
     rows.map(r => `<tr><td>${esc(r.name)}</td><td class="num">${r.fast ? eur(r.fast.med) : '—'}</td><td class="num">${r.n_fast}</td><td class="num">${r.active ? eur(r.active.med) : '—'}</td><td class="num">${r.n_active}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function marketTable(qs) {
-  return `<table><thead><tr><th>Brand</th><th>Categoria</th><th class="num">Venduto</th><th class="num">n</th><th class="num">%${DATA.fast_days}gg</th><th class="num">Chiesto</th><th class="num">Attivi</th></tr></thead><tbody>${
-    qs.map(q => `<tr><td>${esc(q.brand)}</td><td>${esc(q.category)}</td><td class="num">${q.fast ? eur(q.fast.med) : '—'}</td><td class="num">${q.n_fast}</td><td class="num">${q.pct_fast == null ? '—' : q.pct_fast + '%'}</td><td class="num">${q.active ? eur(q.active.med) : '—'}</td><td class="num">${q.n_active}</td></tr>`).join('')}</tbody></table>`;
+  return `<table><thead><tr><th>Brand</th><th>Categoria</th><th class="num">Venduto</th><th class="num">n</th><th class="num">%${DATA.fast_days}gg (±)</th><th class="num">%${DATA.quick_days}gg (±)</th><th class="num">Chiesto</th><th class="num">Attivi</th></tr></thead><tbody>${
+    qs.map(q => `<tr><td>${esc(q.brand)}</td><td>${esc(q.category)}</td><td class="num">${q.fast ? eur(q.fast.med) : '—'}</td><td class="num">${q.n_fast}</td><td class="num">${q.pct_fast == null ? '—' : q.pct_fast + '% ±' + q.ci_fast}</td><td class="num">${q.pct_quick == null ? '—' : q.pct_quick + '% ±' + q.ci_quick}</td><td class="num">${q.active ? eur(q.active.med) : '—'}</td><td class="num">${q.n_active}</td></tr>`).join('')}</tbody></table>`;
 }
 function chart(q) {
   const step = DATA.price_bucket, n = q.hist_active.length;
@@ -440,7 +442,7 @@ function marketSummary() {
   const lines = DATA.queries.map(q => {
     const f = q.fast, a = q.active;
     const cond = (q.by_condition || []).slice(0, 4).map(c => `${c.name}: venduto ${c.fast ? eur(c.fast.med) : '—'} (n=${c.n_fast}), chiesto ${c.active ? eur(c.active.med) : '—'} (${c.n_active} attivi)`).join('; ');
-    return `- key="${q.key}" ${q.brand} · ${q.category}: venduto entro ${DATA.fast_days} gg mediana ${f ? eur(f.med) : 'n/d'} (p25-p75 ${f ? eur(f.p25) + '-' + eur(f.p75) : 'n/d'}, n=${q.n_fast}); % venduti entro ${DATA.fast_days} gg: ${q.pct_fast == null ? 'n/d' : q.pct_fast + '%'} (entro ${q.quick_days} gg: ${q.pct_quick == null ? 'n/d' : q.pct_quick + '%'}); annunci attivi ${q.n_active}, prezzo richiesto mediano ${a ? eur(a.med) : 'n/d'} (p25-p75 ${a ? eur(a.p25) + '-' + eur(a.p75) : 'n/d'}). Per condizione: ${cond || 'n/d'}`;
+    return `- key="${q.key}" ${q.brand} · ${q.category}: venduto entro ${DATA.fast_days} gg mediana ${f ? eur(f.med) : 'n/d'} (p25-p75 ${f ? eur(f.p25) + '-' + eur(f.p75) : 'n/d'}, n=${q.n_fast}); % venduti entro ${DATA.fast_days} gg: ${q.pct_fast == null ? 'n/d' : q.pct_fast + '% ±' + q.ci_fast + ' su ' + q.n_cohort} (entro ${q.quick_days} gg: ${q.pct_quick == null ? 'n/d' : q.pct_quick + '% ±' + q.ci_quick + ' su ' + q.n_cohort_quick}); annunci attivi ${q.n_active}, prezzo richiesto mediano ${a ? eur(a.med) : 'n/d'} (p25-p75 ${a ? eur(a.p25) + '-' + eur(a.p75) : 'n/d'}). Per condizione: ${cond || 'n/d'}`;
   });
   return `Dati di mercato Vinted (UE, aggiornati ${new Date(DATA.generated).toLocaleDateString('it-IT')}, ${DATA.days_collected} giorni di raccolta; "venduto" = annuncio campionato risultato venduto su Vinted entro ${DATA.fast_days} giorni dalla pubblicazione; se n è piccolo o n/d i dati di vendita non sono ancora affidabili e vanno usati i prezzi richiesti con uno sconto del 15-25%):\n${lines.join('\n')}`;
 }
@@ -454,7 +456,14 @@ Rispondi SOLO con un oggetto JSON valido (nessun testo prima o dopo, niente mark
  "foto": {"consigli": [string] (5-6 consigli SPECIFICI per questo capo: sfondo e luce, inquadrature da fare nell'ordine, dettagli da mostrare come etichetta/cuciture/logo/difetti, come appenderlo o stenderlo, cosa evitare), "mancanti": [string] (foto che mancano rispetto a quelle inviate e che servono per vendere)},
  "da_verificare": [string] (cose da controllare prima di pubblicare: etichetta, misure, autenticità, ecc.)
 }
-Regole per il prezzo: se esiste una key corrispondente, parti dal prezzo "venduto entro N giorni" mediano (o dal prezzo richiesto mediano scontato del 15-25% se i dati di vendita non sono affidabili) e adatta per condizione, taglia, modello e desiderabilità (capi iconici, vintage autentico, colorazioni rare valgono di più; capi basic e taglie estreme di meno). Se non c'è una key, usa la tua conoscenza dei prezzi Vinted in Europa e sii prudente. Il prezzo "annuncio" deve lasciare margine per una trattativa del 10-15%. Prezzi esclusa Protezione acquisti.`;
+Regole per il prezzo (PRUDENZA: l'obiettivo e' vendere entro pochi giorni SENZA ribassare; un prezzo troppo alto e' l'errore peggiore, un prezzo un po' basso e' accettabile):
+- Il riferimento e' SEMPRE il prezzo a cui i capi si sono VENDUTI, mai quello richiesto dai venditori (gli annunci attivi sono in gran parte capi che non si vendono a quel prezzo).
+- Se esiste una key con dati di vendita affidabili (n >= 15): "vendita_rapida" = p25 dei venduti; "annuncio" = mediana dei venduti (al massimo +10% se il capo e' chiaramente sopra la media per modello/condizione, mai oltre il p75); "minimo" = poco sotto il p25.
+- Se i dati di vendita sono scarsi (n < 15) o assenti: parti dal prezzo richiesto mediano e SCONTALO del 30-40%; i pochi venduti disponibili hanno comunque la precedenza sul richiesto.
+- Se non c'e' una key: usa la tua conoscenza dei prezzi Vinted in Europa, tenendo conto che i capi si vendono di norma al 50-70% di quello che i venditori chiedono; sii esplicitamente conservativo e dichiara la bassa confidenza.
+- Capi basic, taglie estreme, condizioni "Buone"/"Discrete", difetti: scendi verso il p25 o sotto. Solo capi iconici, vintage autentico documentato, colorazioni rare, "Nuovo con cartellino" possono stare sopra la mediana.
+- I prezzi sono interi; "minimo" < "vendita_rapida" <= "annuncio". Prezzi esclusa Protezione acquisti.
+- In "motivazione" cita i numeri usati (mediana venduti, n, o lo sconto applicato al richiesto).`;
 
 async function analyze() {
   if (!state.photos.length) { toast('Aggiungi almeno una foto'); return; }

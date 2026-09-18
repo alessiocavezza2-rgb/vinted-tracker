@@ -321,6 +321,14 @@ def quantiles(values):
     return {"p25": round(q[0], 1), "med": round(q[1], 1), "p75": round(q[2], 1)}
 
 
+def wilson(k, n, z=1.96):
+    """Semi-ampiezza (in punti %) dell'intervallo di confidenza al 95% di una proporzione."""
+    if not n:
+        return None
+    p = k / n
+    return round(100 * z * ((p * (1 - p) + z * z / (4 * n)) / n) ** 0.5 / (1 + z * z / n))
+
+
 def histogram(values):
     step, cap = CONFIG["price_bucket"], CONFIG["price_cap"]
     n = cap // step + 1
@@ -337,47 +345,55 @@ def query_stats(con, q, latest_ts, fast_days):
     followed = [r for r in rows if r["sample"] and r["status_at"] and r["status"] not in ("deleted", "hidden")]
     age = lambda r: days_between(r["first_seen"], r["status_at"])
     sold = [r for r in followed if r["status"] in SOLD_STATUSES]
-    fast = [r for r in sold if age(r) <= fast_days + 0.5]
-    quick = [r for r in sold if age(r) <= CONFIG["check_days"][0] + 0.5]
-    # coorte: venduti entro fast_days, oppure osservati (ancora in vendita) ad almeno fast_days
-    cohort = [r for r in followed if (r["status"] in SOLD_STATUSES and age(r) <= fast_days + 0.5)
-              or (r["status"] in ("active", "reserved") and age(r) >= fast_days - 0.5)
-              or (r["status"] in SOLD_STATUSES and age(r) > fast_days + 0.5)]
-    cohort_quick = [r for r in followed if (r["status"] in SOLD_STATUSES and age(r) <= CONFIG["check_days"][0] + 0.5)
-                    or age(r) >= CONFIG["check_days"][0] - 0.5]
+    fast_any = [r for r in sold if age(r) <= fast_days + 0.5]     # per prezzi/istogrammi: anche lotti non maturi
+    # coorte: solo lotti "maturi" (pubblicati da almeno N giorni + margine, cosi' il controllo a N giorni
+    # e' gia' avvenuto per tutti): venduti entro N giorni, oppure osservati a >= N giorni (venduti dopo o ancora in vendita)
+    now_iso = iso(now())
+    quick_days = CONFIG["check_days"][0]
+
+    def cohort_for(n_days):
+        return [r for r in followed if days_between(r["first_seen"], now_iso) >= n_days + 0.75
+                and ((r["status"] in SOLD_STATUSES and age(r) <= n_days + 0.5) or age(r) >= n_days - 0.5)]
+    cohort = cohort_for(fast_days)
+    cohort_quick = cohort_for(quick_days)
+    fast = [r for r in cohort if r["status"] in SOLD_STATUSES and age(r) <= fast_days + 0.5]
+    quick = [r for r in cohort_quick if r["status"] in SOLD_STATUSES and age(r) <= quick_days + 0.5]
     sp = lambda r: r["sold_price"] if r["sold_price"] else r["price"]
 
     def by_group(field):
         out = {}
         for r in active:
             out.setdefault(r[field] or "?", {"active": [], "fast": []})["active"].append(r["price"])
-        for r in fast:
+        for r in fast_any:
             out.setdefault(r[field] or "?", {"active": [], "fast": []})["fast"].append(sp(r))
         res = [{"name": g, "n_active": len(d["active"]), "active": quantiles(d["active"]),
                 "n_fast": len(d["fast"]), "fast": quantiles(d["fast"])} for g, d in out.items()]
         res.sort(key=lambda x: -(x["n_active"] + x["n_fast"]))
         return res
 
-    discounted = [r for r in fast if r["first_price"] and sp(r) < r["first_price"]]
+    discounted = [r for r in fast_any if r["first_price"] and sp(r) < r["first_price"]]
     return {
         "key": key, "brand": q["brand"], "category": q["category"], "url": build_url(q),
         "n_active": len(active),
         "active": quantiles([r["price"] for r in active]),
-        "n_fast": len(fast),
-        "fast": quantiles([sp(r) for r in fast]),
+        "n_fast": len(fast_any),
+        "fast": quantiles([sp(r) for r in fast_any]),
         "pct_fast": round(100 * len(fast) / len(cohort)) if cohort else None,
+        "ci_fast": wilson(len(fast), len(cohort)),
         "n_cohort": len(cohort),
         "pct_quick": round(100 * len(quick) / len(cohort_quick)) if cohort_quick else None,
+        "ci_quick": wilson(len(quick), len(cohort_quick)),
+        "n_cohort_quick": len(cohort_quick),
         "quick_days": CONFIG["check_days"][0],
         "n_followed": len([r for r in rows if r["sample"]]),
-        "pct_discounted_fast": round(100 * len(discounted) / len(fast)) if fast else None,
+        "pct_discounted_fast": round(100 * len(discounted) / len(fast_any)) if fast_any else None,
         "hist_active": histogram([r["price"] for r in active]),
-        "hist_fast": histogram([sp(r) for r in fast]),
+        "hist_fast": histogram([sp(r) for r in fast_any]),
         "by_condition": by_group("condition"),
         "by_size": by_group("size")[:8],
         "recent_fast": [{"title": r["title"], "price": sp(r), "size": r["size"], "condition": r["condition"],
                          "days": round(age(r), 1), "id": r["id"]}
-                        for r in sorted(fast, key=lambda r: r["status_at"], reverse=True)[:12]],
+                        for r in sorted(fast_any, key=lambda r: r["status_at"], reverse=True)[:12]],
     }
 
 

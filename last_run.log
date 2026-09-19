@@ -1,22 +1,22 @@
-[2026-09-19 06:25:37] === fetch ===
-[2026-09-19 06:25:56]   carhartt_giacche_uomo: 382 annunci su 4 pagine, nuovi 316, campionati 15
-[2026-09-19 06:26:13]   carhartt_felpe_uomo: 382 annunci su 4 pagine, nuovi 159, campionati 15
-[2026-09-19 06:26:30]   carhartt_jeans_uomo: 382 annunci su 4 pagine, nuovi 171, campionati 15
-[2026-09-19 06:26:48]   nike_giacche_uomo: 378 annunci su 4 pagine, nuovi 358, campionati 15
-[2026-09-19 06:27:06]   nike_felpe_uomo: 375 annunci su 4 pagine, nuovi 359, campionati 15
-[2026-09-19 06:27:23]   nike_tshirt_uomo: 379 annunci su 4 pagine, nuovi 373, campionati 15
-[2026-09-19 06:27:38]   adidas_giacche_uomo: 381 annunci su 4 pagine, nuovi 347, campionati 15
-[2026-09-19 06:27:56]   adidas_felpe_uomo: 381 annunci su 4 pagine, nuovi 337, campionati 15
-[2026-09-19 06:28:10]   adidas_tshirt_uomo: 382 annunci su 4 pagine, nuovi 365, campionati 15
-[2026-09-19 06:28:26]   levis_jeans_uomo: 381 annunci su 4 pagine, nuovi 355, campionati 15
-[2026-09-19 06:28:43]   levis_jeans_donna: 380 annunci su 4 pagine, nuovi 372, campionati 15
-[2026-09-19 06:29:01]   levis_giacche_denim_uomo: 379 annunci su 4 pagine, nuovi 175, campionati 15
-[2026-09-19 06:29:19]   tnf_giacche_uomo: 382 annunci su 4 pagine, nuovi 353, campionati 15
-[2026-09-19 06:29:33]   wrangler_jeans_uomo: 382 annunci su 4 pagine, nuovi 182, campionati 15
-[2026-09-19 06:29:51]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 47, campionati 15
-[2026-09-19 06:30:05]   wrangler_giacche_denim_uomo: 377 annunci su 4 pagine, nuovi 8, campionati 8
-[2026-09-19 06:30:05] === check ===
-[2026-09-19 06:30:05] check: 307 annunci da verificare
-[2026-09-19 07:12:41]   403 (blocco anti-bot) dopo 121 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
-[2026-09-19 07:12:41] check: esiti {'active': 76, 'sold': 30, 'deleted': 11, 'unknown': 4}
-[2026-09-19 07:12:41] dashboard generata: 16 ricerche, 35569 annunci, 1734 seguiti, 131 venduti, 5 giorni di dati
+[2026-09-19 14:39:36] === fetch ===
+[2026-09-19 14:39:54]   carhartt_giacche_uomo: 379 annunci su 4 pagine, nuovi 359, campionati 15
+[2026-09-19 14:40:12]   carhartt_felpe_uomo: 381 annunci su 4 pagine, nuovi 268, campionati 15
+[2026-09-19 14:40:31]   carhartt_jeans_uomo: 379 annunci su 4 pagine, nuovi 313, campionati 15
+[2026-09-19 14:40:51]   nike_giacche_uomo: 380 annunci su 4 pagine, nuovi 369, campionati 15
+[2026-09-19 14:41:09]   nike_felpe_uomo: 381 annunci su 4 pagine, nuovi 374, campionati 15
+[2026-09-19 14:41:27]   nike_tshirt_uomo: 380 annunci su 4 pagine, nuovi 376, campionati 15
+[2026-09-19 14:41:46]   adidas_giacche_uomo: 381 annunci su 4 pagine, nuovi 370, campionati 15
+[2026-09-19 14:42:05]   adidas_felpe_uomo: 380 annunci su 4 pagine, nuovi 369, campionati 15
+[2026-09-19 14:42:24]   adidas_tshirt_uomo: 373 annunci su 4 pagine, nuovi 372, campionati 15
+[2026-09-19 14:42:44]   levis_jeans_uomo: 373 annunci su 4 pagine, nuovi 355, campionati 15
+[2026-09-19 14:42:59]   levis_jeans_donna: 379 annunci su 4 pagine, nuovi 367, campionati 15
+[2026-09-19 14:43:15]   levis_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 303, campionati 15
+[2026-09-19 14:43:33]   tnf_giacche_uomo: 382 annunci su 4 pagine, nuovi 353, campionati 15
+[2026-09-19 14:43:55]   wrangler_jeans_uomo: 382 annunci su 4 pagine, nuovi 215, campionati 15
+[2026-09-19 14:44:13]   wrangler_jeans_donna: 377 annunci su 4 pagine, nuovi 87, campionati 15
+[2026-09-19 14:44:34]   wrangler_giacche_denim_uomo: 382 annunci su 4 pagine, nuovi 14, campionati 14
+[2026-09-19 14:44:34] === check ===
+[2026-09-19 14:44:34] check: 426 annunci da verificare
+[2026-09-19 16:18:42]   403 (blocco anti-bot) dopo 265 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
+[2026-09-19 16:18:42] check: esiti {'sold': 62, 'active': 178, 'deleted': 22, 'unknown': 3}
+[2026-09-19 16:18:42] dashboard generata: 16 ricerche, 40570 annunci, 1973 seguiti, 193 venduti, 5 giorni di dati

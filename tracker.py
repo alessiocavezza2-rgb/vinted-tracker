@@ -397,6 +397,34 @@ def query_stats(con, q, latest_ts, fast_days):
     }
 
 
+def advice(stats):
+    """Classifica le ricerche: valore atteso per annuncio = probabilita' di vendita x prezzo di vendita."""
+    out = []
+    for s in stats:
+        pct = s["pct_fast"] if s["pct_fast"] is not None else s["pct_quick"]
+        n = s["n_cohort"] if s["pct_fast"] is not None else s["n_cohort_quick"]
+        horizon = CONFIG["fast_days"] if s["pct_fast"] is not None else CONFIG["check_days"][0]
+        price = s["fast"]["med"] if s["fast"] else None
+        if pct is None or price is None or n < 15:
+            out.append({"key": s["key"], "score": None, "verdict": "dati insufficienti", "note": f"solo {n} casi maturi", "pct": pct, "n": n, "horizon": horizon, "price": price})
+            continue
+        score = round(pct / 100 * price, 1)
+        ask = s["active"]["med"] if s["active"] else None
+        gap = round(100 * (1 - price / ask)) if ask else None
+        notes = []
+        if price >= 25 and pct >= 25: verdict = "punta"
+        elif price >= 20 and pct >= 15: verdict = "discreto"
+        elif pct >= 30: verdict = "veloce ma vale poco"
+        else: verdict = "evita"
+        if price < 10: notes.append("prezzo troppo basso per ripagare il lavoro")
+        if gap is not None and gap >= 25: notes.append(f"si vende {gap}% sotto il prezzo richiesto: prezza basso subito")
+        if s["pct_discounted_fast"] is not None and s["pct_discounted_fast"] >= 25: notes.append(f"{s['pct_discounted_fast']}% dei venduti ha dovuto ribassare")
+        if s["fast"] and s["fast"]["p75"] >= 1.6 * s["fast"]["med"]: notes.append("prezzi molto dispersi: contano modello e condizioni")
+        out.append({"key": s["key"], "score": score, "verdict": verdict, "note": "; ".join(notes), "pct": pct, "n": n, "horizon": horizon, "price": price})
+    out.sort(key=lambda a: -(a["score"] or -1))
+    return out
+
+
 def build_url(q):
     parts = [f"brand_ids[]={b}" for b in q.get("brand_ids", [])]
     parts += [f"catalog[]={c}" for c in q.get("catalog_ids", [])]
@@ -425,6 +453,7 @@ def cmd_build():
         "n_followed": con.execute("SELECT COUNT(*) FROM items WHERE sample=1").fetchone()[0],
         "n_sold": con.execute("SELECT COUNT(*) FROM items WHERE status IN ('sold','closed')").fetchone()[0],
         "queries": stats,
+        "advice": advice(stats),
     }
     con.close()
     DOCS.mkdir(exist_ok=True)

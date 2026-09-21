@@ -74,6 +74,21 @@
   th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
   td.num, th.num { text-align: right; }
   .tbl-wrap { overflow-x: auto; }
+  .verdict { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .verdict.good { background: var(--accent); color: var(--accent-ink); }
+  .verdict.ok { background: var(--accent-soft); color: var(--accent); }
+  .verdict.meh { background: var(--surface-2); color: var(--ink-2); }
+  .verdict.bad { background: var(--surface-2); color: var(--muted); text-decoration: line-through; }
+  .verdict.na { background: var(--surface-2); color: var(--muted); }
+  .adv { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--grid); }
+  .adv:last-child { border-bottom: 0; }
+  .adv .rank { width: 26px; height: 26px; border-radius: 8px; background: var(--surface-2); color: var(--muted); font-weight: 800; font-size: 13px; display: grid; place-items: center; flex: 0 0 auto; }
+  .adv.v-good .rank { background: var(--accent); color: var(--accent-ink); }
+  .adv .body { min-width: 0; flex: 1; }
+  .adv .t { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .adv .m { font-size: 13px; color: var(--ink-2); }
+  .adv .n { font-size: 12px; color: var(--warn); }
+  .adv.v-bad .t, .adv.v-na .t { color: var(--muted); }
 
   /* market cards */
   .mcard .head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
@@ -165,6 +180,7 @@
   <!-- MERCATO -->
   <section class="view active" id="view-market">
     <div class="notice" id="notice" hidden></div>
+    <div class="card" id="advice"></div>
     <div class="chips" id="brands"></div>
     <div class="row" style="margin:10px 0">
       <select id="sort" style="flex:1">
@@ -274,7 +290,19 @@ function initMarket() {
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderMarket(); });
   $('#viewToggle').onclick = () => { state.table = !state.table; renderMarket(); };
   $('#foot').textContent = `Prezzi in € (esclusa Protezione acquisti). Ogni giorno vengono campionati i 20 annunci più nuovi per ricerca e ricontrollati dopo ${DATA.quick_days} e ${DATA.fast_days} giorni: "Venduto ≤${DATA.fast_days} gg" = annunci risultati venduti su Vinted entro ${DATA.fast_days} giorni dalla pubblicazione, al prezzo che avevano al momento della vendita. Dati dal ${new Date(DATA.first_run).toLocaleDateString('it-IT')}.`;
+  renderAdvice();
   renderMarket();
+}
+function renderAdvice() {
+  const adv = DATA.advice || []; const byKey = Object.fromEntries(DATA.queries.map(q => [q.key, q]));
+  const cls = { 'punta': 'good', 'discreto': 'ok', 'veloce ma vale poco': 'meh', 'evita': 'bad', 'dati insufficienti': 'na' };
+  const rows = adv.map((a, i) => { const q = byKey[a.key]; return `<div class="adv v-${cls[a.verdict]}">
+    <div class="rank">${i + 1}</div>
+    <div class="body"><div class="t"><b>${esc(q.brand)}</b> ${esc(q.category)} <span class="verdict ${cls[a.verdict]}">${esc(a.verdict)}</span></div>
+      <div class="m">${a.score != null ? `<b>${a.score.toLocaleString('it-IT')} €</b> per annuncio · ` : ''}${a.pct != null ? `${a.pct}% venduti in ${a.horizon} gg (su ${a.n})` : 'in raccolta'}${a.price != null ? ` · vende a ${eur(a.price)}` : ''}</div>
+      ${a.note ? `<div class="n">${esc(a.note)}</div>` : ''}</div></div>`; }).join('');
+  $('#advice').innerHTML = `<h2 style="margin:0 0 4px">Su cosa puntare</h2>
+    <p class="muted" style="margin:0 0 8px">Ordinato per valore atteso = probabilità di vendita × prezzo di vendita: quanto rende in media un annuncio di quel tipo. Sotto i 15 casi il verdetto non viene dato.</p>${rows}`;
 }
 function sortedQueries() {
   const qs = DATA.queries.filter(q => state.brand === 'Tutti' || q.brand === state.brand);
@@ -444,7 +472,9 @@ function marketSummary() {
     const cond = (q.by_condition || []).slice(0, 4).map(c => `${c.name}: venduto ${c.fast ? eur(c.fast.med) : '—'} (n=${c.n_fast}), chiesto ${c.active ? eur(c.active.med) : '—'} (${c.n_active} attivi)`).join('; ');
     return `- key="${q.key}" ${q.brand} · ${q.category}: venduto entro ${DATA.fast_days} gg mediana ${f ? eur(f.med) : 'n/d'} (p25-p75 ${f ? eur(f.p25) + '-' + eur(f.p75) : 'n/d'}, n=${q.n_fast}); % venduti entro ${DATA.fast_days} gg: ${q.pct_fast == null ? 'n/d' : q.pct_fast + '% ±' + q.ci_fast + ' su ' + q.n_cohort} (entro ${q.quick_days} gg: ${q.pct_quick == null ? 'n/d' : q.pct_quick + '% ±' + q.ci_quick + ' su ' + q.n_cohort_quick}); annunci attivi ${q.n_active}, prezzo richiesto mediano ${a ? eur(a.med) : 'n/d'} (p25-p75 ${a ? eur(a.p25) + '-' + eur(a.p75) : 'n/d'}). Per condizione: ${cond || 'n/d'}`;
   });
-  return `Dati di mercato Vinted (UE, aggiornati ${new Date(DATA.generated).toLocaleDateString('it-IT')}, ${DATA.days_collected} giorni di raccolta; "venduto" = annuncio campionato risultato venduto su Vinted entro ${DATA.fast_days} giorni dalla pubblicazione; se n è piccolo o n/d i dati di vendita non sono ancora affidabili e vanno usati i prezzi richiesti con uno sconto del 15-25%):\n${lines.join('\n')}`;
+  const adv = (DATA.advice || []).filter(a => a.score != null).slice(0, 6).map((a, i) => `${i + 1}. ${a.key} (valore atteso ${a.score} €/annuncio, ${a.verdict})`).join('; ');
+  return `Classifica interna su cosa conviene puntare: ${adv || 'n/d'}.
+` + `Dati di mercato Vinted (UE, aggiornati ${new Date(DATA.generated).toLocaleDateString('it-IT')}, ${DATA.days_collected} giorni di raccolta; "venduto" = annuncio campionato risultato venduto su Vinted entro ${DATA.fast_days} giorni dalla pubblicazione; se n è piccolo o n/d i dati di vendita non sono ancora affidabili e vanno usati i prezzi richiesti con uno sconto del 15-25%):\n${lines.join('\n')}`;
 }
 const SYSTEM = `Sei un esperto rivenditore di abbigliamento vintage e sportivo di seconda mano su Vinted in Italia (acquisti in stock a chilo e rivendi capo per capo). Aiuti a valutare capi da foto e a preparare annunci che vendono in fretta senza dover ribassare.
 Rispondi SOLO con un oggetto JSON valido (nessun testo prima o dopo, niente markdown), in italiano, con questa struttura:

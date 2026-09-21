@@ -1,22 +1,22 @@
-[2026-09-20 14:47:27] === fetch ===
-[2026-09-20 14:47:44]   carhartt_giacche_uomo: 380 annunci su 4 pagine, nuovi 357, campionati 15
-[2026-09-20 14:48:02]   carhartt_felpe_uomo: 381 annunci su 4 pagine, nuovi 283, campionati 15
-[2026-09-20 14:48:19]   carhartt_jeans_uomo: 381 annunci su 4 pagine, nuovi 371, campionati 15
-[2026-09-20 14:48:38]   nike_giacche_uomo: 378 annunci su 4 pagine, nuovi 367, campionati 15
-[2026-09-20 14:48:57]   nike_felpe_uomo: 379 annunci su 4 pagine, nuovi 374, campionati 15
-[2026-09-20 14:49:17]   nike_tshirt_uomo: 381 annunci su 4 pagine, nuovi 375, campionati 15
-[2026-09-20 14:49:37]   adidas_giacche_uomo: 379 annunci su 4 pagine, nuovi 370, campionati 15
-[2026-09-20 14:49:54]   adidas_felpe_uomo: 380 annunci su 4 pagine, nuovi 375, campionati 15
-[2026-09-20 14:50:10]   adidas_tshirt_uomo: 382 annunci su 4 pagine, nuovi 373, campionati 15
-[2026-09-20 14:50:31]   levis_jeans_uomo: 380 annunci su 4 pagine, nuovi 362, campionati 15
-[2026-09-20 14:50:51]   levis_jeans_donna: 371 annunci su 4 pagine, nuovi 360, campionati 15
-[2026-09-20 14:51:12]   levis_giacche_denim_uomo: 382 annunci su 4 pagine, nuovi 369, campionati 15
-[2026-09-20 14:51:33]   tnf_giacche_uomo: 381 annunci su 4 pagine, nuovi 362, campionati 15
-[2026-09-20 14:51:51]   wrangler_jeans_uomo: 378 annunci su 4 pagine, nuovi 292, campionati 15
-[2026-09-20 14:52:07]   wrangler_jeans_donna: 378 annunci su 4 pagine, nuovi 88, campionati 15
-[2026-09-20 14:52:26]   wrangler_giacche_denim_uomo: 379 annunci su 4 pagine, nuovi 18, campionati 15
-[2026-09-20 14:52:26] === check ===
-[2026-09-20 14:52:26] check: 240 annunci da verificare
-[2026-09-20 16:12:30]   403 (blocco anti-bot) dopo 228 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
-[2026-09-20 16:12:30] check: esiti {'deleted': 19, 'sold': 47, 'active': 159, 'reserved': 2, 'unknown': 1}
-[2026-09-20 16:12:30] dashboard generata: 16 ricerche, 50476 annunci, 2450 seguiti, 323 venduti, 6 giorni di dati
+[2026-09-21 06:54:44] === fetch ===
+[2026-09-21 06:55:03]   carhartt_giacche_uomo: 382 annunci su 4 pagine, nuovi 361, campionati 15
+[2026-09-21 06:55:21]   carhartt_felpe_uomo: 382 annunci su 4 pagine, nuovi 283, campionati 15
+[2026-09-21 06:55:38]   carhartt_jeans_uomo: 379 annunci su 4 pagine, nuovi 327, campionati 15
+[2026-09-21 06:55:58]   nike_giacche_uomo: 379 annunci su 4 pagine, nuovi 368, campionati 15
+[2026-09-21 06:56:15]   nike_felpe_uomo: 376 annunci su 4 pagine, nuovi 369, campionati 15
+[2026-09-21 06:56:33]   nike_tshirt_uomo: 379 annunci su 4 pagine, nuovi 377, campionati 15
+[2026-09-21 06:56:48]   adidas_giacche_uomo: 380 annunci su 4 pagine, nuovi 349, campionati 15
+[2026-09-21 06:57:04]   adidas_felpe_uomo: 378 annunci su 4 pagine, nuovi 357, campionati 15
+[2026-09-21 06:57:21]   adidas_tshirt_uomo: 380 annunci su 4 pagine, nuovi 375, campionati 15
+[2026-09-21 06:57:39]   levis_jeans_uomo: 380 annunci su 4 pagine, nuovi 352, campionati 15
+[2026-09-21 06:57:56]   levis_jeans_donna: 381 annunci su 4 pagine, nuovi 362, campionati 15
+[2026-09-21 06:58:14]   levis_giacche_denim_uomo: 378 annunci su 4 pagine, nuovi 307, campionati 15
+[2026-09-21 06:58:33]   tnf_giacche_uomo: 380 annunci su 4 pagine, nuovi 371, campionati 15
+[2026-09-21 06:58:52]   wrangler_jeans_uomo: 380 annunci su 4 pagine, nuovi 225, campionati 15
+[2026-09-21 06:59:09]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 66, campionati 15
+[2026-09-21 06:59:24]   wrangler_giacche_denim_uomo: 377 annunci su 4 pagine, nuovi 11, campionati 11
+[2026-09-21 06:59:24] === check ===
+[2026-09-21 06:59:24] check: 245 annunci da verificare
+[2026-09-21 08:12:37]   403 (blocco anti-bot) dopo 209 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
+[2026-09-21 08:12:37] check: esiti {'deleted': 24, 'active': 139, 'sold': 44, 'unknown': 2}
+[2026-09-21 08:12:37] dashboard generata: 16 ricerche, 55548 annunci, 2686 seguiti, 367 venduti, 7 giorni di dati

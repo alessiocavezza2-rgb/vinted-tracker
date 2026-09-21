@@ -42,4 +42,8 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add vinted.db docs last_run.log
           git diff --cached --quiet || git commit -m "dati $(date -u +'%Y-%m-%d %H:%M') UTC"
-          git push
+          # il repo puo' essere cambiato durante l'esecuzione: riallineo dando precedenza ai dati appena raccolti
+          for i in 1 2 3; do
+            git push && break
+            git pull --rebase -X theirs || { git checkout --theirs . ; git add -A ; GIT_EDITOR=true git rebase --continue ; }
+          done

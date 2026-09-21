@@ -40,7 +40,7 @@
   /* bottom nav */
   nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: #141112; border-top: 1px solid rgba(255,255,255,.08);
     display: flex; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); z-index: 5; }
-  nav.tabs button { flex: 1; max-width: 160px; border: 0; background: none; color: #9a908a; font: inherit; font-size: 11px;
+  nav.tabs button { flex: 1; max-width: 140px; border: 0; background: none; color: #9a908a; font: inherit; font-size: 11px;
     display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; cursor: pointer; border-radius: 10px; }
   nav.tabs button svg { width: 24px; height: 24px; }
   nav.tabs button[aria-current="page"] { color: var(--red); }
@@ -180,7 +180,6 @@
   <!-- MERCATO -->
   <section class="view active" id="view-market">
     <div class="notice" id="notice" hidden></div>
-    <div class="card" id="advice"></div>
     <div class="chips" id="brands"></div>
     <div class="row" style="margin:10px 0">
       <select id="sort" style="flex:1">
@@ -195,6 +194,12 @@
     <div id="cards"></div>
     <div class="card tbl-wrap" id="table" hidden></div>
     <p class="muted" id="foot"></p>
+  </section>
+
+  <!-- PUNTARE -->
+  <section class="view" id="view-advice">
+    <div class="card" id="advice"></div>
+    <div class="card" id="advice-notes"></div>
   </section>
 
   <!-- STIMA -->
@@ -247,6 +252,7 @@
 
 <nav class="tabs">
   <button data-view="market" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V10M10 19V5M16 19v-8M22 19H2"/></svg>Mercato</button>
+  <button data-view="advice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z"/></svg>Puntare</button>
   <button data-view="estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Stima</button>
   <button data-view="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 8v4l3 2"/></svg>Storico</button>
   <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Impostazioni</button>
@@ -303,6 +309,19 @@ function renderAdvice() {
       ${a.note ? `<div class="n">${esc(a.note)}</div>` : ''}</div></div>`; }).join('');
   $('#advice').innerHTML = `<h2 style="margin:0 0 4px">Su cosa puntare</h2>
     <p class="muted" style="margin:0 0 8px">Ordinato per valore atteso = probabilità di vendita × prezzo di vendita: quanto rende in media un annuncio di quel tipo. Sotto i 15 casi il verdetto non viene dato.</p>${rows}`;
+  const top = adv.filter(a => a.verdict === 'punta').map(a => byKey[a.key]);
+  const avoid = adv.filter(a => a.verdict === 'evita' || a.verdict === 'veloce ma vale poco').map(a => byKey[a.key]);
+  const disc = adv.filter(a => a.score != null && byKey[a.key].active && byKey[a.key].fast && byKey[a.key].active.med > byKey[a.key].fast.med * 1.2).map(a => byKey[a.key]);
+  const li = xs => xs.length ? xs.map(q => `${q.brand} ${q.category.toLowerCase()}`).join(', ') : '—';
+  $('#advice-notes').innerHTML = `<h2 style="margin:0 0 6px">Note per l'ordine</h2>
+    <ul class="tips">
+      <li><b>Compra:</b> ${li(top)}.</li>
+      <li><b>Evita:</b> ${li(avoid)}.</li>
+      <li><b>Prezza subito basso</b> (si vendono ben sotto il richiesto): ${li(disc)}.</li>
+      <li>Il valore sta nei <b>capispalla</b>: a parità di chilo una giacca vale più di felpe e t-shirt e vende più veloce.</li>
+      <li>Fornitori a pezzo selezionato per brand costano più del prezzo di vendita su Vinted: conviene il <b>box al chilo di sole giacche</b> (~9-14 € a capo).</li>
+    </ul>
+    <p class="muted" style="margin:8px 0 0">Aggiornato a ogni raccolta. Le percentuali a 7 giorni sostituiscono quelle a 2 giorni man mano che i lotti maturano.</p>`;
 }
 function sortedQueries() {
   const qs = DATA.queries.filter(q => state.brand === 'Tutti' || q.brand === state.brand);

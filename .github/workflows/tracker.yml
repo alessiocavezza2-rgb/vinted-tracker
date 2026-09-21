@@ -3,7 +3,8 @@ name: Vinted tracker
 on:
   schedule:
     - cron: "30 1 * * *"    # 03:30 ora italiana (estiva)
-    - cron: "30 11 * * *"   # 13:30 ora italiana (estiva)
+    - cron: "30 9 * * *"    # 11:30 ora italiana (estiva)
+    - cron: "30 17 * * *"   # 19:30 ora italiana (estiva)
   workflow_dispatch:
   push:
     branches: [main]

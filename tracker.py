@@ -309,6 +309,44 @@ def cmd_check():
     log(f"check: esiti {counts}")
 
 
+# ---------------------------------------------------------------- fornitori
+
+def fetch_suppliers():
+    """Disponibilita' e prezzi dei box dei fornitori (Shopify espone /products/<slug>.js)."""
+    out = []
+    s = requests.Session()
+    s.headers.update({"User-Agent": UA, "Accept": "application/json, text/javascript, */*"})
+    for sup in CONFIG.get("suppliers", []):
+        for prod in sup["products"]:
+            url = sup["base"] + prod["slug"]
+            try:
+                r = s.get(url + ".js", timeout=45)
+                j = r.json() if r.status_code == 200 else None
+            except (requests.RequestException, ValueError):
+                j = None
+            if not j:
+                log(f"  fornitore {prod['slug']}: non leggibile")
+                continue
+            variants = [{"title": v.get("title"), "price": (v.get("price") or 0) / 100, "available": bool(v.get("available"))}
+                        for v in j.get("variants", [])]
+            free = [v for v in variants if v["available"]]
+            best = min(free, key=lambda v: v["price"]) if free else None
+            kg = None
+            if best:
+                m = re.search(r"(\d+)\s*Kg", best["title"], re.I)
+                kg = int(m.group(1)) if m else None
+            out.append({
+                "supplier": sup["name"], "label": prod["label"], "title": j.get("title"), "url": url,
+                "available": bool(j.get("available")), "variants": variants,
+                "best": best, "best_kg": kg,
+                "per_piece": round(best["price"] / (kg * prod["per_kg"]), 1) if best and kg else None,
+            })
+            sleep(CONFIG["delay_seconds"])
+    log(f"fornitori: {sum(1 for x in out if x['available'])}/{len(out)} box disponibili")
+    (ROOT / "suppliers.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    return out
+
+
 # ---------------------------------------------------------------- stats
 
 def quantiles(values):
@@ -454,6 +492,7 @@ def cmd_build():
         "n_sold": con.execute("SELECT COUNT(*) FROM items WHERE status IN ('sold','closed')").fetchone()[0],
         "queries": stats,
         "advice": advice(stats),
+        "suppliers": json.loads((ROOT / "suppliers.json").read_text(encoding="utf-8")) if (ROOT / "suppliers.json").exists() else [],
     }
     con.close()
     DOCS.mkdir(exist_ok=True)
@@ -470,6 +509,8 @@ if __name__ == "__main__":
     if cmd in ("fetch", "run"):
         log("=== fetch ===")
         cmd_fetch()
+    if cmd in ("fetch", "run"):
+        fetch_suppliers()
     if cmd in ("check", "run"):
         log("=== check ===")
         cmd_check()

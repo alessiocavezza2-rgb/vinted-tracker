@@ -1,0 +1,330 @@
+[
+ {
+  "supplier": "Rivintagekilo",
+  "label": "Giacche miste A/B",
+  "title": "10Kg Jackets Box - Grade A/B",
+  "url": "https://rivintagekilo.com/en/products/jackets-box",
+  "available": true,
+  "variants": [
+   {
+    "title": "10Kg",
+    "price": 129.95,
+    "available": true
+   },
+   {
+    "title": "25Kg",
+    "price": 259.95,
+    "available": true
+   },
+   {
+    "title": "50Kg",
+    "price": 499.95,
+    "available": true
+   }
+  ],
+  "best": {
+   "title": "10Kg",
+   "price": 129.95,
+   "available": true
+  },
+  "best_kg": 10,
+  "per_piece": 8.7
+ },
+ {
+  "supplier": "Rivintagekilo",
+  "label": "The North Face & Columbia",
+  "title": "The North Face & Columbia Box ",
+  "url": "https://rivintagekilo.com/en/products/north-face-jacket-fleece-box",
+  "available": false,
+  "variants": [
+   {
+    "title": "3Kg / A",
+    "price": 129.95,
+    "available": false
+   },
+   {
+    "title": "3Kg / B",
+    "price": 99.95,
+    "available": false
+   },
+   {
+    "title": "5Kg / A",
+    "price": 199.95,
+    "available": false
+   },
+   {
+    "title": "5Kg / B",
+    "price": 129.95,
+    "available": false
+   },
+   {
+    "title": "10Kg / A",
+    "price": 359.95,
+    "available": false
+   },
+   {
+    "title": "10Kg / B",
+    "price": 249.95,
+    "available": false
+   },
+   {
+    "title": "25Kg / A",
+    "price": 899.95,
+    "available": false
+   },
+   {
+    "title": "25Kg / B",
+    "price": 599.95,
+    "available": false
+   },
+   {
+    "title": "50Kg / A",
+    "price": 999.95,
+    "available": false
+   },
+   {
+    "title": "50Kg / B",
+    "price": 129.95,
+    "available": false
+   }
+  ],
+  "best": null,
+  "best_kg": null,
+  "per_piece": null
+ },
+ {
+  "supplier": "Rivintagekilo",
+  "label": "Brand Box grado A",
+  "title": "Brand Box - Grade A",
+  "url": "https://rivintagekilo.com/en/products/brand-box",
+  "available": true,
+  "variants": [
+   {
+    "title": "3Kg",
+    "price": 99.95,
+    "available": true
+   },
+   {
+    "title": "5Kg",
+    "price": 149.95,
+    "available": true
+   },
+   {
+    "title": "10Kg",
+    "price": 279.95,
+    "available": true
+   },
+   {
+    "title": "25Kg",
+    "price": 599.95,
+    "available": true
+   },
+   {
+    "title": "50Kg",
+    "price": 999.95,
+    "available": true
+   }
+  ],
+  "best": {
+   "title": "3Kg",
+   "price": 99.95,
+   "available": true
+  },
+  "best_kg": 3,
+  "per_piece": 13.3
+ },
+ {
+  "supplier": "Rivintagekilo",
+  "label": "Levi's",
+  "title": "Levi's Box ",
+  "url": "https://rivintagekilo.com/en/products/levis-box",
+  "available": true,
+  "variants": [
+   {
+    "title": "3Kg / A",
+    "price": 99.95,
+    "available": false
+   },
+   {
+    "title": "5Kg / B",
+    "price": 99.95,
+    "available": false
+   },
+   {
+    "title": "5Kg / A",
+    "price": 149.95,
+    "available": false
+   },
+   {
+    "title": "5Kg / Oversize A/B",
+    "price": 129.95,
+    "available": true
+   },
+   {
+    "title": "10Kg / B",
+    "price": 179.95,
+    "available": true
+   },
+   {
+    "title": "10Kg / A",
+    "price": 289.95,
+    "available": false
+   },
+   {
+    "title": "10Kg / Oversize A/B",
+    "price": 249.95,
+    "available": true
+   },
+   {
+    "title": "25Kg / B",
+    "price": 499.95,
+    "available": true
+   },
+   {
+    "title": "25Kg / A",
+    "price": 699.95,
+    "available": false
+   },
+   {
+    "title": "25Kg / Oversize A/B",
+    "price": 599.95,
+    "available": false
+   },
+   {
+    "title": "50Kg / B",
+    "price": 699.95,
+    "available": true
+   },
+   {
+    "title": "50Kg / A",
+    "price": 1299.95,
+    "available": false
+   },
+   {
+    "title": "50Kg / Oversize A/B",
+    "price": 999.95,
+    "available": false
+   }
+  ],
+  "best": {
+   "title": "5Kg / Oversize A/B",
+   "price": 129.95,
+   "available": true
+  },
+  "best_kg": 5,
+  "per_piece": 10.4
+ },
+ {
+  "supplier": "Rivintagekilo",
+  "label": "Nike & adidas",
+  "title": "Nike & Adidas Box",
+  "url": "https://rivintagekilo.com/en/products/nike-adidas-box",
+  "available": true,
+  "variants": [
+   {
+    "title": "A / 3Kg",
+    "price": 99.95,
+    "available": false
+   },
+   {
+    "title": "A / 5Kg",
+    "price": 149.95,
+    "available": false
+   },
+   {
+    "title": "A / 10Kg",
+    "price": 349.95,
+    "available": false
+   },
+   {
+    "title": "A / 25Kg",
+    "price": 899.95,
+    "available": false
+   },
+   {
+    "title": "A / 50Kg",
+    "price": 1699.95,
+    "available": false
+   },
+   {
+    "title": "B / 3Kg",
+    "price": 79.95,
+    "available": false
+   },
+   {
+    "title": "B / 5Kg",
+    "price": 129.95,
+    "available": false
+   },
+   {
+    "title": "B / 10Kg",
+    "price": 249.95,
+    "available": false
+   },
+   {
+    "title": "B / 25Kg",
+    "price": 699.95,
+    "available": true
+   },
+   {
+    "title": "B / 50Kg",
+    "price": 1299.95,
+    "available": false
+   }
+  ],
+  "best": {
+   "title": "B / 25Kg",
+   "price": 699.95,
+   "available": true
+  },
+  "best_kg": 25,
+  "per_piece": 11.2
+ },
+ {
+  "supplier": "Rivintagekilo",
+  "label": "Vintage Box",
+  "title": "10Kg Vintage Box (NEW)",
+  "url": "https://rivintagekilo.com/en/products/10kg-vintage-box",
+  "available": true,
+  "variants": [
+   {
+    "title": "Default Title",
+    "price": 149.95,
+    "available": true
+   }
+  ],
+  "best": {
+   "title": "Default Title",
+   "price": 149.95,
+   "available": true
+  },
+  "best_kg": null,
+  "per_piece": null
+ },
+ {
+  "supplier": "Rivintagekilo",
+  "label": "Second hand mix",
+  "title": "10 Kg Second hand mix",
+  "url": "https://rivintagekilo.com/en/products/10kg-second-hand-mix",
+  "available": true,
+  "variants": [
+   {
+    "title": "B",
+    "price": 149.95,
+    "available": false
+   },
+   {
+    "title": "A",
+    "price": 249.95,
+    "available": true
+   }
+  ],
+  "best": {
+   "title": "A",
+   "price": 249.95,
+   "available": true
+  },
+  "best_kg": null,
+  "per_piece": null
+ }
+]

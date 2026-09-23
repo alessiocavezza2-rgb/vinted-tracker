@@ -1,22 +1,24 @@
-[2026-09-23 14:19:26] === fetch ===
-[2026-09-23 14:19:44]   carhartt_giacche_uomo: 377 annunci su 4 pagine, nuovi 350, campionati 10
-[2026-09-23 14:20:00]   carhartt_felpe_uomo: 378 annunci su 4 pagine, nuovi 175, campionati 10
-[2026-09-23 14:20:25]   carhartt_jeans_uomo: 382 annunci su 4 pagine, nuovi 219, campionati 10
-[2026-09-23 14:20:41]   nike_giacche_uomo: 383 annunci su 4 pagine, nuovi 372, campionati 10
-[2026-09-23 14:20:59]   nike_felpe_uomo: 381 annunci su 4 pagine, nuovi 376, campionati 10
-[2026-09-23 14:21:14]   nike_tshirt_uomo: 379 annunci su 4 pagine, nuovi 375, campionati 10
-[2026-09-23 14:21:33]   adidas_giacche_uomo: 378 annunci su 4 pagine, nuovi 358, campionati 10
-[2026-09-23 14:21:50]   adidas_felpe_uomo: 382 annunci su 4 pagine, nuovi 369, campionati 10
-[2026-09-23 14:22:05]   adidas_tshirt_uomo: 379 annunci su 4 pagine, nuovi 371, campionati 10
-[2026-09-23 14:22:22]   levis_jeans_uomo: 381 annunci su 4 pagine, nuovi 371, campionati 10
-[2026-09-23 14:22:40]   levis_jeans_donna: 379 annunci su 4 pagine, nuovi 356, campionati 10
-[2026-09-23 14:22:57]   levis_giacche_denim_uomo: 383 annunci su 4 pagine, nuovi 228, campionati 10
-[2026-09-23 14:23:14]   tnf_giacche_uomo: 380 annunci su 4 pagine, nuovi 355, campionati 10
-[2026-09-23 14:23:32]   wrangler_jeans_uomo: 381 annunci su 4 pagine, nuovi 171, campionati 10
-[2026-09-23 14:23:50]   wrangler_jeans_donna: 381 annunci su 4 pagine, nuovi 75, campionati 10
-[2026-09-23 14:24:04]   wrangler_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 12, campionati 10
-[2026-09-23 14:24:32] fornitori: 6/7 box disponibili
-[2026-09-23 14:24:32] === check ===
-[2026-09-23 14:24:32] check: 230 annunci da verificare
-[2026-09-23 15:45:29] check: esiti {'active': 176, 'deleted': 33, 'sold': 18, 'unknown': 3}
-[2026-09-23 15:45:29] dashboard generata: 16 ricerche, 84280 annunci, 3784 seguiti, 596 venduti, 9 giorni di dati
+[2026-09-23 20:32:07] === fetch ===
+[2026-09-23 20:32:25]   carhartt_giacche_uomo: 355 annunci su 4 pagine, nuovi 314, campionati 10
+[2026-09-23 20:32:44]   carhartt_felpe_uomo: 370 annunci su 4 pagine, nuovi 179, campionati 10
+[2026-09-23 20:32:59]   carhartt_jeans_uomo: 365 annunci su 4 pagine, nuovi 224, campionati 10
+[2026-09-23 20:33:18]   nike_giacche_uomo: 379 annunci su 4 pagine, nuovi 365, campionati 10
+[2026-09-23 20:33:38]   nike_felpe_uomo: 293 annunci su 4 pagine, nuovi 280, campionati 10
+[2026-09-23 20:33:56]   nike_tshirt_uomo: 287 annunci su 4 pagine, nuovi 278, campionati 10
+[2026-09-23 20:34:13]   adidas_giacche_uomo: 332 annunci su 4 pagine, nuovi 312, campionati 10
+[2026-09-23 20:34:33]   adidas_felpe_uomo: 327 annunci su 4 pagine, nuovi 300, campionati 10
+[2026-09-23 20:34:52]   adidas_tshirt_uomo: 380 annunci su 4 pagine, nuovi 345, campionati 10
+[2026-09-23 20:35:09]   levis_jeans_uomo: 373 annunci su 4 pagine, nuovi 352, campionati 10
+[2026-09-23 20:35:27]   levis_jeans_donna: 315 annunci su 4 pagine, nuovi 302, campionati 10
+[2026-09-23 20:35:48]   levis_giacche_denim_uomo: 369 annunci su 4 pagine, nuovi 202, campionati 10
+[2026-09-23 20:36:08]   tnf_giacche_uomo: 327 annunci su 4 pagine, nuovi 307, campionati 10
+[2026-09-23 20:36:25]   wrangler_jeans_uomo: 369 annunci su 4 pagine, nuovi 175, campionati 10
+[2026-09-23 20:36:41]   wrangler_jeans_donna: 376 annunci su 4 pagine, nuovi 42, campionati 10
+[2026-09-23 20:36:59]   wrangler_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 13, campionati 10
+[2026-09-23 20:37:25] fornitori: 6/7 box disponibili
+[2026-09-23 20:37:25] === check ===
+[2026-09-23 20:37:25] check: 230 annunci da verificare
+[2026-09-23 20:51:36]   10023780397: HTTP 500, salto
+[2026-09-23 21:42:59]   403 (blocco anti-bot) dopo 187 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
+[2026-09-23 21:42:59] check: esiti {'active': 123, 'unknown': 2, 'sold': 35, 'deleted': 26}
+[2026-09-23 21:42:59] dashboard generata: 16 ricerche, 88518 annunci, 3944 seguiti, 631 venduti, 9 giorni di dati

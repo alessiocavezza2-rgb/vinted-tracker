@@ -439,12 +439,14 @@ def advice(stats):
     """Classifica le ricerche: valore atteso per annuncio = probabilita' di vendita x prezzo di vendita."""
     out = []
     for s in stats:
-        pct = s["pct_fast"] if s["pct_fast"] is not None else s["pct_quick"]
-        n = s["n_cohort"] if s["pct_fast"] is not None else s["n_cohort_quick"]
-        horizon = CONFIG["fast_days"] if s["pct_fast"] is not None else CONFIG["check_days"][0]
+        # uso l'orizzonte a 7 giorni solo quando ha abbastanza casi, altrimenti quello a 2 giorni
+        use_fast = s["pct_fast"] is not None and s["n_cohort"] >= CONFIG["min_cohort"]
+        pct = s["pct_fast"] if use_fast else s["pct_quick"]
+        n = s["n_cohort"] if use_fast else s["n_cohort_quick"]
+        horizon = CONFIG["fast_days"] if use_fast else CONFIG["check_days"][0]
         price = s["fast"]["med"] if s["fast"] else None
-        if pct is None or price is None or n < 15:
-            out.append({"key": s["key"], "score": None, "verdict": "dati insufficienti", "note": f"solo {n} casi maturi", "pct": pct, "n": n, "horizon": horizon, "price": price})
+        if pct is None or price is None or n < CONFIG["min_cohort"]:
+            out.append({"key": s["key"], "score": None, "verdict": "dati insufficienti", "note": f"solo {n} casi maturi (ne servono {CONFIG['min_cohort']})", "pct": pct, "n": n, "horizon": horizon, "price": price})
             continue
         score = round(pct / 100 * price, 1)
         ask = s["active"]["med"] if s["active"] else None

@@ -310,7 +310,7 @@ function renderAdvice() {
       <div class="m">${a.score != null ? `<b>${a.score.toLocaleString('it-IT')} €</b> per annuncio · ` : ''}${a.pct != null ? `${a.pct}% venduti in ${a.horizon} gg (su ${a.n})` : 'in raccolta'}${a.price != null ? ` · vende a ${eur(a.price)}` : ''}</div>
       ${a.note ? `<div class="n">${esc(a.note)}</div>` : ''}</div></div>`; }).join('');
   $('#advice').innerHTML = `<h2 style="margin:0 0 4px">Su cosa puntare</h2>
-    <p class="muted" style="margin:0 0 8px">Ordinato per valore atteso = probabilità di vendita × prezzo di vendita: quanto rende in media un annuncio di quel tipo. Sotto i 15 casi il verdetto non viene dato.</p>${rows}`;
+    <p class="muted" style="margin:0 0 8px">Ordinato per valore atteso = probabilità di vendita × prezzo di vendita: quanto rende in media un annuncio di quel tipo. Si usa la finestra a 7 giorni quando ha almeno 30 casi, altrimenti quella a 2 giorni; sotto i 30 casi il verdetto non viene dato.</p>${rows}`;
   const top = adv.filter(a => a.verdict === 'punta').map(a => byKey[a.key]);
   const avoid = adv.filter(a => a.verdict === 'evita' || a.verdict === 'veloce ma vale poco').slice(-5).map(a => byKey[a.key]);
   const disc = adv.filter(a => a.score != null && byKey[a.key].active && byKey[a.key].fast && byKey[a.key].active.med >= byKey[a.key].fast.med * 1.35).slice(0, 4).map(a => byKey[a.key]);

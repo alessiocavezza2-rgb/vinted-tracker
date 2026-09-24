@@ -219,6 +219,7 @@
 
   <!-- STORICO -->
   <section class="view" id="view-history">
+    <div class="card" id="queue"></div>
     <div class="card">
       <div class="row" style="justify-content:space-between"><h2 style="margin:0">Capi analizzati</h2><button class="btn ghost sm" id="clearHist">Svuota</button></div>
       <div id="history"></div>
@@ -522,11 +523,22 @@ Rispondi SOLO con un oggetto JSON valido (nessun testo prima o dopo, niente mark
 {
  "identificazione": {"brand": string, "tipo": string (es. "Giacca in denim"), "modello": string|null (nome/linea se riconoscibile), "genere": "Uomo"|"Donna"|"Unisex", "taglia": string|null (leggi l'etichetta se visibile), "colore": string, "materiale": string|null, "epoca": string|null (es. "anni '90", "vintage", "recente"), "condizione": "Nuovo con cartellino"|"Nuovo senza cartellino"|"Ottime"|"Buone"|"Discrete", "difetti": [string], "dettagli": [string] (caratteristiche che aumentano il valore o utili per la descrizione), "confidenza": "alta"|"media"|"bassa"},
  "mercato": {"key": string|null (la key dei dati di mercato che corrisponde a brand+categoria+genere del capo, altrimenti null), "fonte": "dati tracker"|"stima da conoscenza", "note": string (1-2 frasi: come hai usato i dati; se il capo è fuori dalle categorie tracciate dillo chiaramente)},
+ "vestibilita": {"taglia_etichetta": string|null (esattamente come scritto sull'etichetta, es. "L", "32x34", "M/50"), "taglia_reale": string|null (taglia italiana/europea a cui corrisponde davvero il capo: i capi vintage vestono spesso 1-2 taglie in meno o in piu' del cartellino), "veste": "Slim"|"Regular"|"Oversize"|"Boxy"|"Corto"|"Lungo"|null, "a_chi_sta_bene": string|null (es. "chi porta una M e vuole un fit ampio"), "misure_stimate": {"spalle_cm": string|null, "petto_cm": string|null (misura da ascella ad ascella, capo steso), "lunghezza_cm": string|null (dal colletto all'orlo), "manica_cm": string|null, "vita_cm": string|null (solo pantaloni/jeans, capo steso), "cavallo_cm": string|null, "gamba_cm": string|null}, "base": "misurato dalle foto"|"stimato da taglia e modello"|"stimato da taglia", "confidenza": "alta"|"media"|"bassa", "note": string|null (1-2 frasi: come sei arrivato alle misure e cosa deve verificare col metro)},
  "prezzo": {"annuncio": number (prezzo a cui pubblicare, in euro, intero), "minimo": number (sotto cui non accettare offerte), "vendita_rapida": number (prezzo che vende entro pochi giorni), "motivazione": string (2-3 frasi), "velocita_attesa": string (es. "3-7 giorni")},
  "annuncio": {"titolo": string (max 60 caratteri, ricco di parole chiave cercate su Vinted: brand, tipo, modello, taglia, colore, "vintage" se applicabile; niente emoji), "descrizione": string (6-10 righe, tono diretto e onesto: cosa è, taglia ed eventuale vestibilità, materiale, condizioni e difetti dichiarati, misure da inserire come "[inserisci]" dove non le conosci, spedizione rapida; chiudi con 4-6 hashtag), "punti_forza": [string]},
  "foto": {"consigli": [string] (5-6 consigli SPECIFICI per questo capo: sfondo e luce, inquadrature da fare nell'ordine, dettagli da mostrare come etichetta/cuciture/logo/difetti, come appenderlo o stenderlo, cosa evitare), "mancanti": [string] (foto che mancano rispetto a quelle inviate e che servono per vendere)},
+ "priorita": {"vendibilita": number (probabilita' realistica, in %, che QUESTO capo si venda entro 7 giorni al prezzo "annuncio"), "quando": "subito"|"questa settimana"|"tieni per la stagione giusta", "motivo": string (1 frase)},
  "da_verificare": [string] (cose da controllare prima di pubblicare: etichetta, misure, autenticità, ecc.)
 }
+Regole per misure e vestibilita':
+- Se vedi l'etichetta, leggi la taglia esattamente come e' scritta e riportala in "taglia_etichetta".
+- Stima le misure in centimetri come RANGE (es. "56-58") a partire da: taglia sul cartellino, brand, epoca e modello (le tabelle taglie di Carhartt, Nike, adidas, Levi's, The North Face degli anni '90 sono diverse da quelle attuali), e dalle proporzioni visibili nelle foto se il capo e' steso o appeso.
+- Non inventare precisione: se hai solo la taglia, "base" = "stimato da taglia" e "confidenza" = "bassa", e in "note" scrivi che vanno confermate col metro.
+- Indica solo le misure sensate per il tipo di capo (per una giacca: spalle, petto, lunghezza, manica; per jeans: vita, cavallo, gamba).
+- Le misure stimate NON vanno scritte come certe nella descrizione: nell'annuncio inseriscile con la dicitura "circa" e lascia "[misura col metro]" dove la confidenza e' bassa.
+Regole per la priorita':
+- "vendibilita" parte dalla % di venduti della categoria nei dati di mercato e la corregge per condizione, taglia (le taglie centrali M/L vendono meglio), desiderabilita' del modello e stagione (siamo a fine settembre: capispalla, felpe e jeans sono in stagione; t-shirt e capi estivi no).
+- "quando": "subito" se e' in stagione e sopra la media della categoria; "tieni per la stagione giusta" se venderebbe molto meglio tra qualche mese (dillo nel motivo, indicando il mese).
 Regole per il prezzo (PRUDENZA: l'obiettivo e' vendere entro pochi giorni SENZA ribassare; un prezzo troppo alto e' l'errore peggiore, un prezzo un po' basso e' accettabile):
 - Il riferimento e' SEMPRE il prezzo a cui i capi si sono VENDUTI, mai quello richiesto dai venditori (gli annunci attivi sono in gran parte capi che non si vendono a quel prezzo).
 - Se esiste una key con dati di vendita affidabili (n >= 15): "vendita_rapida" = p25 dei venduti; "annuncio" = mediana dei venduti (al massimo +10% se il capo e' chiaramente sopra la media per modello/condizione, mai oltre il p75); "minimo" = poco sotto il p25.
@@ -579,6 +591,9 @@ function renderResult(item) {
       <div class="pb"><div class="lbl">Vendita rapida</div><div class="val">${eur(p.vendita_rapida)}</div><div class="sub">${esc(p.velocita_attesa || '')}</div></div>
     </div>
     <p style="margin:10px 0 0;font-size:14px">${esc(p.motivazione || '')}</p>
+    ${r.priorita ? `<div class="kpis" style="grid-template-columns:1fr 1fr;margin-top:10px">
+      <div class="kpi hi"><div class="lbl">Quando pubblicarlo</div><div class="val" style="font-size:16px">${esc(r.priorita.quando || '—')}</div><div class="rng">${esc(r.priorita.motivo || '')}</div></div>
+      <div class="kpi"><div class="lbl">Si vende in 7 gg</div><div class="val">${r.priorita.vendibilita != null ? r.priorita.vendibilita + '%' : '—'}</div><div class="rng">${priorityScore(item) != null ? `priorità ${priorityScore(item)}` : ''}</div></div></div>` : ''}
     ${q ? `<div class="kpis" style="margin-top:10px">
       <div class="kpi hi"><div class="lbl">Venduto ≤${DATA.fast_days}gg</div><div class="val">${q.fast ? eur(q.fast.med) : '—'}</div><div class="rng">${q.fast ? `${eur(q.fast.p25)}–${eur(q.fast.p75)} · n=${q.n_fast}` : 'in raccolta'}</div></div>
       <div class="kpi"><div class="lbl">Venduti in ${DATA.fast_days}gg</div><div class="val">${q.pct_fast == null ? '—' : q.pct_fast + '%'}</div><div class="rng">su ${q.n_cohort}</div></div>
@@ -586,6 +601,7 @@ function renderResult(item) {
       <p class="src">Dati tracker: ${esc(q.brand)} · ${esc(q.category)}. ${esc(m.note || '')}</p>`
       : `<p class="src">${esc(m.fonte || '')}${m.note ? ' — ' + esc(m.note) : ''}</p>`}
   </div>
+  ${fitBlock(r)}
   <div class="card">
     <h3 style="margin-top:0">Titolo</h3>
     <div class="copybox title">${esc(an.titolo || '')}<button class="btn sm" data-copy>Copia</button></div>
@@ -601,6 +617,27 @@ function renderResult(item) {
     <p class="src">${new Date(item.ts).toLocaleString('it-IT')} · ${esc(item.model || '')}${cost != null ? ` · costo ≈ ${cost.toFixed(3).replace('.', ',')} $` : ''}</p>
   </div>`;
 }
+function fitBlock(r) {
+  const v = r.vestibilita; if (!v) return '';
+  const m = v.misure_stimate || {};
+  const labels = { spalle_cm: 'Spalle', petto_cm: 'Petto (ascella-ascella)', lunghezza_cm: 'Lunghezza', manica_cm: 'Manica', vita_cm: 'Vita', cavallo_cm: 'Cavallo', gamba_cm: 'Gamba' };
+  const rows = Object.keys(labels).filter(k => m[k]).map(k => `<tr><td>${labels[k]}</td><td class="num">${esc(m[k])} cm</td></tr>`).join('');
+  const conf = { alta: 'good', media: 'ok', bassa: 'meh' }[v.confidenza] || 'na';
+  return `<div class="card">
+    <h3 style="margin-top:0">Taglia e vestibilità</h3>
+    <div class="tags">${[v.taglia_etichetta && 'Etichetta: ' + v.taglia_etichetta, v.taglia_reale && 'Veste come: ' + v.taglia_reale, v.veste].filter(Boolean).map(x => `<span class="tag">${esc(x)}</span>`).join('')}
+      <span class="verdict ${conf}">confidenza ${esc(v.confidenza || '?')}</span></div>
+    ${v.a_chi_sta_bene ? `<p style="margin:8px 0 0;font-size:14px">${esc(v.a_chi_sta_bene)}</p>` : ''}
+    ${rows ? `<h3>Misure stimate</h3><div class="tbl-wrap"><table><tbody>${rows}</tbody></table></div>` : ''}
+    ${v.note ? `<p class="src">${esc(v.base || '')}${v.note ? ' — ' + esc(v.note) : ''}</p>` : ''}</div>`;
+}
+function priorityScore(item) {
+  const r = item.res || {}, p = r.prezzo || {}, pr = r.priorita || {};
+  const pct = typeof pr.vendibilita === 'number' ? pr.vendibilita : null;
+  const price = typeof p.annuncio === 'number' ? p.annuncio : null;
+  if (pct == null || price == null) return null;
+  return Math.round(pct / 100 * price * 10) / 10;
+}
 function costEstimate(model, u) {
   const p = model && model.startsWith('claude-sonnet') ? [2, 10] : model && model.startsWith('claude-haiku') ? [1, 5] : [5, 25];
   return ((u.input_tokens || 0) * p[0] + (u.output_tokens || 0) * p[1]) / 1e6;
@@ -613,11 +650,32 @@ function bindCopy(root) {
 }
 
 // ------------------------------------------------------------ history
+function renderQueue() {
+  const hist = LS.get('history', []).map((h, i) => ({ h, i, s: priorityScore(h) })).filter(x => x.s != null);
+  if (!hist.length) { $('#queue').innerHTML = `<h2 style="margin:0 0 4px">Coda di pubblicazione</h2><p class="empty">Analizza qualche capo: qui compare l'ordine in cui pubblicarli.</p>`; return; }
+  const keep = x => (x.h.res.priorita || {}).quando === 'tieni per la stagione giusta';
+  const now = hist.filter(x => !keep(x)).sort((a, b) => b.s - a.s);
+  const later = hist.filter(keep).sort((a, b) => b.s - a.s);
+  const row = (x, n) => { const r = x.h.res, id = r.identificazione || {}, p = r.prezzo || {}, pr = r.priorita || {};
+    return `<div class="adv ${n === 1 ? 'v-good' : ''}" data-i="${x.i}" style="cursor:pointer">
+      <div class="rank">${n}</div>
+      <div class="body"><div class="t"><b>${esc(id.brand || '?')}</b> ${esc(id.tipo || '')} ${id.taglia ? `<span class="muted" style="font-size:12px">taglia ${esc(id.taglia)}</span>` : ''}</div>
+        <div class="m"><b>${eur(p.annuncio)}</b> · ${pr.vendibilita != null ? `${pr.vendibilita}% in 7 gg` : ''} · priorità ${x.s}</div>
+        ${pr.motivo ? `<div class="n" style="color:var(--ink-2)">${esc(pr.motivo)}</div>` : ''}</div></div>`; };
+  $('#queue').innerHTML = `<h2 style="margin:0 0 4px">Coda di pubblicazione</h2>
+    <p class="muted" style="margin:0 0 8px">Ordine consigliato: prima i capi che rendono di più subito (probabilità di vendita × prezzo). Pubblica 3-5 capi al giorno: gli annunci nuovi sono più visibili.</p>
+    ${now.map((x, i) => row(x, i + 1)).join('')}
+    ${later.length ? `<h3>Aspetta la stagione</h3>${later.map(x => row(x, '·')).join('')}` : ''}`;
+  document.querySelectorAll('#queue .adv').forEach(el => el.onclick = () => {
+    const h = LS.get('history', [])[+el.dataset.i]; const o = $('#history-out'); o.innerHTML = renderResult(h); bindCopy(o); o.scrollIntoView({ behavior: 'smooth' });
+  });
+}
 function renderHistory() {
+  renderQueue();
   const hist = LS.get('history', []);
   $('#history').innerHTML = hist.length ? hist.map((h, i) => {
     const id = h.res && h.res.identificazione || {}, p = h.res && h.res.prezzo || {};
-    return `<div class="hist" data-i="${i}"><img src="${h.thumb}" alt=""><div class="t"><b>${esc(id.brand || '?')} · ${esc(id.tipo || '')}</b><span>${esc(id.taglia ? 'Taglia ' + id.taglia + ' · ' : '')}${new Date(h.ts).toLocaleDateString('it-IT')}</span></div><div class="p">${eur(p.annuncio)}</div></div>`;
+    return `<div class="hist" data-i="${i}"><img src="${h.thumb}" alt=""><div class="t"><b>${esc(id.brand || '?')} · ${esc(id.tipo || '')}</b><span>${esc(id.taglia ? 'Taglia ' + id.taglia + ' · ' : '')}${new Date(h.ts).toLocaleDateString('it-IT')}</span></div><div class="p">${eur(p.annuncio)}${priorityScore(h) != null ? `<div class="muted" style="font-size:11px;font-weight:400;text-align:right">pri ${priorityScore(h)}</div>` : ''}</div></div>`;
   }).join('') : '<p class="empty">Nessun capo analizzato ancora.</p>';
   document.querySelectorAll('.hist').forEach(el => el.onclick = () => { const h = LS.get('history', [])[+el.dataset.i]; const o = $('#history-out'); o.innerHTML = renderResult(h); bindCopy(o); o.scrollIntoView({ behavior: 'smooth' }); });
 }

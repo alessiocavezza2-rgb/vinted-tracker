@@ -1,23 +1,23 @@
-[2026-09-25 20:34:16] === fetch ===
-[2026-09-25 20:34:33]   carhartt_giacche_uomo: 376 annunci su 4 pagine, nuovi 312, campionati 10
-[2026-09-25 20:34:49]   carhartt_felpe_uomo: 380 annunci su 4 pagine, nuovi 124, campionati 10
-[2026-09-25 20:35:06]   carhartt_jeans_uomo: 383 annunci su 4 pagine, nuovi 175, campionati 10
-[2026-09-25 20:35:26]   nike_giacche_uomo: 382 annunci su 4 pagine, nuovi 363, campionati 10
-[2026-09-25 20:35:42]   nike_felpe_uomo: 380 annunci su 4 pagine, nuovi 359, campionati 10
-[2026-09-25 20:36:01]   nike_tshirt_uomo: 381 annunci su 4 pagine, nuovi 365, campionati 10
-[2026-09-25 20:36:20]   adidas_giacche_uomo: 378 annunci su 4 pagine, nuovi 351, campionati 10
-[2026-09-25 20:36:38]   adidas_felpe_uomo: 378 annunci su 4 pagine, nuovi 332, campionati 10
-[2026-09-25 20:36:54]   adidas_tshirt_uomo: 378 annunci su 4 pagine, nuovi 355, campionati 10
-[2026-09-25 20:37:10]   levis_jeans_uomo: 379 annunci su 4 pagine, nuovi 353, campionati 10
-[2026-09-25 20:37:30]   levis_jeans_donna: 380 annunci su 4 pagine, nuovi 363, campionati 10
-[2026-09-25 20:37:47]   levis_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 156, campionati 10
-[2026-09-25 20:38:03]   tnf_giacche_uomo: 382 annunci su 4 pagine, nuovi 356, campionati 10
-[2026-09-25 20:38:21]   wrangler_jeans_uomo: 377 annunci su 4 pagine, nuovi 201, campionati 10
-[2026-09-25 20:38:40]   wrangler_jeans_donna: 379 annunci su 4 pagine, nuovi 37, campionati 10
-[2026-09-25 20:38:56]   wrangler_giacche_denim_uomo: 377 annunci su 4 pagine, nuovi 8, campionati 8
-[2026-09-25 20:39:16] fornitori: 6/7 box disponibili
-[2026-09-25 20:39:16] === check ===
-[2026-09-25 20:39:16] check: 230 annunci da verificare
-[2026-09-25 21:48:25]   10100649292: errore rete HTTPSConnectionPool(host='www.vinted.it', port=443): Read timed out. (read timeout=60)
-[2026-09-25 22:01:24] check: esiti {'active': 177, 'sold': 22, 'deleted': 25, 'unknown': 5}
-[2026-09-25 22:01:25] dashboard generata: 16 ricerche, 112281 annunci, 4880 seguiti, 787 venduti, 11 giorni di dati
+[2026-09-26 06:30:45] === fetch ===
+[2026-09-26 06:31:04]   carhartt_giacche_uomo: 382 annunci su 4 pagine, nuovi 110, campionati 10
+[2026-09-26 06:31:22]   carhartt_felpe_uomo: 381 annunci su 4 pagine, nuovi 25, campionati 10
+[2026-09-26 06:31:38]   carhartt_jeans_uomo: 381 annunci su 4 pagine, nuovi 36, campionati 10
+[2026-09-26 06:31:57]   nike_giacche_uomo: 380 annunci su 4 pagine, nuovi 249, campionati 10
+[2026-09-26 06:32:13]   nike_felpe_uomo: 377 annunci su 4 pagine, nuovi 225, campionati 10
+[2026-09-26 06:32:31]   nike_tshirt_uomo: 383 annunci su 4 pagine, nuovi 262, campionati 10
+[2026-09-26 06:32:49]   adidas_giacche_uomo: 380 annunci su 4 pagine, nuovi 174, campionati 10
+[2026-09-26 06:33:05]   adidas_felpe_uomo: 377 annunci su 4 pagine, nuovi 97, campionati 10
+[2026-09-26 06:33:22]   adidas_tshirt_uomo: 380 annunci su 4 pagine, nuovi 163, campionati 10
+[2026-09-26 06:33:38]   levis_jeans_uomo: 379 annunci su 4 pagine, nuovi 329, campionati 10
+[2026-09-26 06:33:55]   levis_jeans_donna: 383 annunci su 4 pagine, nuovi 353, campionati 10
+[2026-09-26 06:34:11]   levis_giacche_denim_uomo: 381 annunci su 4 pagine, nuovi 51, campionati 10
+[2026-09-26 06:34:32]   tnf_giacche_uomo: 382 annunci su 4 pagine, nuovi 122, campionati 10
+[2026-09-26 06:34:50]   wrangler_jeans_uomo: 381 annunci su 4 pagine, nuovi 45, campionati 10
+[2026-09-26 06:35:06]   wrangler_jeans_donna: 376 annunci su 4 pagine, nuovi 6, campionati 6
+[2026-09-26 06:35:23]   wrangler_giacche_denim_uomo: 379 annunci su 4 pagine, nuovi 2, campionati 2
+[2026-09-26 06:35:47] fornitori: 6/7 box disponibili
+[2026-09-26 06:35:47] === check ===
+[2026-09-26 06:35:47] check: 230 annunci da verificare
+[2026-09-26 07:25:37]   10040569778: errore rete HTTPSConnectionPool(host='www.vinted.it', port=443): Read timed out. (read timeout=60)
+[2026-09-26 07:56:32] check: esiti {'deleted': 33, 'sold': 36, 'active': 156, 'reserved': 1, 'unknown': 3}
+[2026-09-26 07:56:33] dashboard generata: 16 ricerche, 114710 annunci, 5028 seguiti, 823 venduti, 12 giorni di dati

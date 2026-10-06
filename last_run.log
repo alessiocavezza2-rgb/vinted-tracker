@@ -1,25 +1,23 @@
-[2026-10-06 07:59:21] === fetch ===
-[2026-10-06 07:59:38]   carhartt_giacche_uomo: 380 annunci su 4 pagine, nuovi 71, campionati 10
-[2026-10-06 07:59:51]   carhartt_felpe_uomo: 380 annunci su 4 pagine, nuovi 32, campionati 10
-[2026-10-06 08:00:06]   carhartt_jeans_uomo: 381 annunci su 4 pagine, nuovi 40, campionati 10
-[2026-10-06 08:00:23]   nike_giacche_uomo: 381 annunci su 4 pagine, nuovi 239, campionati 10
-[2026-10-06 08:00:40]   nike_felpe_uomo: 378 annunci su 4 pagine, nuovi 222, campionati 10
-[2026-10-06 08:00:56]   nike_tshirt_uomo: 381 annunci su 4 pagine, nuovi 236, campionati 10
-[2026-10-06 08:01:14]   adidas_giacche_uomo: 380 annunci su 4 pagine, nuovi 148, campionati 10
-[2026-10-06 08:01:29]   adidas_felpe_uomo: 381 annunci su 4 pagine, nuovi 105, campionati 10
-[2026-10-06 08:01:55]   adidas_tshirt_uomo: 380 annunci su 4 pagine, nuovi 150, campionati 10
-[2026-10-06 08:02:17]   levis_jeans_uomo: 378 annunci su 4 pagine, nuovi 308, campionati 10
-[2026-10-06 08:02:38]   levis_jeans_donna: 381 annunci su 4 pagine, nuovi 313, campionati 10
-[2026-10-06 08:02:52]   levis_giacche_denim_uomo: 377 annunci su 4 pagine, nuovi 44, campionati 10
-[2026-10-06 08:03:15]   tnf_giacche_uomo: 380 annunci su 4 pagine, nuovi 106, campionati 10
-[2026-10-06 08:03:31]   wrangler_jeans_uomo: 380 annunci su 4 pagine, nuovi 61, campionati 10
-[2026-10-06 08:03:41]   wrangler_jeans_donna pagina 1: HTTP 500 |  Articoli | Vinted 
-[2026-10-06 08:03:41]   wrangler_jeans_donna: nessun annuncio (tentativo 1), attendo 90 s e rinnovo la sessione
-[2026-10-06 08:05:30]   wrangler_jeans_donna: 376 annunci su 4 pagine, nuovi 10, campionati 10
-[2026-10-06 08:05:51]   wrangler_giacche_denim_uomo: 377 annunci su 4 pagine, nuovi 0, campionati 0
-[2026-10-06 08:06:13] fornitori: 5/7 box disponibili
-[2026-10-06 08:06:13] === check ===
-[2026-10-06 08:06:13] check: 230 annunci da verificare
-[2026-10-06 09:08:00]   10188385060: errore rete ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-[2026-10-06 09:27:39] check: esiti {'deleted': 28, 'active': 139, 'sold': 55, 'unknown': 7}
-[2026-10-06 09:27:40] dashboard generata: 16 ricerche, 235211 annunci, 9708 seguiti, 1983 venduti, 22 giorni di dati
+[2026-10-06 16:08:38] === fetch ===
+[2026-10-06 16:08:56]   carhartt_giacche_uomo: 381 annunci su 4 pagine, nuovi 346, campionati 10
+[2026-10-06 16:09:12]   carhartt_felpe_uomo: 381 annunci su 4 pagine, nuovi 261, campionati 10
+[2026-10-06 16:09:28]   carhartt_jeans_uomo: 380 annunci su 4 pagine, nuovi 294, campionati 10
+[2026-10-06 16:09:44]   nike_giacche_uomo: 380 annunci su 4 pagine, nuovi 365, campionati 10
+[2026-10-06 16:10:02]   nike_felpe_uomo: 377 annunci su 4 pagine, nuovi 373, campionati 10
+[2026-10-06 16:10:18]   nike_tshirt_uomo: 380 annunci su 4 pagine, nuovi 370, campionati 10
+[2026-10-06 16:10:31]   adidas_giacche_uomo: 379 annunci su 4 pagine, nuovi 358, campionati 10
+[2026-10-06 16:10:50]   adidas_felpe_uomo: 381 annunci su 4 pagine, nuovi 368, campionati 10
+[2026-10-06 16:11:05]   adidas_tshirt_uomo: 382 annunci su 4 pagine, nuovi 370, campionati 10
+[2026-10-06 16:11:20]   levis_jeans_uomo: 380 annunci su 4 pagine, nuovi 360, campionati 10
+[2026-10-06 16:11:37]   levis_jeans_donna: 381 annunci su 4 pagine, nuovi 350, campionati 10
+[2026-10-06 16:11:54]   levis_giacche_denim_uomo: 382 annunci su 4 pagine, nuovi 320, campionati 10
+[2026-10-06 16:12:11]   tnf_giacche_uomo: 382 annunci su 4 pagine, nuovi 355, campionati 10
+[2026-10-06 16:12:27]   wrangler_jeans_uomo: 380 annunci su 4 pagine, nuovi 299, campionati 10
+[2026-10-06 16:12:43]   wrangler_jeans_donna: 382 annunci su 4 pagine, nuovi 81, campionati 10
+[2026-10-06 16:13:00]   wrangler_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 11, campionati 10
+[2026-10-06 16:13:20] fornitori: 5/7 box disponibili
+[2026-10-06 16:13:20] === check ===
+[2026-10-06 16:13:21] check: 230 annunci da verificare
+[2026-10-06 16:18:42]   403 (blocco anti-bot) dopo 15 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
+[2026-10-06 16:18:42] check: esiti {'active': 7, 'deleted': 3, 'sold': 5}
+[2026-10-06 16:18:43] dashboard generata: 16 ricerche, 240302 annunci, 9868 seguiti, 1988 venduti, 22 giorni di dati

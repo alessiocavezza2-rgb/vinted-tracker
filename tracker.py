@@ -483,8 +483,22 @@ def build_url(q):
     return f"{CONFIG['site']}/catalog?order=newest_first&" + "&".join(parts)
 
 
+def prune(con):
+    """Tiene il database leggero: annunci seguiti e venduti restano, il resto e' solo fotografia recente."""
+    before = con.execute("SELECT COUNT(*) FROM items").fetchone()[0]
+    con.execute("DELETE FROM items WHERE sample=0 AND status NOT IN ('sold','closed') "
+                "AND last_seen < strftime('%Y-%m-%dT%H:%M:%S+00:00','now','-4 days')")
+    con.execute("DELETE FROM runs WHERE started < strftime('%Y-%m-%dT%H:%M:%S+00:00','now','-30 days')")
+    con.commit()
+    after = con.execute("SELECT COUNT(*) FROM items").fetchone()[0]
+    if before != after:
+        con.execute("VACUUM")
+        log(f"pulizia database: {before} -> {after} righe")
+
+
 def cmd_build():
     con = db()
+    prune(con)
     fast_days = CONFIG["fast_days"]
     first_run = con.execute("SELECT MIN(started) FROM runs").fetchone()[0]
     stats = []

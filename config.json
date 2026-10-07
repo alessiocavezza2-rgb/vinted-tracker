@@ -5,7 +5,7 @@
     2.0,
     4.5
   ],
-  "sample_per_query": 10,
+  "sample_per_query": 6,
   "check_days": [
     2,
     7
@@ -14,7 +14,7 @@
     15,
     25
   ],
-  "max_item_checks_per_run": 230,
+  "max_item_checks_per_run": 260,
   "fast_days": 7,
   "price_bucket": 10,
   "price_cap": 150,

@@ -390,8 +390,18 @@ def query_stats(con, q, latest_ts, fast_days):
     quick_days = CONFIG["check_days"][0]
 
     def cohort_for(n_days):
-        return [r for r in followed if days_between(r["first_seen"], now_iso) >= n_days + 0.75
-                and ((r["status"] in SOLD_STATUSES and age(r) <= n_days + 0.5) or age(r) >= n_days - 0.5)]
+        """Annunci osservati davvero attorno al traguardo: un controllo arrivato troppo tardi
+        non dice se il capo era gia' venduto al giorno N, quindi viene escluso."""
+        out = []
+        for r in followed:
+            if days_between(r["first_seen"], now_iso) < n_days + 0.75:
+                continue                      # lotto non ancora maturo
+            a = age(r)
+            if r["status"] in SOLD_STATUSES and a <= n_days + 0.5:
+                out.append(r)                 # venduto entro il traguardo
+            elif n_days - 0.5 <= a <= n_days + 2.5:
+                out.append(r)                 # controllato nei tempi: ancora in vendita, o venduto dopo
+        return out
     cohort = cohort_for(fast_days)
     cohort_quick = cohort_for(quick_days)
     fast = [r for r in cohort if r["status"] in SOLD_STATUSES and age(r) <= fast_days + 0.5]

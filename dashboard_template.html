@@ -518,7 +518,7 @@ function showPhotoErrors(list) {
   box.hidden = false;
   box.innerHTML = `<b>Non sono riuscito a usare ${list.length === 1 ? 'questa foto' : 'queste foto'}:</b><ul class="tips">${
     list.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <p class="muted" style="margin:6px 0 0">Se il telefono salva in HEIC: Fotocamera → Impostazioni → <b>Foto ad alta efficienza</b> su OFF, oppure apri la foto in Galleria e condividila/salvala come JPEG.</p>`;
+    <p class="muted" style="margin:6px 0 0">Le foto HEIC vengono convertite automaticamente, ma serve la rete e ci vuole qualche secondo in più. Per andare più veloce: Fotocamera → Impostazioni → <b>Foto ad alta efficienza</b> su OFF, così il telefono salva già in JPEG.</p>`;
 }
 
 // --- preparazione immagini -------------------------------------------------
@@ -532,9 +532,36 @@ function withTimeout(promise, ms, msg) {
   ]);
 }
 
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = () => res();
+    s.onerror = () => rej(new Error('libreria non raggiungibile'));
+    document.head.appendChild(s);
+  });
+}
+
+let heicLib = null;
+async function heicToJpeg(file) {
+  if (!heicLib) {
+    if (typeof heic2any === 'undefined') {
+      await withTimeout(loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'),
+                        25000, 'conversione HEIC non disponibile offline');
+    }
+    heicLib = typeof heic2any !== 'undefined' ? heic2any : null;
+    if (!heicLib) throw new Error('conversione HEIC non disponibile');
+  }
+  const out = await withTimeout(heicLib({ blob: file, toType: 'image/jpeg', quality: 0.9 }), 45000,
+                                'conversione HEIC non riuscita: salva la foto come JPEG dalla Galleria');
+  const blob = Array.isArray(out) ? out[0] : out;
+  if (!blob || !blob.size) throw new Error('conversione HEIC fallita');
+  return new File([blob], (file.name || 'foto').replace(/\.(heic|heif)$/i, '') + '.jpg', { type: 'image/jpeg' });
+}
+
 async function decode(file) {
   if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || '')) {
-    throw new Error('formato HEIC non leggibile dal browser');
+    file = await heicToJpeg(file);     // i browser Android non leggono HEIC: lo converto al volo
   }
   if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name || '')) {
     throw new Error("non è un'immagine");

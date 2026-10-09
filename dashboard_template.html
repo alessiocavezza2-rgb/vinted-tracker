@@ -209,6 +209,7 @@
       <h2 style="margin-top:0">Stima da foto</h2>
       <p class="muted" style="margin:0 0 6px">Scatta o carica fino a 3 foto: capo intero, etichetta (brand/taglia/composizione) e dettagli o difetti.</p>
       <div class="photos" id="photos"></div>
+      <div class="err" id="photoErr" hidden></div>
       <div class="field"><label for="notes">Note (opzionale)</label>
         <textarea id="notes" placeholder="Es. taglia L, piccola macchia sulla manica, comprato in stock a 4 €"></textarea></div>
       <button class="btn block" id="analyze">Analizza e stima il prezzo</button>
@@ -485,26 +486,128 @@ function initEstimate() {
 function renderPhotos() {
   const ph = state.photos;
   let h = ph.map((p, i) => `<div class="ph"><img src="${p.preview}" alt=""><button class="x" data-i="${i}" aria-label="Rimuovi">×</button></div>`).join('');
-  if (ph.length < 3) h += `<label class="ph"><input type="file" accept="image/*" multiple><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>${ph.length ? 'Aggiungi' : 'Scatta o carica'}</span></label>`;
+  if (state.loadingPhotos) h += `<div class="ph"><div class="spinner"></div></div>`;
+  if (ph.length + (state.loadingPhotos || 0) < 3) h += `<label class="ph"><input type="file" accept="image/jpeg,image/png,image/webp,image/*" multiple><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>${ph.length ? 'Aggiungi' : 'Scatta o carica'}</span></label>`;
   $('#photos').innerHTML = h;
-  const inp = $('#photos input'); if (inp) inp.onchange = async e => {
-    for (const f of [...e.target.files].slice(0, 3 - state.photos.length)) {
-      try { state.photos.push(await prepImage(f)); } catch { toast('Immagine non leggibile'); }
+  const inp = $('#photos input');
+  if (inp) inp.onchange = async e => {
+    const files = [...e.target.files].slice(0, 3 - state.photos.length);
+    const problemi = [];
+    state.loadingPhotos = files.length; renderPhotos();
+    for (const f of files) {
+      try {
+        state.photos.push(await prepImage(f));
+      } catch (err) {
+        problemi.push(`${f.name || 'foto'}: ${err.message}`);
+      }
+      state.loadingPhotos--;
     }
+    state.loadingPhotos = 0;
     renderPhotos();
+    showPhotoErrors(problemi);
   };
-  document.querySelectorAll('#photos .x').forEach(b => b.onclick = () => { state.photos.splice(+b.dataset.i, 1); renderPhotos(); });
+  document.querySelectorAll('#photos .x').forEach(b => b.onclick = () => {
+    const p = state.photos.splice(+b.dataset.i, 1)[0];
+    if (p && p.preview && p.preview.startsWith('blob:')) URL.revokeObjectURL(p.preview);
+    renderPhotos();
+  });
 }
-function loadImg(file) { return new Promise((res, rej) => { const u = URL.createObjectURL(file); const im = new Image(); im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = rej; im.src = u; }); }
-function drawTo(im, maxSide, q) {
-  const s = Math.min(1, maxSide / Math.max(im.naturalWidth, im.naturalHeight));
-  const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s);
-  c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-  return c.toDataURL('image/jpeg', q);
+function showPhotoErrors(list) {
+  const box = $('#photoErr');
+  if (!list.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = `<b>Non sono riuscito a usare ${list.length === 1 ? 'questa foto' : 'queste foto'}:</b><ul class="tips">${
+    list.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <p class="muted" style="margin:6px 0 0">Se il telefono salva in HEIC: Fotocamera → Impostazioni → <b>Foto ad alta efficienza</b> su OFF, oppure apri la foto in Galleria e condividila/salvala come JPEG.</p>`;
 }
+
+// --- preparazione immagini -------------------------------------------------
+const MAX_SIDE = 1400, MAX_PX = 24e6;   // limiti prudenti per la memoria dei telefoni
+
+function withTimeout(promise, ms, msg) {
+  let timer;
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise((_, rej) => { timer = setTimeout(() => rej(new Error(msg)), ms); }),
+  ]);
+}
+
+async function decode(file) {
+  if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || '')) {
+    throw new Error('formato HEIC non leggibile dal browser');
+  }
+  if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name || '')) {
+    throw new Error("non è un'immagine");
+  }
+  if (typeof createImageBitmap === 'function') {
+    try {
+      // le foto grandi vengono rimpicciolite gia' in fase di decodifica: senza questo
+      // un file da 50 MP puo' bloccare il telefono invece di dare errore
+      const opts = { imageOrientation: 'from-image' };
+      if (file.size > 6e5) { opts.resizeWidth = 1600; opts.resizeQuality = 'medium'; }
+      return await withTimeout(createImageBitmap(file, opts), 15000, 'decodifica troppo lenta');
+    } catch (e) { /* si riprova col metodo classico */ }
+  }
+  return await withTimeout(new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => { res(im); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('immagine non decodificabile')); };
+    im.src = url;
+  }), 20000, 'foto troppo grande per il browser: riducila o scattala a risoluzione più bassa');
+}
+
+function scaleTo(src, maxSide) {
+  const w0 = src.width || src.naturalWidth, h0 = src.height || src.naturalHeight;
+  if (!w0 || !h0) throw new Error('dimensioni non leggibili');
+  let s = Math.min(1, maxSide / Math.max(w0, h0));
+  if (w0 * h0 * s * s > MAX_PX) s = Math.sqrt(MAX_PX / (w0 * h0));   // foto da 50 MP: niente canvas enormi
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w0 * s));
+  c.height = Math.max(1, Math.round(h0 * s));
+  const ctx = c.getContext('2d', { alpha: false });
+  if (!ctx) throw new Error('canvas non disponibile');
+  ctx.drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+
+function toJpeg(canvas, q) {
+  return new Promise((res, rej) => {
+    if (canvas.toBlob) {
+      canvas.toBlob(b => b ? res(b) : rej(new Error('conversione fallita')), 'image/jpeg', q);
+    } else {
+      try {
+        const d = canvas.toDataURL('image/jpeg', q);
+        if (!d || d.length < 1000) return rej(new Error('conversione fallita'));
+        const bin = atob(d.split(',')[1]); const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        res(new Blob([arr], { type: 'image/jpeg' }));
+      } catch (e) { rej(new Error('conversione fallita')); }
+    }
+  });
+}
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => { const s = String(r.result); const i = s.indexOf(','); res(i < 0 ? '' : s.slice(i + 1)); };
+    r.onerror = () => rej(new Error('lettura fallita'));
+    r.readAsDataURL(blob);
+  });
+}
+
 async function prepImage(file) {
-  const im = await loadImg(file);
-  return { data: drawTo(im, 1400, 0.85).split(',')[1], preview: drawTo(im, 500, 0.75), thumb: drawTo(im, 160, 0.7) };
+  if (file.size > 40e6) throw new Error('file troppo grande (oltre 40 MB)');
+  const src = await decode(file);
+  const big = scaleTo(src, MAX_SIDE);            // una sola riduzione dalla foto originale
+  if (src.close) src.close();                    // la memoria della foto grande viene liberata subito
+  const blob = await toJpeg(big, 0.85);
+  const data = await blobToBase64(blob);
+  if (!data || data.length < 500) throw new Error('immagine vuota dopo la conversione');
+  const small = scaleTo(big, 500);               // anteprima e miniatura partono dalla versione ridotta
+  const previewBlob = await toJpeg(small, 0.75);
+  const thumb = scaleTo(small, 160).toDataURL('image/jpeg', 0.7);
+  return { data, preview: URL.createObjectURL(previewBlob), thumb, bytes: blob.size };
 }
 
 function marketSummary() {

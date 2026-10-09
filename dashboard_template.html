@@ -209,6 +209,7 @@
       <h2 style="margin-top:0">Stima da foto</h2>
       <p class="muted" style="margin:0 0 6px">Scatta o carica fino a 3 foto: capo intero, etichetta (brand/taglia/composizione) e dettagli o difetti.</p>
       <div class="photos" id="photos"></div>
+      <p class="muted" id="photoWait" hidden>Foto in formato HEIC: la sto convertendo, può volerci anche un minuto. Per evitarlo, imposta la fotocamera su JPEG (vedi sotto).</p>
       <div class="err" id="photoErr" hidden></div>
       <div class="field"><label for="notes">Note (opzionale)</label>
         <textarea id="notes" placeholder="Es. taglia L, piccola macchia sulla manica, comprato in stock a 4 €"></textarea></div>
@@ -487,6 +488,7 @@ function renderPhotos() {
   const ph = state.photos;
   let h = ph.map((p, i) => `<div class="ph"><img src="${p.preview}" alt=""><button class="x" data-i="${i}" aria-label="Rimuovi">×</button></div>`).join('');
   if (state.loadingPhotos) h += `<div class="ph"><div class="spinner"></div></div>`;
+  $('#photoWait').hidden = !state.heicWait;
   if (ph.length + (state.loadingPhotos || 0) < 3) h += `<label class="ph"><input type="file" accept="image/jpeg,image/png,image/webp,image/*" multiple><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>${ph.length ? 'Aggiungi' : 'Scatta o carica'}</span></label>`;
   $('#photos').innerHTML = h;
   const inp = $('#photos input');
@@ -496,13 +498,16 @@ function renderPhotos() {
     state.loadingPhotos = files.length; renderPhotos();
     for (const f of files) {
       try {
+        state.heicWait = /heic|heif/i.test(f.type) || /\.(heic|heif)$/i.test(f.name || '');
+        if (state.heicWait) renderPhotos();
         state.photos.push(await prepImage(f));
+        state.heicWait = false;
       } catch (err) {
         problemi.push(`${f.name || 'foto'}: ${err.message}`);
       }
       state.loadingPhotos--;
     }
-    state.loadingPhotos = 0;
+    state.loadingPhotos = 0; state.heicWait = false;
     renderPhotos();
     showPhotoErrors(problemi);
   };
@@ -518,7 +523,7 @@ function showPhotoErrors(list) {
   box.hidden = false;
   box.innerHTML = `<b>Non sono riuscito a usare ${list.length === 1 ? 'questa foto' : 'queste foto'}:</b><ul class="tips">${
     list.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <p class="muted" style="margin:6px 0 0">Le foto HEIC vengono convertite automaticamente, ma serve la rete e ci vuole qualche secondo in più. Per andare più veloce: Fotocamera → Impostazioni → <b>Foto ad alta efficienza</b> su OFF, così il telefono salva già in JPEG.</p>`;
+    <p class="muted" style="margin:6px 0 0"><b>Soluzione definitiva (15 secondi):</b> apri la Fotocamera → ingranaggio <b>Impostazioni</b> → <b>Impostazioni avanzate</b> → disattiva <b>Foto ad alta efficienza</b> (HEIF). Da quel momento le foto sono JPEG e si caricano subito. Per le foto già scattate: Galleria → apri la foto → <b>⋮</b> → <b>Modifica</b> → salva, oppure condividила con te stesso su WhatsApp e scarica il file convertito.</p>`;
 }
 
 // --- preparazione immagini -------------------------------------------------
@@ -543,25 +548,40 @@ function loadScript(src) {
 }
 
 let heicLib = null;
-async function heicToJpeg(file) {
-  if (!heicLib) {
-    if (typeof heic2any === 'undefined') {
-      await withTimeout(loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'),
-                        25000, 'conversione HEIC non disponibile offline');
-    }
-    heicLib = typeof heic2any !== 'undefined' ? heic2any : null;
-    if (!heicLib) throw new Error('conversione HEIC non disponibile');
+async function heicDecoder() {
+  if (heicLib) return heicLib;
+  if (typeof libheif === 'undefined') {
+    await withTimeout(loadScript('https://cdn.jsdelivr.net/npm/libheif-js@1.18.2/libheif-wasm/libheif-bundle.js'),
+                      25000, 'conversione HEIC non disponibile (serve la rete)');
   }
-  const out = await withTimeout(heicLib({ blob: file, toType: 'image/jpeg', quality: 0.9 }), 45000,
-                                'conversione HEIC non riuscita: salva la foto come JPEG dalla Galleria');
-  const blob = Array.isArray(out) ? out[0] : out;
-  if (!blob || !blob.size) throw new Error('conversione HEIC fallita');
-  return new File([blob], (file.name || 'foto').replace(/\.(heic|heif)$/i, '') + '.jpg', { type: 'image/jpeg' });
+  if (typeof libheif === 'undefined') throw new Error('conversione HEIC non disponibile');
+  heicLib = typeof libheif === 'function' ? await libheif() : libheif;
+  return heicLib;
+}
+
+async function heicToCanvas(file) {
+  const lib = await heicDecoder();
+  const imgs = new lib.HeifDecoder().decode(new Uint8Array(await file.arrayBuffer()));
+  if (!imgs || !imgs.length) throw new Error('HEIC non leggibile: salva la foto come JPEG');
+  const im = imgs[0], w = im.get_width(), h = im.get_height();
+  if (!w || !h) throw new Error('HEIC senza dimensioni valide');
+  if (w * h > 2.2e7) {
+    throw new Error(`foto HEIC da ${Math.round(w * h / 1e6)} MP: troppo pesante da convertire nel browser, imposta la fotocamera su JPEG`);
+  }
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  const id = ctx.createImageData(w, h);
+  await withTimeout(new Promise((res, rej) => im.display(id, r => r ? res() : rej(new Error('decodifica HEIC fallita')))),
+                    90000, 'conversione HEIC troppo lenta: imposta la fotocamera su JPEG');
+  ctx.putImageData(id, 0, 0);
+  if (im.free) im.free();
+  return c;
 }
 
 async function decode(file) {
   if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || '')) {
-    file = await heicToJpeg(file);     // i browser Android non leggono HEIC: lo converto al volo
+    return await heicToCanvas(file);   // i browser Android non leggono l'HEIC: lo decodifico a parte
   }
   if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name || '')) {
     throw new Error("non è un'immagine");

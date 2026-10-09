@@ -565,18 +565,21 @@ async function heicToCanvas(file) {
   if (!imgs || !imgs.length) throw new Error('HEIC non leggibile: salva la foto come JPEG');
   const im = imgs[0], w = im.get_width(), h = im.get_height();
   if (!w || !h) throw new Error('HEIC senza dimensioni valide');
-  if (w * h > 2.2e7) {
-    throw new Error(`foto HEIC da ${Math.round(w * h / 1e6)} MP: troppo pesante da convertire nel browser, imposta la fotocamera su JPEG`);
+  if (w * h > 3.6e7) {
+    throw new Error(`foto HEIC da ${Math.round(w * h / 1e6)} MP: troppo pesante per il browser, imposta la fotocamera su JPEG`);
   }
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const ctx = c.getContext('2d');
+  const big = document.createElement('canvas');
+  big.width = w; big.height = h;
+  const ctx = big.getContext('2d');
   const id = ctx.createImageData(w, h);
   await withTimeout(new Promise((res, rej) => im.display(id, r => r ? res() : rej(new Error('decodifica HEIC fallita')))),
-                    90000, 'conversione HEIC troppo lenta: imposta la fotocamera su JPEG');
+                    120000, 'conversione HEIC troppo lenta: imposta la fotocamera su JPEG');
   ctx.putImageData(id, 0, 0);
   if (im.free) im.free();
-  return c;
+  // si riduce subito e si libera la tela grande: su un 24 MP sono oltre 150 MB di memoria
+  const small = scaleTo(big, MAX_SIDE);
+  big.width = big.height = 0;
+  return small;
 }
 
 async function decode(file) {

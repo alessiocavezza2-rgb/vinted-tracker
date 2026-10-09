@@ -1,23 +1,24 @@
-[2026-10-09 16:27:05] === fetch ===
-[2026-10-09 16:27:20]   carhartt_giacche_uomo: 380 annunci su 4 pagine, nuovi 355, campionati 6
-[2026-10-09 16:27:38]   carhartt_felpe_uomo: 377 annunci su 4 pagine, nuovi 255, campionati 6
-[2026-10-09 16:27:54]   carhartt_jeans_uomo: 380 annunci su 4 pagine, nuovi 265, campionati 6
-[2026-10-09 16:28:11]   nike_giacche_uomo: 377 annunci su 4 pagine, nuovi 358, campionati 6
-[2026-10-09 16:28:26]   nike_felpe_uomo: 380 annunci su 4 pagine, nuovi 372, campionati 6
-[2026-10-09 16:28:43]   nike_tshirt_uomo: 375 annunci su 4 pagine, nuovi 365, campionati 6
-[2026-10-09 16:29:01]   adidas_giacche_uomo: 378 annunci su 4 pagine, nuovi 358, campionati 6
-[2026-10-09 16:29:19]   adidas_felpe_uomo: 379 annunci su 4 pagine, nuovi 367, campionati 6
-[2026-10-09 16:29:35]   adidas_tshirt_uomo: 381 annunci su 4 pagine, nuovi 374, campionati 6
-[2026-10-09 16:29:50]   levis_jeans_uomo: 380 annunci su 4 pagine, nuovi 346, campionati 6
-[2026-10-09 16:30:06]   levis_jeans_donna: 379 annunci su 4 pagine, nuovi 351, campionati 6
-[2026-10-09 16:30:22]   levis_giacche_denim_uomo: 381 annunci su 4 pagine, nuovi 350, campionati 6
-[2026-10-09 16:30:38]   tnf_giacche_uomo: 381 annunci su 4 pagine, nuovi 361, campionati 6
-[2026-10-09 16:30:55]   wrangler_jeans_uomo: 379 annunci su 4 pagine, nuovi 314, campionati 6
-[2026-10-09 16:31:13]   wrangler_jeans_donna: 379 annunci su 4 pagine, nuovi 99, campionati 6
-[2026-10-09 16:31:27]   wrangler_giacche_denim_uomo: 378 annunci su 4 pagine, nuovi 16, campionati 6
-[2026-10-09 16:31:51] fornitori: 4/7 box disponibili
-[2026-10-09 16:31:51] === check ===
-[2026-10-09 16:31:51] check: 260 annunci da verificare
-[2026-10-09 16:36:46]   403 (blocco anti-bot) dopo 15 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
-[2026-10-09 16:36:46] check: esiti {'sold': 6, 'deleted': 2, 'active': 7}
-[2026-10-09 16:36:47] dashboard generata: 16 ricerche, 60365 annunci, 8565 seguiti, 2129 venduti, 25 giorni di dati
+[2026-10-09 21:48:00] === fetch ===
+[2026-10-09 21:48:18]   carhartt_giacche_uomo: 380 annunci su 4 pagine, nuovi 258, campionati 6
+[2026-10-09 21:48:37]   carhartt_felpe_uomo: 380 annunci su 4 pagine, nuovi 141, campionati 6
+[2026-10-09 21:48:51]   carhartt_jeans_uomo: 383 annunci su 4 pagine, nuovi 114, campionati 6
+[2026-10-09 21:49:09]   nike_giacche_uomo: 378 annunci su 4 pagine, nuovi 362, campionati 6
+[2026-10-09 21:49:23]   nike_felpe_uomo: 380 annunci su 4 pagine, nuovi 363, campionati 6
+[2026-10-09 21:49:39]   nike_tshirt_uomo: 377 annunci su 4 pagine, nuovi 367, campionati 6
+[2026-10-09 21:49:56]   adidas_giacche_uomo: 375 annunci su 4 pagine, nuovi 340, campionati 6
+[2026-10-09 21:50:11]   adidas_felpe_uomo: 379 annunci su 4 pagine, nuovi 342, campionati 6
+[2026-10-09 21:50:28]   adidas_tshirt_uomo: 381 annunci su 4 pagine, nuovi 346, campionati 6
+[2026-10-09 21:50:45]   levis_jeans_uomo: 382 annunci su 4 pagine, nuovi 367, campionati 6
+[2026-10-09 21:51:02]   levis_jeans_donna: 380 annunci su 4 pagine, nuovi 368, campionati 6
+[2026-10-09 21:51:18]   levis_giacche_denim_uomo: 380 annunci su 4 pagine, nuovi 141, campionati 6
+[2026-10-09 21:51:31]   tnf_giacche_uomo: 379 annunci su 4 pagine, nuovi 328, campionati 6
+[2026-10-09 21:51:48]   wrangler_jeans_uomo: 381 annunci su 4 pagine, nuovi 163, campionati 6
+[2026-10-09 21:52:03]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 32, campionati 6
+[2026-10-09 21:52:18]   wrangler_giacche_denim_uomo: 376 annunci su 4 pagine, nuovi 12, campionati 6
+[2026-10-09 21:52:43] fornitori: 4/7 box disponibili
+[2026-10-09 21:52:43] === check ===
+[2026-10-09 21:52:43] check: 260 annunci da verificare
+[2026-10-09 21:54:31]   403 (blocco anti-bot) dopo 5 controlli: interrompo i controlli per oggi |  Vinted Please wait Enable JavaScript and cookies to continue &copy; Vinted.com 
+[2026-10-09 21:54:31] check: esiti {'active': 4, 'sold': 1}
+[2026-10-09 21:54:31] pulizia database: 64689 -> 61181 righe
+[2026-10-09 21:54:31] dashboard generata: 16 ricerche, 61181 annunci, 8661 seguiti, 2130 venduti, 25 giorni di dati

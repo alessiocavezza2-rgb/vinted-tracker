@@ -223,7 +223,8 @@
   <section class="view" id="view-history">
     <div class="card" id="queue"></div>
     <div class="card">
-      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Capi analizzati</h2><button class="btn ghost sm" id="clearHist">Svuota</button></div>
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Capi analizzati</h2>
+        <span class="row" style="gap:6px"><button class="btn ghost sm" id="exportHist">Copia riepilogo</button><button class="btn ghost sm" id="clearHist">Svuota</button></span></div>
       <div id="history"></div>
     </div>
     <div id="history-out"></div>
@@ -832,6 +833,35 @@ function renderHistory() {
   }).join('') : '<p class="empty">Nessun capo analizzato ancora.</p>';
   document.querySelectorAll('.hist').forEach(el => el.onclick = () => { const h = LS.get('history', [])[+el.dataset.i]; const o = $('#history-out'); o.innerHTML = renderResult(h); bindCopy(o); o.scrollIntoView({ behavior: 'smooth' }); });
 }
+$('#exportHist').onclick = async () => {
+  const hist = LS.get('history', []);
+  if (!hist.length) { toast('Nessun capo analizzato'); return; }
+  const righe = hist.map((h, i) => {
+    const r = h.res || {}, id = r.identificazione || {}, p = r.prezzo || {}, pr = r.priorita || {},
+          v = r.vestibilita || {}, m = r.mercato || {}, an = r.annuncio || {};
+    return [`${i + 1}. ${id.brand || '?'} — ${id.tipo || ''}${id.modello ? ' ' + id.modello : ''}`,
+      `   taglia ${id.taglia || '?'} (veste ${v.taglia_reale || '?'}, ${v.veste || '?'}) · ${id.condizione || '?'} · ${id.colore || ''}`,
+      (id.difetti || []).length ? `   difetti: ${id.difetti.join('; ')}` : null,
+      `   prezzo: annuncio ${p.annuncio} €, minimo ${p.minimo} €, vendita rapida ${p.vendita_rapida} €`,
+      `   vendibilità stimata ${pr.vendibilita != null ? pr.vendibilita + '%' : '?'} in 7 gg · ${pr.quando || '?'}${pr.motivo ? ' (' + pr.motivo + ')' : ''}`,
+      `   mercato: ${m.key || 'fuori categorie tracciate'} · ${m.fonte || ''}`,
+      `   titolo: ${an.titolo || ''}`].filter(Boolean).join('
+');
+  }).join('
+
+');
+  const testo = `RIEPILOGO ${hist.length} CAPI ANALIZZATI — ${new Date().toLocaleDateString('it-IT')}
+`
+    + `(dati di mercato del ${new Date(DATA.generated).toLocaleDateString('it-IT')})
+
+${righe}`;
+  try { await navigator.clipboard.writeText(testo); toast('Riepilogo copiato: incollalo in chat'); }
+  catch (e) {
+    const o = $('#history-out');
+    o.innerHTML = `<div class="card"><h3 style="margin-top:0">Riepilogo da copiare a mano</h3><div class="copybox" style="padding-right:12px">${esc(testo)}</div></div>`;
+    o.scrollIntoView({ behavior: 'smooth' });
+  }
+};
 $('#clearHist').onclick = () => { if (confirm('Cancellare lo storico?')) { LS.del('history'); $('#history-out').innerHTML = ''; renderHistory(); } };
 
 // ------------------------------------------------------------ boot

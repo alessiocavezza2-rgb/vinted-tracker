@@ -380,32 +380,45 @@ def query_stats(con, q, latest_ts, fast_days):
     key = q["key"]
     rows = con.execute("SELECT * FROM items WHERE query_key=?", (key,)).fetchall()
     active = [r for r in rows if r["last_seen"] == latest_ts and r["status"] in ("active", "reserved")]
-    followed = [r for r in rows if r["sample"] and r["status_at"] and r["status"] not in ("deleted", "hidden")]
-    age = lambda r: days_between(r["first_seen"], r["status_at"])
-    sold = [r for r in followed if r["status"] in SOLD_STATUSES]
-    fast_any = [r for r in sold if age(r) <= fast_days + 0.5]     # per prezzi/istogrammi: anche lotti non maturi
-    # coorte: solo lotti "maturi" (pubblicati da almeno N giorni + margine, cosi' il controllo a N giorni
-    # e' gia' avvenuto per tutti): venduti entro N giorni, oppure osservati a >= N giorni (venduti dopo o ancora in vendita)
+    # tutti gli annunci messi sotto osservazione, anche quelli non ancora controllati
+    seguiti = [r for r in rows if r["sample"] or r["status"] in SOLD_STATUSES or r["status"] == "deleted"]
+    vivi = [r for r in seguiti if r["status"] not in ("deleted", "hidden")]
     now_iso = iso(now())
     quick_days = CONFIG["check_days"][0]
 
+    def eta(r):
+        """Giorni trascorsi fra la pubblicazione e l'ultima osservazione (None se mai osservato)."""
+        return days_between(r["first_seen"], r["status_at"]) if r["status_at"] else None
+
     def cohort_for(n_days):
-        """Annunci osservati davvero attorno al traguardo: un controllo arrivato troppo tardi
-        non dice se il capo era gia' venduto al giorno N, quindi viene escluso."""
-        out = []
-        for r in followed:
+        """Solo i lotti davvero verificati al traguardo: se il controllo di un lotto non e'
+        stato fatto, restano solo i venduti e la percentuale risulterebbe gonfiata."""
+        lotti = {}
+        for r in vivi:
             if days_between(r["first_seen"], now_iso) < n_days + 0.75:
                 continue                      # lotto non ancora maturo
-            a = age(r)
-            if r["status"] in SOLD_STATUSES and a <= n_days + 0.5:
-                out.append(r)                 # venduto entro il traguardo
-            elif n_days - 0.5 <= a <= n_days + 2.5:
-                out.append(r)                 # controllato nei tempi: ancora in vendita, o venduto dopo
+            lotti.setdefault(r["first_seen"][:10], []).append(r)
+        out = []
+        for _, membri in lotti.items():
+            noti = []
+            for r in membri:
+                a = eta(r)
+                if a is None:
+                    continue                  # mai controllato: esito ignoto
+                if r["status"] in SOLD_STATUSES and a <= n_days + 0.5:
+                    noti.append((r, True))
+                elif a >= n_days - 0.5:
+                    noti.append((r, False))   # osservato al traguardo e ancora in vendita
+            if len(noti) >= 0.7 * len(membri):   # lotto coperto a sufficienza
+                out.extend(noti)
         return out
-    cohort = cohort_for(fast_days)
-    cohort_quick = cohort_for(quick_days)
-    fast = [r for r in cohort if r["status"] in SOLD_STATUSES and age(r) <= fast_days + 0.5]
-    quick = [r for r in cohort_quick if r["status"] in SOLD_STATUSES and age(r) <= quick_days + 0.5]
+
+    coorte = cohort_for(fast_days)
+    coorte_quick = cohort_for(quick_days)
+    fast = [r for r, v in coorte if v]
+    quick = [r for r, v in coorte_quick if v]
+    sold = [r for r in vivi if r["status"] in SOLD_STATUSES and eta(r) is not None]
+    fast_any = [r for r in sold if eta(r) <= fast_days + 0.5]     # per prezzi e istogrammi
     sp = lambda r: r["sold_price"] if r["sold_price"] else r["price"]
 
     def by_group(field):
@@ -426,13 +439,13 @@ def query_stats(con, q, latest_ts, fast_days):
         "active": quantiles([r["price"] for r in active]),
         "n_fast": len(fast_any),
         "fast": quantiles([sp(r) for r in fast_any]),
-        "pct_fast": round(100 * len(fast) / len(cohort)) if cohort else None,
-        "ci_fast": wilson(len(fast), len(cohort)),
-        "n_cohort": len(cohort),
-        "pct_quick": round(100 * len(quick) / len(cohort_quick)) if cohort_quick else None,
-        "ci_quick": wilson(len(quick), len(cohort_quick)),
-        "n_cohort_quick": len(cohort_quick),
-        "quick_days": CONFIG["check_days"][0],
+        "pct_fast": round(100 * len(fast) / len(coorte)) if coorte else None,
+        "ci_fast": wilson(len(fast), len(coorte)),
+        "n_cohort": len(coorte),
+        "pct_quick": round(100 * len(quick) / len(coorte_quick)) if coorte_quick else None,
+        "ci_quick": wilson(len(quick), len(coorte_quick)),
+        "n_cohort_quick": len(coorte_quick),
+        "quick_days": quick_days,
         "n_followed": len([r for r in rows if r["sample"]]),
         "pct_discounted_fast": round(100 * len(discounted) / len(fast_any)) if fast_any else None,
         "hist_active": histogram([r["price"] for r in active]),
@@ -440,7 +453,7 @@ def query_stats(con, q, latest_ts, fast_days):
         "by_condition": by_group("condition"),
         "by_size": by_group("size")[:8],
         "recent_fast": [{"title": r["title"], "price": sp(r), "size": r["size"], "condition": r["condition"],
-                         "days": round(age(r), 1), "id": r["id"]}
+                         "days": round(eta(r), 1), "id": r["id"]}
                         for r in sorted(fast_any, key=lambda r: r["status_at"], reverse=True)[:12]],
     }
 
@@ -449,14 +462,15 @@ def advice(stats):
     """Classifica le ricerche: valore atteso per annuncio = probabilita' di vendita x prezzo di vendita."""
     out = []
     for s in stats:
-        # uso l'orizzonte a 7 giorni solo quando ha abbastanza casi, altrimenti quello a 2 giorni
         use_fast = s["pct_fast"] is not None and s["n_cohort"] >= CONFIG["min_cohort"]
         pct = s["pct_fast"] if use_fast else s["pct_quick"]
         n = s["n_cohort"] if use_fast else s["n_cohort_quick"]
         horizon = CONFIG["fast_days"] if use_fast else CONFIG["check_days"][0]
         price = s["fast"]["med"] if s["fast"] else None
         if pct is None or price is None or n < CONFIG["min_cohort"]:
-            out.append({"key": s["key"], "score": None, "verdict": "dati insufficienti", "note": f"solo {n} casi maturi (ne servono {CONFIG['min_cohort']})", "pct": pct, "n": n, "horizon": horizon, "price": price})
+            out.append({"key": s["key"], "score": None, "verdict": "dati insufficienti",
+                        "note": f"solo {n} casi maturi (ne servono {CONFIG['min_cohort']})",
+                        "pct": pct, "n": n, "horizon": horizon, "price": price})
             continue
         score = round(pct / 100 * price, 1)
         ask = s["active"]["med"] if s["active"] else None
@@ -468,9 +482,12 @@ def advice(stats):
         else: verdict = "evita"
         if price < 10: notes.append("prezzo troppo basso per ripagare il lavoro")
         if gap is not None and gap >= 25: notes.append(f"si vende {gap}% sotto il prezzo richiesto: prezza basso subito")
-        if s["pct_discounted_fast"] is not None and s["pct_discounted_fast"] >= 25: notes.append(f"{s['pct_discounted_fast']}% dei venduti ha dovuto ribassare")
-        if s["fast"] and s["fast"]["p75"] >= 1.6 * s["fast"]["med"]: notes.append("prezzi molto dispersi: contano modello e condizioni")
-        out.append({"key": s["key"], "score": score, "verdict": verdict, "note": "; ".join(notes), "pct": pct, "n": n, "horizon": horizon, "price": price})
+        if s["pct_discounted_fast"] is not None and s["pct_discounted_fast"] >= 25:
+            notes.append(f"{s['pct_discounted_fast']}% dei venduti ha dovuto ribassare")
+        if s["fast"] and s["fast"]["p75"] >= 1.6 * s["fast"]["med"]:
+            notes.append("prezzi molto dispersi: contano modello e condizioni")
+        out.append({"key": s["key"], "score": score, "verdict": verdict, "note": "; ".join(notes),
+                    "pct": pct, "n": n, "horizon": horizon, "price": price})
     out.sort(key=lambda a: -(a["score"] or -1))
     return out
 

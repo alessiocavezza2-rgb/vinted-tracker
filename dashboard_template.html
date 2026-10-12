@@ -845,16 +845,10 @@ $('#exportHist').onclick = async () => {
       `   prezzo: annuncio ${p.annuncio} €, minimo ${p.minimo} €, vendita rapida ${p.vendita_rapida} €`,
       `   vendibilità stimata ${pr.vendibilita != null ? pr.vendibilita + '%' : '?'} in 7 gg · ${pr.quando || '?'}${pr.motivo ? ' (' + pr.motivo + ')' : ''}`,
       `   mercato: ${m.key || 'fuori categorie tracciate'} · ${m.fonte || ''}`,
-      `   titolo: ${an.titolo || ''}`].filter(Boolean).join('
-');
-  }).join('
-
-');
-  const testo = `RIEPILOGO ${hist.length} CAPI ANALIZZATI — ${new Date().toLocaleDateString('it-IT')}
-`
-    + `(dati di mercato del ${new Date(DATA.generated).toLocaleDateString('it-IT')})
-
-${righe}`;
+      `   titolo: ${an.titolo || ''}`].filter(Boolean).join('\n');
+  }).join('\n\n');
+  const testo = `RIEPILOGO ${hist.length} CAPI ANALIZZATI — ${new Date().toLocaleDateString('it-IT')}\n`
+    + `(dati di mercato del ${new Date(DATA.generated).toLocaleDateString('it-IT')})\n\n${righe}`;
   try { await navigator.clipboard.writeText(testo); toast('Riepilogo copiato: incollalo in chat'); }
   catch (e) {
     const o = $('#history-out');

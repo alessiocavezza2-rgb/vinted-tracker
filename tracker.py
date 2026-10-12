@@ -513,6 +513,26 @@ def prune(con):
         log(f"pulizia database: {before} -> {after} righe")
 
 
+def controlla_script(html):
+    """Intercetta l'errore che ha gia' mandato in bianco la pagina due volte: una stringa
+    JS aperta e mai chiusa perche' al posto di \n e' finito un a capo vero."""
+    inizio = html.find("<script>")
+    if inizio < 0:
+        raise SystemExit("ERRORE: la pagina generata non contiene lo script")
+    corpo = html[inizio:html.rfind("</script>")]
+    sospette = []
+    for n, riga in enumerate(corpo.split(chr(10)), 1):
+        spoglia = riga.rstrip()
+        # una riga che finisce con una virgoletta appena aperta e' quasi sempre una stringa spezzata
+        if re.search(r"""[(\[,=+:]\s*['"]$""", spoglia):
+            sospette.append((n, spoglia[-60:]))
+    if sospette:
+        dettaglio = "; ".join(f"riga {n}: ...{testo}" for n, testo in sospette[:3])
+        raise SystemExit(f"ERRORE: stringa spezzata nello script ({dettaglio}). "
+                         f"Pagina non generata per non pubblicarne una senza funzioni.")
+    return True
+
+
 def cmd_build():
     con = db()
     prune(con)

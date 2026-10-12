@@ -221,6 +221,7 @@
 
   <!-- STORICO -->
   <section class="view" id="view-history">
+    <div class="card" id="mine"></div>
     <div class="card" id="queue"></div>
     <div class="card">
       <div class="row" style="justify-content:space-between"><h2 style="margin:0">Capi analizzati</h2>
@@ -804,6 +805,45 @@ function bindCopy(root) {
 }
 
 // ------------------------------------------------------------ history
+function renderMine() {
+  const mine = DATA.mine || [], bench = DATA.fav_benchmark || {};
+  const box = $('#mine');
+  if (!mine.length) {
+    box.innerHTML = `<h2 style="margin:0 0 4px">I miei annunci</h2>
+      <p class="empty">Nessun annuncio trovato sul profilo. Compaiono qui entro poche ore dalla pubblicazione.</p>`;
+    return;
+  }
+  const attesa = bench.venduti != null && bench.n_venduti >= 15 ? bench.venduti : null;
+  const riga = m => {
+    const storia = m.history || [];
+    const primo = storia.length ? storia[0].fav : null;
+    const cresce = primo != null && m.favourites > primo;
+    let azione = '', classe = 'ok';
+    if (m.sold) { azione = `venduto a ${eur(m.sold_price || m.price)}`; classe = 'good'; }
+    else if (m.days < 2) { azione = 'appena pubblicato, lascia lavorare'; classe = 'na'; }
+    else if (attesa != null && m.favourites < attesa * 0.5) { azione = `pochi preferiti (la mediana di chi vende ne ha ${attesa}): valuta -10%`; classe = 'meh'; }
+    else if (m.days >= 7) { azione = 'fermo da una settimana: scendi al prezzo di vendita rapida'; classe = 'meh'; }
+    else if (attesa != null) { azione = `in linea con chi vende (${attesa} preferiti a 2 giorni)`; classe = 'ok'; }
+    else { azione = 'interesse in osservazione'; classe = 'na'; }
+    const ribasso = m.first_price && m.price < m.first_price
+      ? ` <span class="muted" style="font-size:12px">(da ${eur(m.first_price)})</span>` : '';
+    return `<div class="adv ${m.sold ? 'v-good' : ''}">
+      <div class="rank">${m.sold ? '€' : Math.round(m.days)}</div>
+      <div class="body">
+        <div class="t"><b>${esc(m.brand || '?')}</b> <span class="muted" style="font-size:12px">${esc(m.size || '')} · ${esc(m.condition || '')}</span>
+          <span class="verdict ${classe}">${esc(azione)}</span></div>
+        <div class="m"><b>${eur(m.price)}</b>${ribasso} · <b>${m.favourites}</b> preferit${m.favourites === 1 ? 'o' : 'i'}${cresce ? ' ↑' : ''} · online da ${m.days < 1 ? 'meno di un giorno' : Math.round(m.days) + ' giorni'}</div>
+        <div class="m"><a href="${m.url}" target="_blank" rel="noopener">${esc((m.title || '').slice(0, 60))} ↗</a></div>
+      </div></div>`;
+  };
+  const attivi = mine.filter(m => !m.sold), venduti = mine.filter(m => m.sold);
+  box.innerHTML = `<h2 style="margin:0 0 4px">I miei annunci</h2>
+    <p class="muted" style="margin:0 0 8px">${attivi.length} online, ${venduti.length} vendut${venduti.length === 1 ? 'o' : 'i'}.
+      ${attesa != null ? `Riferimento: chi vende entro ${DATA.fast_days} giorni ha <b>${attesa} preferiti</b> dopo 2 giorni (su ${bench.n_venduti} casi).`
+        : 'Il riferimento sui preferiti si forma in circa una settimana di raccolta.'}</p>
+    ${attivi.map(riga).join('')}
+    ${venduti.length ? `<h3>Venduti</h3>${venduti.map(riga).join('')}` : ''}`;
+}
 function renderQueue() {
   const hist = LS.get('history', []).map((h, i) => ({ h, i, s: priorityScore(h) })).filter(x => x.s != null);
   if (!hist.length) { $('#queue').innerHTML = `<h2 style="margin:0 0 4px">Coda di pubblicazione</h2><p class="empty">Analizza qualche capo: qui compare l'ordine in cui pubblicarli.</p>`; return; }
@@ -825,6 +865,7 @@ function renderQueue() {
   });
 }
 function renderHistory() {
+  renderMine();
   renderQueue();
   const hist = LS.get('history', []);
   $('#history').innerHTML = hist.length ? hist.map((h, i) => {

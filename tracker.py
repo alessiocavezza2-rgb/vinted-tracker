@@ -44,6 +44,7 @@ TITLE_RE = re.compile(
 CAN_BUY_RE = re.compile(r'\\"can_buy\\":(true|false)')
 PRICE_RE = re.compile(r'\\"price\\":\{\\"amount\\":\\"([\d.]+)\\",\\"currency_code\\":\\"([A-Z]{3})\\"')
 STATUS_TITLE_RE = re.compile(r'\\"title\\":\\"([^"\\]*)\\"')
+FAV_RE = re.compile(r'\\"favourite_count\\":(\d+)')
 
 SOLD_STATUSES = ("sold", "closed")
 
@@ -107,12 +108,28 @@ def db():
             PRIMARY KEY (id, query_key)
         );
         CREATE INDEX IF NOT EXISTS items_check ON items(sample, next_check);
+        CREATE TABLE IF NOT EXISTS mine (
+            id INTEGER PRIMARY KEY,
+            title TEXT, brand TEXT, size TEXT, condition TEXT,
+            price REAL, first_price REAL, favourites INTEGER DEFAULT 0,
+            sold INTEGER DEFAULT 0, sold_at TEXT, sold_price REAL,
+            first_seen TEXT, last_seen TEXT
+        );
+        CREATE TABLE IF NOT EXISTS mine_history (
+            id INTEGER, ts TEXT, price REAL, favourites INTEGER,
+            PRIMARY KEY (id, ts)
+        );
         CREATE TABLE IF NOT EXISTS runs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             query_key TEXT, started TEXT, pages INTEGER, n_items INTEGER,
             max_id INTEGER, n_new INTEGER, n_sampled INTEGER
         );
     """)
+    for col in ("favourites INTEGER", "fav_first INTEGER"):
+        try:
+            con.execute(f"ALTER TABLE items ADD COLUMN {col}")
+        except sqlite3.OperationalError:
+            pass          # colonna gia' presente
     return con
 
 
@@ -228,30 +245,32 @@ def upsert(con, key, ts, found, prev_max):
 # ---------------------------------------------------------------- check
 
 def parse_item_page(text):
-    """Ritorna (status, price_eur|None)."""
+    """Ritorna (status, price_eur|None, favourites|None)."""
     price = None
     m = PRICE_RE.search(text)
     if m and m.group(2) == "EUR":
         price = float(m.group(1))
+    mf = FAV_RE.search(text)
+    fav = int(mf.group(1)) if mf else None
     i = text.find('buyer_item_status')
     if i >= 0:
         seg = text[max(0, i - 400):i]
         titles = STATUS_TITLE_RE.findall(seg)
         title = titles[-1].lower() if titles else ""
         if "vendut" in title:
-            return "sold", price
+            return "sold", price, fav
         if "prenotat" in title or "riservat" in title:
-            return "reserved", price
+            return "reserved", price, fav
         if "nascost" in title:
-            return "hidden", price
-        return "closed", price
+            return "hidden", price, fav
+        return "closed", price, fav
     cb = CAN_BUY_RE.search(text)
     if cb:
         if cb.group(1) == "true":
             reserved = re.search(r'\\"is_reserved\\":true', text)
-            return ("reserved" if reserved else "active"), price
-        return "closed", price
-    return "unknown", price
+            return ("reserved" if reserved else "active"), price, fav
+        return "closed", price, fav
+    return "unknown", price, fav
 
 
 def cmd_check():
@@ -277,7 +296,7 @@ def cmd_check():
                     log("  ancora 429: interrompo i controlli per oggi")
                     break
             if r.status_code == 404:
-                status, price = "deleted", None
+                status, price, fav = "deleted", None, None
             elif r.status_code == 403:
                 log(f"  403 (blocco anti-bot) dopo {n - 1} controlli: interrompo i controlli per oggi | {snippet(r.text)[:120]}")
                 break
@@ -286,7 +305,7 @@ def cmd_check():
                 sleep(CONFIG["item_delay_seconds"])
                 continue
             else:
-                status, price = parse_item_page(r.text)
+                status, price, fav = parse_item_page(r.text)
         except requests.RequestException as e:
             log(f"  {row['id']}: errore rete {e}")
             continue
@@ -298,15 +317,81 @@ def cmd_check():
         if status == "unknown":
             status = row["status"]           # pagina non leggibile: mantengo lo stato precedente
         con.execute("UPDATE items SET status=?, status_at=?, checks=?, next_check=?, price=COALESCE(?, price), "
+                    "favourites=COALESCE(?, favourites), "
+                    "fav_first=CASE WHEN fav_first IS NULL THEN ? ELSE fav_first END, "
                     "sold_price=CASE WHEN ? IN ('sold','closed') THEN COALESCE(?, price) ELSE sold_price END "
                     "WHERE id=? AND query_key=?",
-                    (status, ts, checks, nxt, price, status, price, row["id"], row["query_key"]))
+                    (status, ts, checks, nxt, price, fav, fav, status, price, row["id"], row["query_key"]))
         if n % 25 == 0:
             con.commit()
         sleep(CONFIG["item_delay_seconds"])
     con.commit()
     con.close()
     log(f"check: esiti {counts}")
+
+
+# ---------------------------------------------------------------- i miei annunci
+
+def fetch_mine():
+    """Legge gli annunci del proprio profilo: prezzo, preferiti e stato (pubblici)."""
+    uid = CONFIG.get("my_user_id")
+    if not uid:
+        return
+    s = session()
+    headers = {"X-CSRF-Token": "75f6c9fa-dc8e-4e52-a000-e09dd4084b3e",
+               "X-Anon-Id": s.cookies.get("anon_id") or "", "Locale": "it", "Platform": "web",
+               "X-Next-App": "marketplace-web", "Referer": f"{CONFIG['site']}/member/{uid}",
+               "Accept": "application/json, text/plain, */*"}
+    trovati = []
+    for page in range(1, 5):
+        try:
+            r = s.get(f"{CONFIG['site']}/api/v2/wardrobe/{uid}/items",
+                      params={"page": page, "per_page": 96, "order": "relevance"},
+                      headers=headers, timeout=60)
+        except requests.RequestException as e:
+            log(f"  i miei annunci: errore rete {e}")
+            return
+        if r.status_code != 200:
+            log(f"  i miei annunci: HTTP {r.status_code}")
+            return
+        try:
+            j = r.json()
+        except ValueError:
+            log("  i miei annunci: risposta non leggibile")
+            return
+        trovati.extend(j.get("items", []))
+        if page >= ((j.get("pagination") or {}).get("total_pages") or 1):
+            break
+        sleep(CONFIG["delay_seconds"])
+
+    con = db()
+    ts = iso(now())
+    for it in trovati:
+        iid = it.get("id")
+        if not iid:
+            continue
+        prezzo = float((it.get("price") or {}).get("amount") or 0)
+        fav = int(it.get("favourite_count") or 0)
+        venduto = 1 if it.get("is_closed") else 0
+        riga = con.execute("SELECT sold, first_price FROM mine WHERE id=?", (iid,)).fetchone()
+        if riga is None:
+            con.execute("INSERT INTO mine(id, title, brand, size, condition, price, first_price, favourites, "
+                        "sold, first_seen, last_seen) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                        (iid, (it.get("title") or "")[:200], (it.get("brand") or ""), (it.get("size") or ""),
+                         (it.get("status") or ""), prezzo, prezzo, fav, venduto, ts, ts))
+        else:
+            con.execute("UPDATE mine SET title=?, price=?, favourites=?, sold=?, last_seen=?, "
+                        "sold_at=CASE WHEN ?=1 AND sold=0 THEN ? ELSE sold_at END, "
+                        "sold_price=CASE WHEN ?=1 AND sold=0 THEN ? ELSE sold_price END WHERE id=?",
+                        ((it.get("title") or "")[:200], prezzo, fav, venduto, ts,
+                         venduto, ts, venduto, prezzo, iid))
+        con.execute("INSERT OR REPLACE INTO mine_history(id, ts, price, favourites) VALUES (?,?,?,?)",
+                    (iid, ts, prezzo, fav))
+    con.commit()
+    attivi = sum(1 for x in trovati if not x.get("is_closed"))
+    log(f"i miei annunci: {len(trovati)} totali, {attivi} attivi, "
+        f"{sum(int(x.get('favourite_count') or 0) for x in trovati)} preferiti")
+    con.close()
 
 
 # ---------------------------------------------------------------- fornitori
@@ -513,6 +598,43 @@ def prune(con):
         log(f"pulizia database: {before} -> {after} righe")
 
 
+def fav_benchmark(con):
+    """Quanti preferiti ha, al primo controllo (2 giorni), un annuncio che poi vende
+    entro 7 giorni rispetto a uno che resta invenduto."""
+    fast_days = CONFIG["fast_days"]
+    rows = con.execute("""SELECT fav_first, status, first_seen, status_at FROM items
+                          WHERE sample=1 AND fav_first IS NOT NULL AND status_at IS NOT NULL""").fetchall()
+    venduti, invenduti = [], []
+    for r in rows:
+        eta = days_between(r["first_seen"], r["status_at"])
+        if r["status"] in SOLD_STATUSES and eta <= fast_days + 0.5:
+            venduti.append(r["fav_first"])
+        elif r["status"] in ("active", "reserved") and eta >= fast_days - 0.5:
+            invenduti.append(r["fav_first"])
+    def med(v):
+        return round(statistics.median(v), 1) if v else None
+    return {"venduti": med(venduti), "n_venduti": len(venduti),
+            "invenduti": med(invenduti), "n_invenduti": len(invenduti)}
+
+
+def mine_report(con):
+    """Stato dei propri annunci, con i giorni online e l'andamento dei preferiti."""
+    out = []
+    now_iso = iso(now())
+    for r in con.execute("SELECT * FROM mine ORDER BY sold, first_seen DESC").fetchall():
+        giorni = days_between(r["first_seen"], r["sold_at"] or now_iso)
+        storia = [{"ts": h["ts"], "fav": h["favourites"], "price": h["price"]}
+                  for h in con.execute("SELECT ts, favourites, price FROM mine_history WHERE id=? ORDER BY ts", (r["id"],))]
+        out.append({
+            "id": r["id"], "title": r["title"], "brand": r["brand"], "size": r["size"],
+            "condition": r["condition"], "price": r["price"], "first_price": r["first_price"],
+            "favourites": r["favourites"], "sold": bool(r["sold"]),
+            "sold_price": r["sold_price"], "days": round(giorni, 1),
+            "url": f"{CONFIG['site']}/items/{r['id']}", "history": storia[-14:],
+        })
+    return out
+
+
 def controlla_script(html):
     """Intercetta l'errore che ha gia' mandato in bianco la pagina due volte: una stringa
     JS aperta e mai chiusa perche' al posto di \n e' finito un a capo vero."""
@@ -555,6 +677,8 @@ def cmd_build():
         "n_sold": con.execute("SELECT COUNT(*) FROM items WHERE status IN ('sold','closed')").fetchone()[0],
         "queries": stats,
         "advice": advice(stats),
+        "mine": mine_report(con),
+        "fav_benchmark": fav_benchmark(con),
         "suppliers": json.loads((ROOT / "suppliers.json").read_text(encoding="utf-8")) if (ROOT / "suppliers.json").exists() else [],
     }
     con.close()
@@ -573,6 +697,7 @@ if __name__ == "__main__":
         log("=== fetch ===")
         cmd_fetch()
     if cmd in ("fetch", "run"):
+        fetch_mine()
         fetch_suppliers()
     if cmd in ("check", "run"):
         log("=== check ===")

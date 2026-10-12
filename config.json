@@ -239,5 +239,6 @@
       ]
     }
   ],
-  "min_cohort": 30
+  "min_cohort": 30,
+  "my_user_id": 105875780
 }

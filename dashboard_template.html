@@ -41,10 +41,10 @@
   /* bottom nav */
   nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: #141112; border-top: 1px solid rgba(255,255,255,.08);
     display: flex; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); z-index: 5; }
-  nav.tabs button { flex: 1; max-width: 120px; border: 0; background: none; color: #9a908a; font: inherit; font-size: 11px;
+  nav.tabs button { flex: 1; max-width: 140px; border: 0; background: none; color: #9a908a; font: inherit; font-size: 11px;
     display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; cursor: pointer;
     border-radius: 10px; font-size: 10.5px; letter-spacing: -.01em; }
-  nav.tabs button svg { width: 22px; height: 22px; }
+  nav.tabs button svg { width: 24px; height: 24px; }
   nav.tabs button[aria-current="page"] { color: var(--red); }
 
   /* generic */
@@ -124,14 +124,6 @@
   .sold-list .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sold-list .p { font-weight: 700; }
   .sold-list .d { color: var(--muted); }
-
-  /* chiedi */
-  #chat { display: flex; flex-direction: column; gap: 8px; max-height: 58vh; overflow-y: auto; }
-  .msg { padding: 9px 12px; border-radius: 14px; font-size: 14.5px; line-height: 1.45; max-width: 92%; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .msg.me { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; }
-  .msg.cl { align-self: flex-start; background: var(--surface-2); color: var(--ink); border-bottom-left-radius: 4px; }
-  .msg.err { align-self: flex-start; background: color-mix(in srgb, var(--bad) 14%, var(--surface)); }
-  .msg small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
 
   /* estimate */
   .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
@@ -230,24 +222,6 @@
   </section>
 
   <!-- STORICO -->
-  <!-- CHIEDI -->
-  <section class="view" id="view-ask">
-    <div class="card">
-      <h2 style="margin-top:0">Chiedi</h2>
-      <p class="muted" style="margin:0 0 10px">Domande sul mercato, sui prezzi o sui tuoi annunci. Chi risponde ha davanti i dati del tracker, i tuoi annunci online e i capi che hai analizzato.</p>
-      <div id="chat"></div>
-      <div class="field" style="margin:10px 0 8px">
-        <textarea id="askBox" placeholder="Es. Conviene ribassare la North Face? Quale capo pubblico sabato? Il prezzo del Marlboro è giusto?"></textarea>
-      </div>
-      <div class="row">
-        <button class="btn" id="askSend">Invia</button>
-        <button class="btn ghost" id="askStop" hidden>Ferma</button>
-        <button class="btn ghost sm" id="askClear">Svuota</button>
-      </div>
-      <p class="muted" id="askNokey" hidden style="margin:8px 0 0">Serve la chiave API: vai in <a href="#" data-go="settings">Opzioni</a>.</p>
-    </div>
-  </section>
-
   <section class="view" id="view-history">
     <div class="card" id="mine"></div>
     <div class="card" id="queue"></div>
@@ -288,8 +262,7 @@
   <button data-view="market" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V10M10 19V5M16 19v-8M22 19H2"/></svg>Mercato</button>
   <button data-view="advice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z"/></svg>Puntare</button>
   <button data-view="estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Stima</button>
-  <button data-view="ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a3 3 0 0 1-3 3H8l-5 4V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3z"/><path d="M9 9.5a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.1 1-1.1 1.7M11.5 16.5h.01"/></svg>Chiedi</button>
-  <button data-view="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 8v4l3 2"/></svg>Storico</button>
+    <button data-view="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 8v4l3 2"/></svg>Storico</button>
   <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Opzioni</button>
 </nav>
 <div class="tip" id="tip"></div>
@@ -494,7 +467,6 @@ function initSettings() {
 function refreshKeyUI() {
   const has = !!LS.get('apikey', '');
   $('#nokey').hidden = has; $('#analyze').disabled = !has;
-  $('#askNokey').hidden = has; $('#askSend').disabled = !has;
 }
 
 async function callClaude(messages, { maxTokens = 4000, thinking = true, system, signal } = {}) {
@@ -837,93 +809,6 @@ function bindCopy(root) {
   });
 }
 
-// ------------------------------------------------------------ chiedi
-const ASK_SYSTEM = `Sei il consulente di un piccolo rivenditore di abbigliamento vintage su Vinted in Italia.
-Rispondi in italiano, in modo diretto e conciso, come un collega esperto che parla a voce.
-Regole:
-- Usa SOLO i numeri presenti nei dati che ti vengono forniti. Non inventare prezzi, percentuali o statistiche.
-- Quando un dato non c'e' o il campione e' piccolo, dillo invece di indovinare.
-- Distingui sempre il prezzo a cui i capi si VENDONO dal prezzo che i venditori CHIEDONO.
-- Se una domanda riguarda una categoria fuori dai dati raccolti, dichiaralo e rispondi in modo prudente.
-- Niente elenchi lunghi: due o tre frasi quando bastano, una tabella solo se serve davvero.
-- Se ti chiede cosa fare, dai una raccomandazione chiara e il motivo in una riga.`;
-
-function contestoChat() {
-  const parti = [marketSummary()];
-  const mine = DATA.mine || [];
-  if (mine.length) {
-    parti.push('I MIEI ANNUNCI ONLINE (dati pubblici del profilo):\n' + mine.map(m => {
-      const st = m.sold ? `venduto a ${m.sold_price || m.price} EUR` : `in vendita a ${m.price} EUR`;
-      const storia = (m.history || []).map(h => `${h.ts.slice(5, 10)}: ${h.fav}`).join(', ');
-      return `- ${m.brand} ${m.size} ${m.condition} "${m.title}": ${st}, ${m.favourites} preferiti, online da ${m.days} giorni` +
-             (storia ? ` (preferiti nel tempo: ${storia})` : '');
-    }).join('\n'));
-  }
-  const bench = DATA.fav_benchmark || {};
-  if (bench.venduti != null) {
-    parti.push(`Riferimento preferiti: chi vende entro ${DATA.fast_days} giorni ha ${bench.venduti} preferiti dopo 2 giorni ` +
-               `(su ${bench.n_venduti} casi); chi resta invenduto ne ha ${bench.invenduti} (su ${bench.n_invenduti}).`);
-  }
-  const hist = LS.get('history', []);
-  if (hist.length) {
-    parti.push('CAPI ANALIZZATI NON ANCORA PUBBLICATI (stime da foto):\n' + hist.map((h, i) => {
-      const r = h.res || {}, id = r.identificazione || {}, p = r.prezzo || {}, pr = r.priorita || {};
-      return `- ${id.brand || '?'} ${id.tipo || ''} taglia ${id.taglia || '?'} ${id.condizione || ''}: ` +
-             `prezzo consigliato ${p.annuncio} EUR (min ${p.minimo}), vendibilita' stimata ${pr.vendibilita}%, ${pr.quando || ''}`;
-    }).join('\n'));
-  }
-  parti.push(`Oggi e' ${new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}.`);
-  return parti.join('\n\n');
-}
-
-function renderChat() {
-  const turni = LS.get('chat', []);
-  $('#chat').innerHTML = turni.length
-    ? turni.map(m => `<div class="msg ${m.role === 'user' ? 'me' : (m.err ? 'err' : 'cl')}">${esc(m.content)}${
-        m.cost ? `<small>${m.cost}</small>` : ''}</div>`).join('')
-    : '<p class="empty">Nessuna domanda ancora. Scrivi qui sotto.</p>';
-  $('#chat').scrollTop = $('#chat').scrollHeight;
-}
-
-let askCtl = null;
-async function inviaDomanda() {
-  const box = $('#askBox'), testo = box.value.trim();
-  if (!testo) return;
-  const turni = LS.get('chat', []);
-  turni.push({ role: 'user', content: testo });
-  LS.set('chat', turni); box.value = ''; renderChat();
-
-  const pensa = { role: 'assistant', content: 'Sto guardando i dati…' };
-  turni.push(pensa); renderChat();
-  $('#askSend').disabled = true; $('#askStop').hidden = false;
-  askCtl = new AbortController();
-  const messaggi = [{ role: 'user', content: 'Dati aggiornati su cui basare le risposte:\n\n' + contestoChat() }];
-  for (const m of turni.slice(-13)) {
-    if (m === pensa) continue;
-    messaggi.push({ role: m.role, content: m.content });
-  }
-  try {
-    const r = await callClaude(messaggi, { system: ASK_SYSTEM, maxTokens: 1500, signal: askCtl.signal });
-    const costo = r.usage ? `≈ ${costEstimate(r.model, r.usage).toFixed(3).replace('.', ',')} $` : '';
-    turni[turni.length - 1] = { role: 'assistant', content: r.text, cost: costo };
-  } catch (e) {
-    turni[turni.length - 1] = { role: 'assistant', content: 'Errore: ' + e.message, err: true };
-  } finally {
-    LS.set('chat', turni.slice(-30)); renderChat();
-    $('#askSend').disabled = false; $('#askStop').hidden = true; askCtl = null;
-  }
-}
-
-function initAsk() {
-  renderChat();
-  $('#askSend').onclick = inviaDomanda;
-  $('#askStop').onclick = () => askCtl && askCtl.abort();
-  $('#askClear').onclick = () => { LS.del('chat'); renderChat(); };
-  $('#askBox').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); inviaDomanda(); }
-  });
-}
-
 // ------------------------------------------------------------ history
 function renderMine() {
   const mine = DATA.mine || [], bench = DATA.fav_benchmark || {};
@@ -1023,7 +908,7 @@ $('#exportHist').onclick = async () => {
 $('#clearHist').onclick = () => { if (confirm('Cancellare lo storico?')) { LS.del('history'); $('#history-out').innerHTML = ''; renderHistory(); } };
 
 // ------------------------------------------------------------ boot
-initMarket(); initSettings(); initEstimate(); initAsk(); renderHistory();
+initMarket(); initSettings(); initEstimate(); renderHistory();
 go(LS.get('view', 'market'));
 </script>
 </body>

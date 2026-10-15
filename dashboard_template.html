@@ -165,6 +165,10 @@
   .hist .t b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
   .hist .t span { font-size: 12px; color: var(--muted); }
   .hist .p { font-weight: 800; color: var(--accent); }
+  .hist.done { opacity: .55; }
+  .hist .pub { flex: 0 0 auto; padding: 4px 8px; font-size: 11px; }
+  .tag-pub { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px;
+    background: var(--surface-2); color: var(--muted); font-size: 10.5px; font-weight: 600; vertical-align: 1px; }
 
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; font-weight: 600; }
@@ -850,8 +854,9 @@ function renderMine() {
     ${venduti.length ? `<h3>Venduti</h3>${venduti.map(riga).join('')}` : ''}`;
 }
 function renderQueue() {
-  const hist = LS.get('history', []).map((h, i) => ({ h, i, s: priorityScore(h) })).filter(x => x.s != null);
-  if (!hist.length) { $('#queue').innerHTML = `<h2 style="margin:0 0 4px">Coda di pubblicazione</h2><p class="empty">Analizza qualche capo: qui compare l'ordine in cui pubblicarli.</p>`; return; }
+  const hist = LS.get('history', []).map((h, i) => ({ h, i, s: priorityScore(h) }))
+    .filter(x => x.s != null && !x.h.published);
+  if (!hist.length) { $('#queue').innerHTML = `<h2 style="margin:0 0 4px">Coda di pubblicazione</h2><p class="empty">Nessun capo in attesa. Analizzane uno, oppure rimetti in coda un capo dallo storico.</p>`; return; }
   const keep = x => (x.h.res.priorita || {}).quando === 'tieni per la stagione giusta';
   const now = hist.filter(x => !keep(x)).sort((a, b) => b.s - a.s);
   const later = hist.filter(keep).sort((a, b) => b.s - a.s);
@@ -875,9 +880,18 @@ function renderHistory() {
   const hist = LS.get('history', []);
   $('#history').innerHTML = hist.length ? hist.map((h, i) => {
     const id = h.res && h.res.identificazione || {}, p = h.res && h.res.prezzo || {};
-    return `<div class="hist" data-i="${i}"><img src="${h.thumb}" alt=""><div class="t"><b>${esc(id.brand || '?')} · ${esc(id.tipo || '')}</b><span>${esc(id.taglia ? 'Taglia ' + id.taglia + ' · ' : '')}${new Date(h.ts).toLocaleDateString('it-IT')}</span></div><div class="p">${eur(p.annuncio)}${priorityScore(h) != null ? `<div class="muted" style="font-size:11px;font-weight:400;text-align:right">pri ${priorityScore(h)}</div>` : ''}</div></div>`;
+    return `<div class="hist ${h.published ? 'done' : ''}" data-i="${i}"><img src="${h.thumb}" alt=""><div class="t"><b>${esc(id.brand || '?')} · ${esc(id.tipo || '')}${h.published ? '<span class="tag-pub">pubblicato</span>' : ''}</b><span>${esc(id.taglia ? 'Taglia ' + id.taglia + ' · ' : '')}${new Date(h.ts).toLocaleDateString('it-IT')}</span></div><div class="p">${eur(p.annuncio)}${!h.published && priorityScore(h) != null ? `<div class="muted" style="font-size:11px;font-weight:400;text-align:right">pri ${priorityScore(h)}</div>` : ''}</div><button class="btn ghost sm pub" data-pub="${i}">${h.published ? 'In coda' : 'Pubblicato'}</button></div>`;
   }).join('') : '<p class="empty">Nessun capo analizzato ancora.</p>';
   document.querySelectorAll('.hist').forEach(el => el.onclick = () => { const h = LS.get('history', [])[+el.dataset.i]; const o = $('#history-out'); o.innerHTML = renderResult(h); bindCopy(o); o.scrollIntoView({ behavior: 'smooth' }); });
+  document.querySelectorAll('.hist .pub').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const hist = LS.get('history', []), i = +b.dataset.pub, h = hist[i];
+    if (!h) return;
+    h.published = h.published ? null : new Date().toISOString();
+    LS.set('history', hist);
+    toast(h.published ? 'Segnato come pubblicato' : 'Rimesso in coda');
+    renderHistory();
+  });
 }
 $('#exportHist').onclick = async () => {
   const hist = LS.get('history', []);
@@ -885,7 +899,8 @@ $('#exportHist').onclick = async () => {
   const righe = hist.map((h, i) => {
     const r = h.res || {}, id = r.identificazione || {}, p = r.prezzo || {}, pr = r.priorita || {},
           v = r.vestibilita || {}, m = r.mercato || {}, an = r.annuncio || {};
-    return [`${i + 1}. ${id.brand || '?'} — ${id.tipo || ''}${id.modello ? ' ' + id.modello : ''}`,
+    return [`${i + 1}. ${id.brand || '?'} — ${id.tipo || ''}${id.modello ? ' ' + id.modello : ''}`
+      + (h.published ? ' [GIA PUBBLICATO]' : ''),
       `   taglia ${id.taglia || '?'} (veste ${v.taglia_reale || '?'}, ${v.veste || '?'}) · ${id.condizione || '?'} · ${id.colore || ''}`,
       `   materiale: ${id.materiale || 'non rilevato'}${id.epoca ? ' · epoca ' + id.epoca : ''}`,
       (() => { const m = v.misure_stimate || {}; const u = Object.entries(m).filter(([, x]) => x)

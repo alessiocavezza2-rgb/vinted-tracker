@@ -22,3 +22,5 @@
 [2026-10-16 06:38:31]   10276173657: errore rete ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
 [2026-10-16 07:47:28] check: esiti {'deleted': 42, 'active': 122, 'sold': 95}
 [2026-10-16 07:47:29] dashboard generata: 16 ricerche, 63528 annunci, 10453 seguiti, 2679 venduti, 31 giorni di dati
+[2026-10-16 13:01:50] pulizia database: 63528 -> 58324 righe
+[2026-10-16 13:01:51] dashboard generata: 16 ricerche, 58324 annunci, 10453 seguiti, 2679 venduti, 31 giorni di dati

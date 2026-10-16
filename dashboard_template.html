@@ -300,14 +300,14 @@ function initMarket() {
   $('#sub').textContent = `Aggiornato ${gen.toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${DATA.days_collected} gg di dati · ${DATA.n_followed} annunci seguiti · ${DATA.n_sold} venduti`;
   if (DATA.days_collected <= DATA.fast_days) {
     const n = $('#notice'); n.hidden = false;
-    n.textContent = `Gli annunci campionati vengono ricontrollati dopo ${DATA.quick_days} e ${DATA.fast_days} giorni: i primi "venduti" compaiono dal ${DATA.quick_days + 1}° giorno, le percentuali a ${DATA.fast_days} giorni dall'${DATA.fast_days + 1}°. Per ora guarda soprattutto prezzi richiesti e concorrenza.`;
+    n.textContent = `Gli annunci campionati vengono ricontrollati dopo ${DATA.quick_days}, ${DATA.fast_days} e ${DATA.slow_days} giorni: i primi "venduti" compaiono dal ${DATA.quick_days + 1}° giorno, le percentuali a ${DATA.fast_days} giorni dall'${DATA.fast_days + 1}° e quelle a ${DATA.slow_days} giorni dal ${DATA.slow_days + 1}°. Per ora guarda soprattutto prezzi richiesti e concorrenza.`;
   }
   const brands = ['Tutti', ...new Set(DATA.queries.map(q => q.brand))];
   $('#brands').innerHTML = brands.map(b => `<button class="chip" data-b="${esc(b)}" aria-pressed="${b === state.brand}">${esc(b)}</button>`).join('');
   $('#brands').addEventListener('click', e => { const b = e.target.dataset.b; if (b) { state.brand = b; renderMarket(); } });
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderMarket(); });
   $('#viewToggle').onclick = () => { state.table = !state.table; renderMarket(); };
-  $('#foot').textContent = `Prezzi in € (esclusa Protezione acquisti). Ogni giorno vengono campionati i 20 annunci più nuovi per ricerca e ricontrollati dopo ${DATA.quick_days} e ${DATA.fast_days} giorni: "Venduto ≤${DATA.fast_days} gg" = annunci risultati venduti su Vinted entro ${DATA.fast_days} giorni dalla pubblicazione, al prezzo che avevano al momento della vendita. Dati dal ${new Date(DATA.first_run).toLocaleDateString('it-IT')}.`;
+  $('#foot').textContent = `Prezzi in € (esclusa Protezione acquisti). Ogni giorno vengono campionati i 20 annunci più nuovi per ricerca e ricontrollati dopo ${DATA.quick_days}, ${DATA.fast_days} e ${DATA.slow_days} giorni: "Venduto ≤${DATA.fast_days} gg" = annunci risultati venduti su Vinted entro ${DATA.fast_days} giorni dalla pubblicazione, al prezzo che avevano al momento della vendita. Dati dal ${new Date(DATA.first_run).toLocaleDateString('it-IT')}.`;
   renderAdvice();
   renderSuppliers();
   renderMarket();
@@ -391,7 +391,9 @@ function marketCard(q, isOpen) {
         <div class="rng">${f ? `${eur(f.p25)} – ${eur(f.p75)}` : 'in raccolta'}</div></div>
       <div class="kpi ${q.n_cohort && q.n_cohort < 20 ? 'weak' : ''}"><div class="lbl">Venduti in ${DATA.fast_days}gg</div>
         <div class="val">${q.pct_fast == null ? '—' : q.pct_fast + '%'} <small>${q.ci_fast != null ? '±' + q.ci_fast : ''} su ${q.n_cohort}</small></div>
-        <div class="rng">${q.pct_quick != null ? `${q.pct_quick}% ±${q.ci_quick} entro ${q.quick_days} gg (su ${q.n_cohort_quick})` : `${q.n_followed} seguiti`}</div></div>
+        <div class="rng">${[q.pct_quick != null ? `${q.pct_quick}% ±${q.ci_quick} entro ${q.quick_days} gg` : null,
+          q.pct_slow != null ? `${q.pct_slow}% ±${q.ci_slow} entro ${DATA.slow_days} gg` : null]
+          .filter(Boolean).join(' · ') || `${q.n_followed} seguiti`}</div></div>
       <div class="kpi"><div class="lbl">In vendita</div>
         <div class="val">${q.n_active} <small>annunci</small></div>
         <div class="rng">chiesto ${a ? eur(a.med) : '—'}</div></div>
@@ -416,8 +418,8 @@ function groupTable(rows) {
     rows.map(r => `<tr><td>${esc(r.name)}</td><td class="num">${r.fast ? eur(r.fast.med) : '—'}</td><td class="num">${r.n_fast}</td><td class="num">${r.active ? eur(r.active.med) : '—'}</td><td class="num">${r.n_active}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function marketTable(qs) {
-  return `<table><thead><tr><th>Brand</th><th>Categoria</th><th class="num">Venduto</th><th class="num">n</th><th class="num">%${DATA.fast_days}gg (±)</th><th class="num">%${DATA.quick_days}gg (±)</th><th class="num">Chiesto</th><th class="num">Attivi</th></tr></thead><tbody>${
-    qs.map(q => `<tr><td>${esc(q.brand)}</td><td>${esc(q.category)}</td><td class="num">${q.fast ? eur(q.fast.med) : '—'}</td><td class="num">${q.n_fast}</td><td class="num">${q.pct_fast == null ? '—' : q.pct_fast + '% ±' + q.ci_fast}</td><td class="num">${q.pct_quick == null ? '—' : q.pct_quick + '% ±' + q.ci_quick}</td><td class="num">${q.active ? eur(q.active.med) : '—'}</td><td class="num">${q.n_active}</td></tr>`).join('')}</tbody></table>`;
+  return `<table><thead><tr><th>Brand</th><th>Categoria</th><th class="num">Venduto</th><th class="num">n</th><th class="num">%${DATA.fast_days}gg (±)</th><th class="num">%${DATA.slow_days}gg (±)</th><th class="num">%${DATA.quick_days}gg (±)</th><th class="num">Chiesto</th><th class="num">Attivi</th></tr></thead><tbody>${
+    qs.map(q => `<tr><td>${esc(q.brand)}</td><td>${esc(q.category)}</td><td class="num">${q.fast ? eur(q.fast.med) : '—'}</td><td class="num">${q.n_fast}</td><td class="num">${q.pct_fast == null ? '—' : q.pct_fast + '% ±' + q.ci_fast}</td><td class="num">${q.pct_slow == null ? '—' : q.pct_slow + '% ±' + q.ci_slow}</td><td class="num">${q.pct_quick == null ? '—' : q.pct_quick + '% ±' + q.ci_quick}</td><td class="num">${q.active ? eur(q.active.med) : '—'}</td><td class="num">${q.n_active}</td></tr>`).join('')}</tbody></table>`;
 }
 function chart(q) {
   const step = DATA.price_bucket, n = q.hist_active.length;
@@ -676,7 +678,7 @@ function marketSummary() {
   const lines = DATA.queries.map(q => {
     const f = q.fast, a = q.active;
     const cond = (q.by_condition || []).slice(0, 4).map(c => `${c.name}: venduto ${c.fast ? eur(c.fast.med) : '—'} (n=${c.n_fast}), chiesto ${c.active ? eur(c.active.med) : '—'} (${c.n_active} attivi)`).join('; ');
-    return `- key="${q.key}" ${q.brand} · ${q.category}: venduto entro ${DATA.fast_days} gg mediana ${f ? eur(f.med) : 'n/d'} (p25-p75 ${f ? eur(f.p25) + '-' + eur(f.p75) : 'n/d'}, n=${q.n_fast}); % venduti entro ${DATA.fast_days} gg: ${q.pct_fast == null ? 'n/d' : q.pct_fast + '% ±' + q.ci_fast + ' su ' + q.n_cohort} (entro ${q.quick_days} gg: ${q.pct_quick == null ? 'n/d' : q.pct_quick + '% ±' + q.ci_quick + ' su ' + q.n_cohort_quick}); annunci attivi ${q.n_active}, prezzo richiesto mediano ${a ? eur(a.med) : 'n/d'} (p25-p75 ${a ? eur(a.p25) + '-' + eur(a.p75) : 'n/d'}). Per condizione: ${cond || 'n/d'}`;
+    return `- key="${q.key}" ${q.brand} · ${q.category}: venduto entro ${DATA.fast_days} gg mediana ${f ? eur(f.med) : 'n/d'} (p25-p75 ${f ? eur(f.p25) + '-' + eur(f.p75) : 'n/d'}, n=${q.n_fast}); % venduti entro ${DATA.fast_days} gg: ${q.pct_fast == null ? 'n/d' : q.pct_fast + '% ±' + q.ci_fast + ' su ' + q.n_cohort} (entro ${q.quick_days} gg: ${q.pct_quick == null ? 'n/d' : q.pct_quick + '% ±' + q.ci_quick + ' su ' + q.n_cohort_quick}; entro ${DATA.slow_days} gg: ${q.pct_slow == null ? 'n/d' : q.pct_slow + '% ±' + q.ci_slow + ' su ' + q.n_cohort_slow}, prezzo mediano ${q.slow ? eur(q.slow.med) : 'n/d'} su n=${q.n_slow}); annunci attivi ${q.n_active}, prezzo richiesto mediano ${a ? eur(a.med) : 'n/d'} (p25-p75 ${a ? eur(a.p25) + '-' + eur(a.p75) : 'n/d'}). Per condizione: ${cond || 'n/d'}`;
   });
   const adv = (DATA.advice || []).filter(a => a.score != null).slice(0, 6).map((a, i) => `${i + 1}. ${a.key} (valore atteso ${a.score} €/annuncio, ${a.verdict})`).join('; ');
   return `Classifica interna su cosa conviene puntare: ${adv || 'n/d'}.

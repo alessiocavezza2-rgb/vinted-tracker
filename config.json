@@ -8,13 +8,14 @@
   "sample_per_query": 6,
   "check_days": [
     2,
-    7
+    7,
+    14
   ],
   "item_delay_seconds": [
     15,
     25
   ],
-  "max_item_checks_per_run": 260,
+  "max_item_checks_per_run": 320,
   "fast_days": 7,
   "price_bucket": 10,
   "price_cap": 150,
@@ -240,5 +241,6 @@
     }
   ],
   "min_cohort": 30,
-  "my_user_id": 105875780
+  "my_user_id": 105875780,
+  "slow_days": 14
 }

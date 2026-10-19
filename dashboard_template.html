@@ -125,6 +125,9 @@
   .sold-list .p { font-weight: 700; }
   .sold-list .d { color: var(--muted); }
 
+  .warn-fill { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; font-size: 13px; line-height: 1.4;
+    background: color-mix(in srgb, var(--bad) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); }
+
   /* estimate */
   .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
   .photos .ph { aspect-ratio: 3/4; border-radius: 12px; background: var(--surface-2); overflow: hidden; position: relative;
@@ -691,7 +694,7 @@ Rispondi SOLO con un oggetto JSON valido (nessun testo prima o dopo, niente mark
  "mercato": {"key": string|null (la key dei dati di mercato che corrisponde a brand+categoria+genere del capo, altrimenti null), "fonte": "dati tracker"|"stima da conoscenza", "note": string (1-2 frasi: come hai usato i dati; se il capo è fuori dalle categorie tracciate dillo chiaramente)},
  "vestibilita": {"taglia_etichetta": string|null (esattamente come scritto sull'etichetta, es. "L", "32x34", "M/50"), "taglia_reale": string|null (taglia italiana/europea a cui corrisponde davvero il capo: i capi vintage vestono spesso 1-2 taglie in meno o in piu' del cartellino), "veste": "Slim"|"Regular"|"Oversize"|"Boxy"|"Corto"|"Lungo"|null, "a_chi_sta_bene": string|null (es. "chi porta una M e vuole un fit ampio"), "misure_stimate": {"spalle_cm": string|null, "petto_cm": string|null (misura da ascella ad ascella, capo steso), "lunghezza_cm": string|null (dal colletto all'orlo), "manica_cm": string|null, "vita_cm": string|null (solo pantaloni/jeans, capo steso), "cavallo_cm": string|null, "gamba_cm": string|null}, "base": "misurato dalle foto"|"stimato da taglia e modello"|"stimato da taglia", "confidenza": "alta"|"media"|"bassa", "note": string|null (1-2 frasi: come sei arrivato alle misure e cosa deve verificare col metro)},
  "prezzo": {"annuncio": number (prezzo a cui pubblicare, in euro, intero), "minimo": number (sotto cui non accettare offerte), "vendita_rapida": number (prezzo che vende entro pochi giorni), "motivazione": string (2-3 frasi), "velocita_attesa": string (es. "3-7 giorni")},
- "annuncio": {"titolo": string (max 60 caratteri, ricco di parole chiave cercate su Vinted: brand, tipo, modello, taglia, colore, "vintage" se applicabile; niente emoji), "descrizione": string (6-10 righe, tono diretto e onesto: cosa è, taglia ed eventuale vestibilità, materiale, condizioni e difetti dichiarati, misure da inserire come "[inserisci]" dove non le conosci, spedizione rapida; chiudi con 4-6 hashtag), "punti_forza": [string]},
+ "annuncio": {"titolo": string (max 60 caratteri, ricco di parole chiave cercate su Vinted: brand, tipo, modello, taglia, colore, "vintage" se applicabile; niente emoji), "descrizione": string (6-10 righe, tono diretto e onesto: cosa è, taglia ed eventuale vestibilità, materiale, condizioni e difetti dichiarati, per ogni misura che non puoi leggere con certezza scrivi tre trattini bassi al posto del numero, es. "spalle ___ cm", spedizione rapida; chiudi con 4-6 hashtag), "punti_forza": [string]},
  "foto": {"consigli": [string] (5-6 consigli SPECIFICI per questo capo: sfondo e luce, inquadrature da fare nell'ordine, dettagli da mostrare come etichetta/cuciture/logo/difetti, come appenderlo o stenderlo, cosa evitare), "mancanti": [string] (foto che mancano rispetto a quelle inviate e che servono per vendere)},
  "priorita": {"vendibilita": number (probabilita' realistica, in %, che QUESTO capo si venda entro 7 giorni al prezzo "annuncio"), "quando": "subito"|"questa settimana"|"tieni per la stagione giusta", "motivo": string (1 frase)},
  "da_verificare": [string] (cose da controllare prima di pubblicare: etichetta, misure, autenticità, ecc.)
@@ -701,7 +704,7 @@ Regole per misure e vestibilita':
 - Stima le misure in centimetri come RANGE (es. "56-58") a partire da: taglia sul cartellino, brand, epoca e modello (le tabelle taglie di Carhartt, Nike, adidas, Levi's, The North Face degli anni '90 sono diverse da quelle attuali), e dalle proporzioni visibili nelle foto se il capo e' steso o appeso.
 - Non inventare precisione: se hai solo la taglia, "base" = "stimato da taglia" e "confidenza" = "bassa", e in "note" scrivi che vanno confermate col metro.
 - Indica solo le misure sensate per il tipo di capo (per una giacca: spalle, petto, lunghezza, manica; per jeans: vita, cavallo, gamba).
-- Le misure stimate NON vanno scritte come certe nella descrizione: nell'annuncio inseriscile con la dicitura "circa" e lascia "[misura col metro]" dove la confidenza e' bassa.
+- Le misure stimate NON vanno scritte come certe nella descrizione: usa "circa" e, dove la confidenza e' bassa, scrivi solo "___ cm" senza altre parole fra parentesi. Non inserire MAI nella descrizione frasi di servizio rivolte al venditore (promemoria, istruzioni, note fra parentesi quadre): la descrizione viene incollata su Vinted cosi' com'e' e la legge il compratore.
 Regole per la priorita':
 - "vendibilita" parte dalla % di venduti della categoria nei dati di mercato e la corregge per condizione, taglia (le taglie centrali M/L vendono meglio), desiderabilita' del modello e stagione (siamo a fine settembre: capispalla, felpe e jeans sono in stagione; t-shirt e capi estivi no).
 - "quando": "subito" se e' in stagione e sopra la media della categoria; "tieni per la stagione giusta" se venderebbe molto meglio tra qualche mese (dillo nel motivo, indicando il mese).
@@ -772,6 +775,7 @@ function renderResult(item) {
     <h3 style="margin-top:0">Titolo</h3>
     <div class="copybox title">${esc(an.titolo || '')}<button class="btn sm" data-copy>Copia</button></div>
     <h3>Descrizione</h3>
+    ${/___|\[/.test(an.descrizione || '') ? `<p class="warn-fill">Prima di pubblicare: completa col metro le misure segnate con <b>___</b>. Se pubblichi il testo cosi' com'e', il compratore legge che le misure non sono vere.</p>` : ''}
     <div class="copybox">${esc(an.descrizione || '')}<button class="btn sm" data-copy>Copia</button></div>
     ${(an.punti_forza || []).length ? `<h3>Punti di forza</h3><ul class="tips">${an.punti_forza.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
   </div>
@@ -811,7 +815,11 @@ function costEstimate(model, u) {
 function bindCopy(root) {
   root.querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => {
     const txt = b.parentElement.textContent.replace(/Copia$/, '').trim();
-    try { await navigator.clipboard.writeText(txt); toast('Copiato'); } catch { toast('Copia non riuscita'); }
+    const dacompletare = /___|\[misura|\[inserisci/.test(txt);
+    try {
+      await navigator.clipboard.writeText(txt);
+      toast(dacompletare ? 'Copiato: completa le misure prima di pubblicare' : 'Copiato');
+    } catch { toast('Copia non riuscita'); }
   });
 }
 

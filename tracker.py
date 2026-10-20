@@ -545,6 +545,9 @@ def query_stats(con, q, latest_ts, fast_days):
         "ci_quick": wilson(len(quick), len(coorte_quick)),
         "n_cohort_quick": len(coorte_quick),
         "quick_days": quick_days,
+        "windows": [{"days": d, "pct": round(100 * sum(1 for _, v in c if v) / len(c)) if c else None,
+                      "ci": wilson(sum(1 for _, v in c if v), len(c)) if c else None, "n": len(c)}
+                     for d, c in ((d, cohort_for(d)) for d in CONFIG["check_days"])],
         "pct_slow": round(100 * len(slow) / len(coorte_slow)) if coorte_slow else None,
         "ci_slow": wilson(len(slow), len(coorte_slow)) if coorte_slow else None,
         "n_cohort_slow": len(coorte_slow),
@@ -694,7 +697,7 @@ def cmd_build():
     data = {
         "generated": iso(now()), "first_run": first_run, "days_collected": n_days,
         "fast_days": fast_days, "quick_days": CONFIG["check_days"][0],
-        "slow_days": CONFIG.get("slow_days"),
+        "slow_days": CONFIG.get("slow_days"), "check_days": CONFIG["check_days"],
         "price_bucket": CONFIG["price_bucket"], "price_cap": CONFIG["price_cap"],
         "n_items_total": con.execute("SELECT COUNT(*) FROM items").fetchone()[0],
         "n_followed": con.execute("SELECT COUNT(*) FROM items WHERE sample=1").fetchone()[0],

@@ -22,3 +22,5 @@
 [2026-10-19 23:32:23] check: esiti {'deleted': 32, 'sold': 41, 'active': 240, 'unknown': 7}
 [2026-10-19 23:32:24] pulizia database: 68438 -> 65596 righe
 [2026-10-19 23:32:24] dashboard generata: 16 ricerche, 65596 annunci, 11500 seguiti, 3393 venduti, 30 giorni di dati
+[2026-10-20 09:54:58] pulizia database: 65596 -> 60982 righe
+[2026-10-20 09:54:59] dashboard generata: 16 ricerche, 60982 annunci, 11500 seguiti, 3393 venduti, 30 giorni di dati

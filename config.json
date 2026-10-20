@@ -9,7 +9,8 @@
   "check_days": [
     2,
     7,
-    14
+    14,
+    21
   ],
   "item_delay_seconds": [
     15,

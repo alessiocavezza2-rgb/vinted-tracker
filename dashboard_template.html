@@ -128,6 +128,10 @@
   .warn-fill { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; font-size: 13px; line-height: 1.4;
     background: color-mix(in srgb, var(--bad) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); }
 
+  .edit-field { width: 100%; margin-bottom: 8px; padding: 8px 10px; border-radius: 10px; font: inherit;
+    font-size: 14px; background: var(--surface); color: var(--ink); border: 1px solid var(--grid); }
+  textarea.edit-field { min-height: 220px; line-height: 1.45; resize: vertical; }
+
   /* estimate */
   .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
   .photos .ph { aspect-ratio: 3/4; border-radius: 12px; background: var(--surface-2); overflow: hidden; position: relative;
@@ -746,7 +750,7 @@ function parseJSON(t) {
   if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} }
   throw new Error('risposta non leggibile, riprova');
 }
-function renderResult(item) {
+function renderResult(item, idx) {
   const r = item.res || {}, id = r.identificazione || {}, m = r.mercato || {}, p = r.prezzo || {}, an = r.annuncio || {}, ft = r.foto || {};
   const q = DATA && m.key ? DATA.queries.find(x => x.key === m.key) : null;
   const cost = item.usage ? costEstimate(item.model, item.usage) : null;
@@ -758,7 +762,8 @@ function renderResult(item) {
       <div class="tags">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div></div></div>
     ${(id.difetti || []).length ? `<p class="muted" style="margin:8px 0 0"><b>Difetti:</b> ${esc(id.difetti.join('; '))}</p>` : ''}
     <div class="price-hero">
-      <div class="pb main"><div class="lbl">Prezzo annuncio</div><div class="val">${eur(p.annuncio)}</div><div class="sub">minimo ${eur(p.minimo)}</div></div>
+      <div class="pb main"><div class="lbl">Prezzo annuncio</div><div class="val">${eur(p.annuncio)}</div><div class="sub">minimo ${eur(p.minimo)}${
+        idx != null ? ` · <a href="#" data-edit="prezzo">modifica</a>` : ''}</div></div>
       <div class="pb"><div class="lbl">Vendita rapida</div><div class="val">${eur(p.vendita_rapida)}</div><div class="sub">${esc(p.velocita_attesa || '')}</div></div>
     </div>
     <p style="margin:10px 0 0;font-size:14px">${esc(p.motivazione || '')}</p>
@@ -775,10 +780,12 @@ function renderResult(item) {
   ${fitBlock(r)}
   <div class="card">
     <h3 style="margin-top:0">Titolo</h3>
-    <div class="copybox title">${esc(an.titolo || '')}<button class="btn sm" data-copy>Copia</button></div>
+    <div class="copybox title">${esc(an.titolo || '')}<button class="btn sm" data-copy>Copia</button>${
+      idx != null ? `<button class="btn sm ghost" data-edit="titolo">Modifica</button>` : ''}</div>
     <h3>Descrizione</h3>
     ${/___|\[/.test(an.descrizione || '') ? `<p class="warn-fill">Prima di pubblicare: completa col metro le misure segnate con <b>___</b>. Se pubblichi il testo cosi' com'e', il compratore legge che le misure non sono vere.</p>` : ''}
-    <div class="copybox">${esc(an.descrizione || '')}<button class="btn sm" data-copy>Copia</button></div>
+    <div class="copybox">${esc(an.descrizione || '')}<button class="btn sm" data-copy>Copia</button>${
+      idx != null ? `<button class="btn sm ghost" data-edit="descrizione">Modifica</button>` : ''}</div>
     ${(an.punti_forza || []).length ? `<h3>Punti di forza</h3><ul class="tips">${an.punti_forza.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
   </div>
   <div class="card">
@@ -814,6 +821,51 @@ function costEstimate(model, u) {
   const p = model && model.startsWith('claude-sonnet') ? [2, 10] : model && model.startsWith('claude-haiku') ? [1, 5] : [5, 25];
   return ((u.input_tokens || 0) * p[0] + (u.output_tokens || 0) * p[1]) / 1e6;
 }
+function bindEdit(root, idx) {
+  if (idx == null) return;
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = e => {
+    e.preventDefault();
+    const campo = b.dataset.edit;
+    const hist = LS.get('history', []), h = hist[idx];
+    if (!h) return;
+    const r = h.res || {}, an = r.annuncio || {}, p = r.prezzo || {};
+    const attuale = campo === 'prezzo' ? (p.annuncio != null ? p.annuncio : '') : (an[campo] || '');
+    const box = b.closest('.copybox') || b.closest('.pb');
+    const ta = document.createElement(campo === 'descrizione' ? 'textarea' : 'input');
+    if (campo === 'descrizione') ta.rows = 14; else ta.type = campo === 'prezzo' ? 'number' : 'text';
+    ta.value = attuale;
+    ta.className = 'edit-field';
+    const salva = document.createElement('button');
+    salva.className = 'btn sm'; salva.textContent = 'Salva';
+    const annulla = document.createElement('button');
+    annulla.className = 'btn sm ghost'; annulla.textContent = 'Annulla';
+    box.innerHTML = ''; box.append(ta, salva, annulla);
+    ta.focus();
+    const ridisegna = () => {
+      const o = $('#history-out'); o.innerHTML = renderResult(LS.get('history', [])[idx], idx);
+      bindCopy(o); bindEdit(o, idx); renderHistory();
+    };
+    annulla.onclick = ridisegna;
+    salva.onclick = () => {
+      const lista = LS.get('history', []), capo = lista[idx];
+      if (!capo) return;
+      capo.res = capo.res || {};
+      if (campo === 'prezzo') {
+        capo.res.prezzo = capo.res.prezzo || {};
+        const v = parseFloat(String(ta.value).replace(',', '.'));
+        if (!isNaN(v)) capo.res.prezzo.annuncio = v;
+      } else {
+        capo.res.annuncio = capo.res.annuncio || {};
+        capo.res.annuncio[campo] = ta.value.trim();
+      }
+      capo.modificato = new Date().toISOString();
+      LS.set('history', lista);
+      toast('Modifica salvata');
+      ridisegna();
+    };
+  });
+}
+
 function bindCopy(root) {
   root.querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => {
     const txt = b.parentElement.textContent.replace(/Copia$/, '').trim();
@@ -883,7 +935,7 @@ function renderQueue() {
     ${now.map((x, i) => row(x, i + 1)).join('')}
     ${later.length ? `<h3>Aspetta la stagione</h3>${later.map(x => row(x, '·')).join('')}` : ''}`;
   document.querySelectorAll('#queue .adv').forEach(el => el.onclick = () => {
-    const h = LS.get('history', [])[+el.dataset.i]; const o = $('#history-out'); o.innerHTML = renderResult(h); bindCopy(o); o.scrollIntoView({ behavior: 'smooth' });
+    const i = +el.dataset.i, h = LS.get('history', [])[i]; const o = $('#history-out'); o.innerHTML = renderResult(h, i); bindCopy(o); bindEdit(o, i); o.scrollIntoView({ behavior: 'smooth' });
   });
 }
 function renderHistory() {
@@ -894,7 +946,7 @@ function renderHistory() {
     const id = h.res && h.res.identificazione || {}, p = h.res && h.res.prezzo || {};
     return `<div class="hist ${h.published ? 'done' : ''}" data-i="${i}"><img src="${h.thumb}" alt=""><div class="t"><b>${esc(id.brand || '?')} · ${esc(id.tipo || '')}${h.published ? '<span class="tag-pub">pubblicato</span>' : ''}</b><span>${esc(id.taglia ? 'Taglia ' + id.taglia + ' · ' : '')}${new Date(h.ts).toLocaleDateString('it-IT')}</span></div><div class="p">${eur(p.annuncio)}${!h.published && priorityScore(h) != null ? `<div class="muted" style="font-size:11px;font-weight:400;text-align:right">pri ${priorityScore(h)}</div>` : ''}</div><button class="btn ghost sm pub" data-pub="${i}">${h.published ? 'In coda' : 'Pubblicato'}</button><button class="btn ghost sm del" data-del="${i}" aria-label="Togli dallo storico" title="Togli dallo storico">×</button></div>`;
   }).join('') : '<p class="empty">Nessun capo analizzato ancora.</p>';
-  document.querySelectorAll('.hist').forEach(el => el.onclick = () => { const h = LS.get('history', [])[+el.dataset.i]; const o = $('#history-out'); o.innerHTML = renderResult(h); bindCopy(o); o.scrollIntoView({ behavior: 'smooth' }); });
+  document.querySelectorAll('.hist').forEach(el => el.onclick = () => { const i = +el.dataset.i, h = LS.get('history', [])[i]; const o = $('#history-out'); o.innerHTML = renderResult(h, i); bindCopy(o); bindEdit(o, i); o.scrollIntoView({ behavior: 'smooth' }); });
   document.querySelectorAll('.hist .del').forEach(b => b.onclick = e => {
     e.stopPropagation();
     const hist = LS.get('history', []), i = +b.dataset.del, h = hist[i];

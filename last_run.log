@@ -1,24 +1,24 @@
-[2026-10-28 07:14:00] === fetch ===
-[2026-10-28 07:14:17]   carhartt_giacche_uomo: 380 annunci su 4 pagine, nuovi 117, campionati 6
-[2026-10-28 07:14:34]   carhartt_felpe_uomo: 381 annunci su 4 pagine, nuovi 36, campionati 6
-[2026-10-28 07:14:51]   carhartt_jeans_uomo: 379 annunci su 4 pagine, nuovi 35, campionati 6
-[2026-10-28 07:15:08]   nike_giacche_uomo: 384 annunci su 4 pagine, nuovi 341, campionati 6
-[2026-10-28 07:15:21]   nike_felpe_uomo: 384 annunci su 4 pagine, nuovi 349, campionati 6
-[2026-10-28 07:15:41]   nike_tshirt_uomo: 379 annunci su 4 pagine, nuovi 323, campionati 6
-[2026-10-28 07:15:57]   adidas_giacche_uomo: 380 annunci su 4 pagine, nuovi 220, campionati 6
-[2026-10-28 07:16:13]   adidas_felpe_uomo: 381 annunci su 4 pagine, nuovi 155, campionati 6
-[2026-10-28 07:16:27]   adidas_tshirt_uomo: 381 annunci su 4 pagine, nuovi 197, campionati 6
-[2026-10-28 07:16:42]   levis_jeans_uomo: 376 annunci su 4 pagine, nuovi 318, campionati 6
-[2026-10-28 07:17:00]   levis_jeans_donna: 381 annunci su 4 pagine, nuovi 351, campionati 6
-[2026-10-28 07:17:14]   levis_giacche_denim_uomo: 379 annunci su 4 pagine, nuovi 69, campionati 6
-[2026-10-28 07:17:28]   tnf_giacche_uomo: 380 annunci su 4 pagine, nuovi 129, campionati 6
-[2026-10-28 07:17:46]   wrangler_jeans_uomo: 380 annunci su 4 pagine, nuovi 97, campionati 6
-[2026-10-28 07:18:01]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 11, campionati 6
-[2026-10-28 07:18:19]   wrangler_giacche_denim_uomo: 376 annunci su 4 pagine, nuovi 1, campionati 1
-[2026-10-28 07:18:20] i miei annunci: 3 totali, 3 attivi, 36 preferiti
-[2026-10-28 07:18:44] fornitori: 5/7 box disponibili
-[2026-10-28 07:18:44] === check ===
-[2026-10-28 07:18:44] check: 253 annunci da verificare
-[2026-10-28 08:45:28] check: esiti {'active': 191, 'sold': 28, 'deleted': 32, 'reserved': 2}
-[2026-10-28 08:45:28] pulizia database: 70989 -> 66093 righe
-[2026-10-28 08:45:29] dashboard generata: 16 ricerche, 66093 annunci, 13776 seguiti, 4355 venduti, 31 giorni di dati
+[2026-10-28 16:12:56] === fetch ===
+[2026-10-28 16:13:12]   carhartt_giacche_uomo: 356 annunci su 4 pagine, nuovi 336, campionati 6
+[2026-10-28 16:13:28]   carhartt_felpe_uomo: 366 annunci su 4 pagine, nuovi 220, campionati 6
+[2026-10-28 16:13:42]   carhartt_jeans_uomo: 380 annunci su 4 pagine, nuovi 338, campionati 6
+[2026-10-28 16:14:00]   nike_giacche_uomo: 268 annunci su 4 pagine, nuovi 265, campionati 6
+[2026-10-28 16:14:16]   nike_felpe_uomo: 378 annunci su 4 pagine, nuovi 370, campionati 6
+[2026-10-28 16:14:32]   nike_tshirt_uomo: 379 annunci su 4 pagine, nuovi 364, campionati 6
+[2026-10-28 16:14:50]   adidas_giacche_uomo: 334 annunci su 4 pagine, nuovi 323, campionati 6
+[2026-10-28 16:15:06]   adidas_felpe_uomo: 384 annunci su 4 pagine, nuovi 370, campionati 6
+[2026-10-28 16:15:21]   adidas_tshirt_uomo: 337 annunci su 4 pagine, nuovi 331, campionati 6
+[2026-10-28 16:15:36]   levis_jeans_uomo: 378 annunci su 4 pagine, nuovi 361, campionati 6
+[2026-10-28 16:15:52]   levis_jeans_donna: 287 annunci su 4 pagine, nuovi 253, campionati 6
+[2026-10-28 16:16:07]   levis_giacche_denim_uomo: 369 annunci su 4 pagine, nuovi 338, campionati 6
+[2026-10-28 16:16:22]   tnf_giacche_uomo: 342 annunci su 4 pagine, nuovi 319, campionati 6
+[2026-10-28 16:16:37]   wrangler_jeans_uomo: 375 annunci su 4 pagine, nuovi 293, campionati 6
+[2026-10-28 16:16:55]   wrangler_jeans_donna: 379 annunci su 4 pagine, nuovi 92, campionati 6
+[2026-10-28 16:17:09]   wrangler_giacche_denim_uomo: 373 annunci su 4 pagine, nuovi 27, campionati 6
+[2026-10-28 16:17:10] i miei annunci: 3 totali, 3 attivi, 36 preferiti
+[2026-10-28 16:17:34] fornitori: 5/7 box disponibili
+[2026-10-28 16:17:34] === check ===
+[2026-10-28 16:17:34] check: 320 annunci da verificare
+[2026-10-28 18:08:35] check: esiti {'active': 255, 'deleted': 27, 'sold': 37, 'reserved': 1}
+[2026-10-28 18:08:35] pulizia database: 70893 -> 66150 righe
+[2026-10-28 18:08:35] dashboard generata: 16 ricerche, 66150 annunci, 13872 seguiti, 4392 venduti, 31 giorni di dati

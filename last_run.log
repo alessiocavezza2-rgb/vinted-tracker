@@ -1,23 +1,24 @@
-[2026-10-31 20:31:21] === fetch ===
-[2026-10-31 20:31:41]   carhartt_giacche_uomo: 379 annunci su 4 pagine, nuovi 327, campionati 6
-[2026-10-31 20:31:56]   carhartt_felpe_uomo: 380 annunci su 4 pagine, nuovi 145, campionati 6
-[2026-10-31 20:32:11]   carhartt_jeans_uomo: 380 annunci su 4 pagine, nuovi 116, campionati 6
-[2026-10-31 20:32:26]   nike_giacche_uomo: 382 annunci su 4 pagine, nuovi 352, campionati 6
-[2026-10-31 20:32:42]   nike_felpe_uomo: 376 annunci su 4 pagine, nuovi 353, campionati 6
-[2026-10-31 20:32:58]   nike_tshirt_uomo: 379 annunci su 4 pagine, nuovi 341, campionati 6
-[2026-10-31 20:33:12]   adidas_giacche_uomo: 381 annunci su 4 pagine, nuovi 334, campionati 6
-[2026-10-31 20:33:28]   adidas_felpe_uomo: 378 annunci su 4 pagine, nuovi 335, campionati 6
-[2026-10-31 20:33:46]   adidas_tshirt_uomo: 381 annunci su 4 pagine, nuovi 358, campionati 6
-[2026-10-31 20:34:04]   levis_jeans_uomo: 377 annunci su 4 pagine, nuovi 333, campionati 6
-[2026-10-31 20:34:21]   levis_jeans_donna: 380 annunci su 4 pagine, nuovi 369, campionati 6
-[2026-10-31 20:34:35]   levis_giacche_denim_uomo: 376 annunci su 4 pagine, nuovi 188, campionati 6
-[2026-10-31 20:34:50]   tnf_giacche_uomo: 382 annunci su 4 pagine, nuovi 347, campionati 6
-[2026-10-31 20:35:08]   wrangler_jeans_uomo: 380 annunci su 4 pagine, nuovi 146, campionati 6
-[2026-10-31 20:35:26]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 53, campionati 6
-[2026-10-31 20:35:41]   wrangler_giacche_denim_uomo: 375 annunci su 4 pagine, nuovi 5, campionati 5
-[2026-10-31 20:35:42] i miei annunci: 5 totali, 5 attivi, 43 preferiti
-[2026-10-31 20:36:05] fornitori: 5/7 box disponibili
-[2026-10-31 20:36:05] === check ===
-[2026-10-31 20:36:05] check: 133 annunci da verificare
-[2026-10-31 21:20:51] check: esiti {'active': 98, 'deleted': 16, 'sold': 19}
-[2026-10-31 21:20:51] dashboard generata: 16 ricerche, 69125 annunci, 14819 seguiti, 4745 venduti, 31 giorni di dati
+[2026-11-01 07:57:53] === fetch ===
+[2026-11-01 07:58:07]   carhartt_giacche_uomo: 380 annunci su 4 pagine, nuovi 113, campionati 6
+[2026-11-01 07:58:21]   carhartt_felpe_uomo: 380 annunci su 4 pagine, nuovi 43, campionati 6
+[2026-11-01 07:58:37]   carhartt_jeans_uomo: 379 annunci su 4 pagine, nuovi 56, campionati 6
+[2026-11-01 07:58:55]   nike_giacche_uomo: 382 annunci su 4 pagine, nuovi 345, campionati 6
+[2026-11-01 07:59:08]   nike_felpe_uomo: 381 annunci su 4 pagine, nuovi 330, campionati 6
+[2026-11-01 07:59:25]   nike_tshirt_uomo: 381 annunci su 4 pagine, nuovi 308, campionati 6
+[2026-11-01 07:59:42]   adidas_giacche_uomo: 381 annunci su 4 pagine, nuovi 239, campionati 6
+[2026-11-01 07:59:58]   adidas_felpe_uomo: 383 annunci su 4 pagine, nuovi 163, campionati 6
+[2026-11-01 08:00:15]   adidas_tshirt_uomo: 381 annunci su 4 pagine, nuovi 207, campionati 6
+[2026-11-01 08:00:34]   levis_jeans_uomo: 379 annunci su 4 pagine, nuovi 334, campionati 6
+[2026-11-01 08:00:48]   levis_jeans_donna: 377 annunci su 4 pagine, nuovi 340, campionati 6
+[2026-11-01 08:01:05]   levis_giacche_denim_uomo: 374 annunci su 4 pagine, nuovi 65, campionati 6
+[2026-11-01 08:01:21]   tnf_giacche_uomo: 379 annunci su 4 pagine, nuovi 196, campionati 6
+[2026-11-01 08:01:36]   wrangler_jeans_uomo: 383 annunci su 4 pagine, nuovi 64, campionati 6
+[2026-11-01 08:01:53]   wrangler_jeans_donna: 380 annunci su 4 pagine, nuovi 18, campionati 6
+[2026-11-01 08:02:11]   wrangler_giacche_denim_uomo: 381 annunci su 4 pagine, nuovi 0, campionati 0
+[2026-11-01 08:02:12] i miei annunci: 5 totali, 5 attivi, 45 preferiti
+[2026-11-01 08:02:32] fornitori: 5/7 box disponibili
+[2026-11-01 08:02:32] === check ===
+[2026-11-01 08:02:32] check: 320 annunci da verificare
+[2026-11-01 09:52:25] check: esiti {'sold': 45, 'deleted': 45, 'active': 230}
+[2026-11-01 09:52:26] pulizia database: 72199 -> 64192 righe
+[2026-11-01 09:52:26] dashboard generata: 16 ricerche, 64192 annunci, 14909 seguiti, 4790 venduti, 31 giorni di dati

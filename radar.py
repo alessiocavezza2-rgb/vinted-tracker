@@ -51,7 +51,8 @@ MOLTIPLIC_VALUTA = 1.5
 
 VENDITE_SOLIDE = 20          # da qui in su mi fido della stima
 VENDITE_MINIME = 8           # sotto questo numero non mostro nemmeno il gruppo
-VENDITE_FASCIA = 10          # vendite minime perche' una fascia sia consigliabile
+VENDITE_FASCIA = 10
+MAX_OCC_HTML = 60   # quante occasioni stampare nella pagina (le migliori per margine)          # vendite minime perche' una fascia sia consigliabile
 
 # Quando il 75o percentile vale piu' di 3 volte il 25o, quel gruppo non ha UN
 # prezzo: ne ha due. E' il caso delle Summit Series, vendute a 29-60 euro quando
@@ -451,35 +452,80 @@ def stampa_box(box):
 
 # ---------------------------------------------------------------- html
 
+# stessa tavolozza della dashboard (dashboard_template.html): se cambia una,
+# cambia anche l'altra, altrimenti le due pagine smettono di somigliarsi.
 CSS = """
-:root{--bg:#fff;--fg:#1a1a1a;--bd:#e2e2e4;--mu:#65686d;--ok:#0a7d32;--mid:#b26a00;--card:#f6f6f7}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){
---bg:#16181c;--fg:#e8e8e8;--bd:#2f3237;--mu:#9aa0a6;--ok:#4ade80;--mid:#fbbf24;--card:#1e2126}}
-:root[data-theme=dark]{--bg:#16181c;--fg:#e8e8e8;--bd:#2f3237;--mu:#9aa0a6;
---ok:#4ade80;--mid:#fbbf24;--card:#1e2126}
+:root{color-scheme:light;
+--page:#efebe6;--surface:#faf8f5;--surface-2:#ede8e2;--ink:#141112;--ink-2:#4f4845;--muted:#8a817b;
+--grid:#e0dad3;--border:rgba(20,17,18,.09);
+--accent:#7a1c2b;--accent-ink:#fff;--accent-soft:#f1dfe0;--red:#c8102e;
+--good:#0a7a2f;--warn:#a3520b;--bad:#c8102e;
+--shadow:0 1px 2px rgba(20,17,18,.05),0 6px 18px rgba(20,17,18,.07)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+--page:#121011;--surface:#1c1819;--surface-2:#272223;--ink:#f5f1ee;--ink-2:#c9c1bc;--muted:#8f8681;
+--grid:#322c2d;--border:rgba(255,255,255,.08);
+--accent:#e3213f;--accent-ink:#fff;--accent-soft:#3a1a20;--red:#ff3b52;
+--good:#34d399;--warn:#fbbf24;--bad:#ff6b6b;
+--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{color-scheme:dark;
+--page:#121011;--surface:#1c1819;--surface-2:#272223;--ink:#f5f1ee;--ink-2:#c9c1bc;--muted:#8f8681;
+--grid:#322c2d;--border:rgba(255,255,255,.08);
+--accent:#e3213f;--accent-ink:#fff;--accent-soft:#3a1a20;--red:#ff3b52;
+--good:#34d399;--warn:#fbbf24;--bad:#ff6b6b;
+--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3)}
 *{box-sizing:border-box}
-body{margin:0 auto;padding:16px;max-width:920px;background:var(--bg);color:var(--fg);
-font:15px/1.55 -apple-system,BlinkMacSystemFont,system-ui,Segoe UI,sans-serif}
-h1{font-size:21px;margin:0 0 2px;letter-spacing:-.01em}
-h2{font-size:17px;margin:30px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--bd)}
-.sub{color:var(--mu);font-size:13px;margin-bottom:18px}
-.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:14px}
-th,td{padding:8px 7px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}
-th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--mu);font-weight:600}
-.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.big{font-weight:700}
-small{color:var(--mu);font-size:12px}
-a{color:inherit;text-decoration:none;border-bottom:1px solid var(--bd)}
-tr.compra .big,tr.compra .badge{color:var(--ok)}
-tr.valuta .big,tr.valuta .badge{color:var(--mid)}
-.badge{font-size:11px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
-.nota{background:var(--card);border-radius:9px;padding:12px 14px;font-size:13px;
-color:var(--mu);margin:10px 0 0}
-.nota b{color:var(--fg)}
-.regola{background:var(--card);border-radius:9px;padding:14px;font-size:14px;margin:0 0 6px}
-.regola b{color:var(--fg)}
-.vuoto{color:var(--mu)}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);
+font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+padding-block:0 calc(24px + env(safe-area-inset-bottom))}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px}
+header.top{padding:18px 0 8px;display:flex;align-items:center;gap:10px}
+header.top .logo{width:34px;height:34px;border-radius:10px;background:#141112;color:var(--red);
+display:grid;place-items:center;font-weight:800;font-size:16px;flex:0 0 auto}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+h2{font-size:17px;margin:18px 0 8px}
+.sub{color:var(--muted);font-size:12px;margin:0}
+a{color:var(--accent)}
+.card{background:var(--surface);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.notice{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:10px 12px;
+font-size:13px;margin-bottom:12px}
+.muted{color:var(--muted);font-size:13px}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px;border-bottom:1px solid var(--grid);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.n,th.n{text-align:right;white-space:nowrap}
+.big{font-weight:800;font-size:15px}
+small{color:var(--muted);font-size:12px;line-height:1.35;display:inline-block}
+.verdict{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.verdict.good{background:var(--accent);color:var(--accent-ink)}
+.verdict.ok{background:var(--accent-soft);color:var(--accent)}
+.verdict.meh{background:var(--surface-2);color:var(--muted)}
+tr.compra .big{color:var(--accent)}
+tr.valuta .big{color:var(--warn)}
+/* occasioni: una scheda per capo, col link diretto all'annuncio */
+.occ{border-bottom:1px solid var(--grid);padding:12px 0}
+.occ:first-child{padding-top:2px}
+.occ:last-child{border-bottom:0;padding-bottom:2px}
+.occ .top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.occ .t{font-size:14px;font-weight:600;min-width:0}
+.occ .meta{color:var(--muted);font-size:12px;margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.kpi{min-width:0;background:var(--surface-2);border-radius:12px;padding:7px 9px}
+.kpi .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:17px;font-weight:800;line-height:1.2;letter-spacing:-.01em;
+font-variant-numeric:tabular-nums}
+.kpi.hi{background:var(--accent-soft)}
+.kpi.hi .val{color:var(--accent)}
+.kpi .val small{font-size:11px;font-weight:500}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;
+background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;
+justify-content:center;gap:8px;text-decoration:none}
+.btn.block{width:100%}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.vuoto{color:var(--muted);font-size:13px}
+@media(max-width:420px){.kpis{grid-template-columns:repeat(2,1fr)}}
 """
 
 
@@ -491,36 +537,48 @@ def scrivi_html(rif, occ, box, ore, ultimo):
     righe_std = "".join(
         f"<tr><td>{i['nome']}"
         + ("" if i["solido"] else " <small>stima incerta</small>")
-        + (f"<br><small>pubblica a {i['fascia']['da']}-{i['fascia']['a']} &euro; "
-           f"&middot; li' si vende il {100 * i['fascia']['quota']:.0f} %</small>"
-           if i["fascia"] else "")
-        + f"</td><td class=n>{i['ricavo']:.0f} &euro;</td>"
-        f"<td class=n>{i['ricavo_alto']:.0f} &euro;</td>"
-        f"<td class='n big'>{i['paga_max']:.0f} &euro;</td>"
-        f"<td class=n>{i['n_venduti']}</td></tr>"
+        + f"<br><small>{i['n_venduti']} vendite &middot; se raro {i['ricavo_alto']:.0f} &euro;"
+        + (f"<br>pubblica a {i['fascia']['da']}-{i['fascia']['a']} &euro;, "
+           f"li' si vende il {100 * i['fascia']['quota']:.0f} %" if i["fascia"] else "")
+        + f"</small></td><td class=n>{i['ricavo']:.0f} &euro;</td>"
+        f"<td class='n big'>{i['paga_max']:.0f} &euro;</td></tr>"
         for nome, i in sorted(rif.items(), key=lambda kv: -kv[1]["paga_max"]))
 
+    # sul telefono una lista di 244 schede e' illeggibile: le occasioni sono
+    # gia' ordinate per margine, quindi le prime sono quelle che contano.
+    resto = max(0, len(occ) - MAX_OCC_HTML)
+    occ = occ[:MAX_OCC_HTML]
+
     if occ:
+        pillola = {"COMPRA": "good", "VALUTA": "ok"}
         righe_occ = "".join(
-            f"<tr class='{o['verdetto'].lower()}'>"
-            f"<td><a href='https://www.vinted.it/items/{o['id']}'>{(o['title'] or '')[:48]}</a>"
-            f"<br><small>{o['riferimento']} &middot; {o['condition']} &middot; {o['size']}"
+            f"<div class='occ {o['verdetto'].lower()}'>"
+            f"<div class=top><div class=t>{(o['title'] or 'senza titolo')[:70]}"
+            f"<div class=meta>{o['riferimento']} &middot; {o['condition']} &middot; {o['size']}"
             + ("" if o["solido"] else " &middot; stima incerta")
-            + "</small></td>"
-            f"<td class=n>{float(o['price']):.0f} &euro;</td>"
-            f"<td class=n>{costo_pieno(float(o['price'])):.0f} &euro;</td>"
-            f"<td class=n>{o['ricavo']:.0f} &euro;</td>"
-            f"<td class='n big'>{o['margine']:.0f} &euro;</td>"
-            f"<td class=n>{o['moltiplicatore']:.1f}&times;</td>"
-            f"<td class=badge>{o['verdetto']}</td></tr>"
+            + "</div></div>"
+            f"<span class='verdict {pillola.get(o['verdetto'], 'meh')}'>{o['verdetto']}</span></div>"
+            "<div class=kpis>"
+            f"<div class=kpi><div class=lbl>chiede</div><div class=val>{float(o['price']):.0f} &euro;</div></div>"
+            f"<div class=kpi><div class=lbl>ti costa</div><div class=val>{costo_pieno(float(o['price'])):.0f} &euro;</div></div>"
+            f"<div class=kpi><div class=lbl>rivendi</div><div class=val>{o['ricavo']:.0f} &euro;</div></div>"
+            f"<div class='kpi hi'><div class=lbl>margine</div>"
+            f"<div class=val>{o['margine']:.0f} &euro; <small>{o['moltiplicatore']:.1f}&times;</small></div></div>"
+            "</div>"
+            f"<a class='btn block' target=_blank rel=noopener "
+            f"href='https://www.vinted.it/items/{o['id']}'>Apri l'annuncio su Vinted &rarr;</a>"
+            "</div>"
             for o in occ)
+        if resto:
+            righe_occ += (f"<div class=vuoto>Altre {resto} occasioni piu' sottili non sono "
+                          "in questa lista: qui ci sono le migliori per margine.</div>")
     else:
         eta = ""
         if ultimo:
             ore_fa = (datetime.now(timezone.utc) - ultimo).total_seconds() / 3600
             eta = (f" L'annuncio piu' recente nel database e' di {ore_fa:.0f} ore fa: "
                    f"se non torna niente, lancia <code>python tracker.py fetch</code>.")
-        righe_occ = f"<tr><td colspan=7 class=vuoto>Nessuna occasione in questa finestra.{eta}</td></tr>"
+        righe_occ = f"<div class=vuoto>Nessuna occasione in questa finestra.{eta}</div>"
 
     corpo = []
     for b in box:
@@ -530,30 +588,35 @@ def scrivi_html(rif, occ, box, ore, ultimo):
         esaurita = "" if b["disponibile"] else " <small>(esaurita)</small>"
         corpo.append(
             f"<tr class='{cls}'><td>{b['label']}{esaurita}"
-            f"<br><small>taglio migliore: {b['taglio']} &middot; {b['prezzo_box']:.0f} &euro; "
-            f"&middot; confronto: {b['composizione']}</small></td>"
+            f"<br><small>{b['taglio']} a {b['prezzo_box']:.0f} &euro; &middot; "
+            f"{100 * b['quota_vendibili']:.0f} % vendibile &middot; {b['moltiplicatore']:.1f}&times;"
+            f"<br>confronto: {b['composizione']}</small></td>"
             f"<td class=n>{b['per_capo']:.1f} &euro;</td>"
-            f"<td class=n>{100 * b['quota_vendibili']:.0f} %</td>"
             f"<td class=n>{b['costo_per_vendibile']:.1f} &euro;</td>"
             f"<td class=n>{b['ricavo']:.0f} &euro;</td>"
             f"<td class='n big'>{b['margine']:.0f} &euro;</td>"
-            f"<td class=n>{b['moltiplicatore']:.1f}&times;</td>"
-            f"<td class=badge>{et}</td></tr>")
-    righe_box = "".join(corpo) or "<tr><td colspan=8 class=vuoto>Nessuna box confrontabile.</td></tr>"
+            f"<td class=n><span class='verdict "
+            f"{ {'compra': 'good', 'valuta': 'ok'}.get(cls, 'meh') }'>{et}</span></td></tr>")
+    righe_box = "".join(corpo) or "<tr><td colspan=6 class=vuoto>Nessuna box confrontabile.</td></tr>"
 
     html = f"""<!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141112">
 <title>Radar acquisti</title>
 <style>{CSS}</style>
 </head>
 <body>
-<h1>Radar acquisti</h1>
-<div class="sub">Aggiornato il {oggi} &middot; finestra {ore} ore &middot; <a href="index.html">&larr; dashboard</a></div>
+<div class="wrap">
+<header class="top">
+  <div class="logo">V</div>
+  <div><h1>Radar acquisti</h1>
+    <p class="sub">Aggiornato il {oggi} &middot; finestra {ore} ore &middot; <a href="index.html">&larr; dashboard</a></p></div>
+</header>
 
-<div class="regola">
+<div class="notice">
 <b>Come leggerlo.</b> Un capo comprato a X non costa X: costa
 X + 5 % + {PROTEZIONE_FISSA:.2f} &euro; di Protezione Acquisti
 + {SPEDIZIONE_ACQUISTO:.2f} &euro; di spedizione.<br><br>
@@ -565,45 +628,41 @@ magari il capo e' migliore della media.<br>
 foto e descrizione.
 </div>
 
+<h2>Occasioni</h2>
+<div class="card">
+{righe_occ}
+</div>
+<p class="muted">Il prezzo e' solo il primo filtro. Apri l'annuncio e guarda foto, difetti e
+misure prima di comprare: la taglia stimata ha gia' sbagliato due volte.</p>
+
 <h2>Quanto puoi pagare</h2>
-<div class="wrap">
+<div class="card"><div class="tbl-wrap">
 <table>
-<tr><th>gruppo</th><th class="n">rivendi a</th><th class="n">se raro</th>
-<th class="n">paga max</th><th class="n">vendite</th></tr>
+<tr><th>gruppo</th><th class="n">rivendi a</th><th class="n">paga max</th></tr>
 {righe_std}
 </table>
-</div>
-<div class="nota"><b>Rivendi a</b> e' la mediana dei prezzi a cui quei capi si sono davvero
+</div></div>
+<p class="muted"><b>Rivendi a</b> e' la mediana dei prezzi a cui quei capi si sono davvero
 venduti &mdash; non la media, cosi' due pezzi da collezione finiti a 400 &euro; non falsano
-il quadro. <b>Se raro</b> e' quanto fa lo stesso gruppo quando il pezzo e' ricercato: alcuni gruppi
-hanno due mercati con un vuoto in mezzo, e in quel caso <i>rivendi a</i> usa solo quello comune. Dove c'e' scritto <i>stima incerta</i> le vendite nel campione sono meno di
-{VENDITE_SOLIDE}.</div>
-
-<h2>Occasioni</h2>
-<div class="wrap">
-<table>
-<tr><th>capo</th><th class="n">prezzo</th><th class="n">ti costa</th><th class="n">rivendi</th>
-<th class="n">margine</th><th class="n">&times;</th><th>esito</th></tr>
-{righe_occ}
-</table>
-</div>
-<div class="nota">Il prezzo e' solo il primo filtro. Prima di comprare apri l'annuncio e guarda
-foto, difetti e misure: la taglia stimata ha gia' sbagliato due volte.</div>
+il quadro. <b>Se raro</b> e' quanto fa lo stesso gruppo quando il pezzo e' ricercato: alcuni
+gruppi hanno due mercati con un vuoto in mezzo, e in quel caso <i>rivendi a</i> usa solo
+quello comune. Dove c'e' scritto <i>stima incerta</i> le vendite nel campione sono meno di
+{VENDITE_SOLIDE}.</p>
 
 <h2>Box dei fornitori</h2>
-<div class="wrap">
+<div class="card"><div class="tbl-wrap">
 <table>
-<tr><th>box</th><th class="n">&euro;/capo</th><th class="n">vendibili</th>
-<th class="n">costo utile</th><th class="n">rivendi</th><th class="n">margine</th>
-<th class="n">&times;</th><th>esito</th></tr>
+<tr><th>box</th><th class="n">&euro;/capo</th><th class="n">costo utile</th>
+<th class="n">rivendi</th><th class="n">margine</th><th class="n">esito</th></tr>
 {righe_box}
 </table>
-</div>
-<div class="nota">Sulla box reale da 136 &euro; erano vendibili 8 capi su 12, cioe' il 67 %:
-il costo vero per capo era <b>17 &euro;</b>, non 11,33 &euro;. Le quote della colonna
-<i>vendibili</i> sono stime per tipo di box, non dati misurati: correggile in
-<code>radar.py</code> quando avrai aperto altre box.</div>
+</div></div>
+<p class="muted">Sulla box reale da 136 &euro; erano vendibili 8 capi su 12, cioe' il 67 %:
+il costo vero per capo era <b>17 &euro;</b>, non 11,33 &euro;. Le quote <i>vendibile</i> sono
+stime per tipo di box, non dati misurati: correggile in <code>radar.py</code> quando avrai
+aperto altre box.</p>
 
+</div>
 </body>
 </html>"""
     out = docs / "radar.html"

@@ -759,6 +759,11 @@ font-weight:800;font-size:12px;flex:0 0 auto;background:var(--surface-2);color:v
 .task .cosa{font-size:13px;color:var(--ink-2);margin-top:1px}
 .task .numeri{font-size:12px;color:var(--muted);margin-top:3px}
 .task .numeri b{color:var(--accent);font-size:13px}
+.fatto{flex:0 0 auto;align-self:center;border:1px solid var(--border);background:var(--surface-2);
+color:var(--ink-2);font:inherit;font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer}
+.task[hidden],.giorno[hidden]{display:none}
+.riga-fatti{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;
+padding-top:10px;border-top:1px solid var(--grid)}
 .azioni{display:flex;gap:8px}
 .azioni .btn{flex:1}
 .occ[hidden]{display:none}
@@ -830,7 +835,65 @@ JS = """
 
   aggiorna();
 })();
+
+/* Il pulsante 'fatto' del calendario: zittisce un promemoria fino a domani.
+   Salvo la data, non un booleano, cosi' il giorno dopo ricompare da solo
+   senza bisogno di cancellare niente. Se il capo viene ripubblicato prende un
+   id nuovo e il promemoria riparte comunque. */
+(function(){
+  var K='radar-fatti';
+  function oggi(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function leggi(){try{return JSON.parse(localStorage.getItem(K))||{};}catch(e){return {};}}
+  function scrivi(v){try{localStorage.setItem(K,JSON.stringify(v));}catch(e){}}
+  var fatti=leggi();
+  var riga=document.getElementById('riga-fatti');
+  var conta=document.getElementById('conta-fatti');
+  var annulla=document.getElementById('annulla-fatti');
+
+  function aggiorna(){
+    var n=0;
+    document.querySelectorAll('.task[data-task]').forEach(function(x){
+      var spento = fatti[x.dataset.task]===oggi();
+      x.hidden=spento; if(spento) n++;
+    });
+    // nascondo anche l'intestazione di un giorno rimasto senza promemoria
+    var corrente=null, vivi=0;
+    var figli=document.querySelectorAll('#agenda > div');
+    figli.forEach(function(el){
+      if(el.classList.contains('giorno')){
+        if(corrente) corrente.hidden = (vivi===0);
+        corrente=el; vivi=0;
+      } else if(el.classList.contains('task') && !el.hidden){ vivi++; }
+    });
+    if(corrente) corrente.hidden = (vivi===0);
+
+    conta.textContent = n===0 ? '' : (n===1 ? '1 cosa fatta oggi' : n+' cose fatte oggi');
+    riga.hidden = n===0;
+  }
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.fatto');
+    if(b){
+      fatti[b.closest('.task').dataset.task]=oggi();
+      scrivi(fatti); aggiorna(); return;
+    }
+    if(e.target===annulla){ fatti={}; scrivi(fatti); aggiorna(); }
+  });
+
+  aggiorna();
+})();
 """
+
+
+def chiave_task(r):
+    """Identita' stabile di una riga del calendario, per il pulsante 'fatto'.
+
+    Comprende l'urgenza: se un capo passa da 'ripubblica' a 'subito' il
+    promemoria e' un altro e deve ricomparire anche se il primo era spuntato.
+    Un capo ripubblicato prende un id nuovo, quindi riparte da solo.
+    """
+    base = f"m{r['id']}" if r["id"] else "n" + re.sub(r"\W+", "", (r["capo"] or "")[:20])
+    return f"{base}-{r['urgenza']}"
 
 
 def scrivi_html(rif, occ, box, ore, ultimo, cal):
@@ -865,12 +928,15 @@ def scrivi_html(rif, occ, box, ore, ultimo, cal):
         link = (f" &middot; <a target=_blank rel=noopener "
                 f"href='https://www.vinted.it/items/{r['id']}'>apri</a>") if r["id"] else ""
         blocchi.append(
-            f"<div class='task {r['urgenza']}'>"
+            f"<div class='task {r['urgenza']}' data-task='{chiave_task(r)}'>"
             f"<div class=segno>{simbolo.get(r['urgenza'], '&middot;')}</div>"
             f"<div class=corpo><div class=capo>{r['capo'][:70]}</div>"
             f"<div class=cosa>{r['cosa']}</div>"
             + (f"<div class=numeri>{numeri}{link}</div>" if numeri or link else "")
-            + "</div></div>")
+            + "</div>"
+            + ("" if r["urgenza"] == "aspetta"
+               else "<button class='fatto' type=button title='fatto per oggi'>fatto</button>")
+            + "</div>")
     righe_cal = "".join(blocchi) or "<div class=vuoto>Niente in agenda.</div>"
 
     # sul telefono una lista di 244 schede e' illeggibile: le occasioni sono
@@ -964,7 +1030,11 @@ foto e descrizione.
 
 <h2>Da fare</h2>
 <div class="card">
-{righe_cal}
+<div id="agenda">{righe_cal}</div>
+<div class="riga-fatti" id="riga-fatti" hidden>
+  <span class="muted" id="conta-fatti"></span>
+  <button class="fatto" type="button" id="annulla-fatti">rimettile</button>
+</div>
 </div>
 <p class="muted">I tempi vengono dalle coorti del tracker: un annuncio fermo da due settimane
 non si sblocca da solo, e ripubblicarlo con il prezzo <i>alzato</i> rende piu' di un taglio

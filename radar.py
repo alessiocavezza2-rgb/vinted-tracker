@@ -764,6 +764,8 @@ color:var(--ink-2);font:inherit;font-size:12px;padding:7px 12px;border-radius:99
 .task[hidden],.giorno[hidden]{display:none}
 .riga-fatti{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;
 padding-top:10px;border-top:1px solid var(--grid)}
+.rimetti{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;
+padding:4px 0;cursor:pointer}
 .azioni{display:flex;gap:8px}
 .azioni .btn{flex:1}
 .occ[hidden]{display:none}
@@ -873,8 +875,9 @@ JS = """
 
   document.addEventListener('click',function(e){
     var b=e.target.closest('.fatto');
-    if(b){
-      fatti[b.closest('.task').dataset.task]=oggi();
+    var riga_task = b && b.closest('.task');
+    if(riga_task){
+      fatti[riga_task.dataset.task]=oggi();
       scrivi(fatti); aggiorna(); return;
     }
     if(e.target===annulla){ fatti={}; scrivi(fatti); aggiorna(); }
@@ -1033,7 +1036,7 @@ foto e descrizione.
 <div id="agenda">{righe_cal}</div>
 <div class="riga-fatti" id="riga-fatti" hidden>
   <span class="muted" id="conta-fatti"></span>
-  <button class="fatto" type="button" id="annulla-fatti">rimettile</button>
+  <button class="rimetti" type="button" id="annulla-fatti">rimettile</button>
 </div>
 </div>
 <p class="muted">I tempi vengono dalle coorti del tracker: un annuncio fermo da due settimane

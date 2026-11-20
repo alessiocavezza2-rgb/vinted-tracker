@@ -441,14 +441,21 @@ MESI_IT = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio
 
 
 def quando_in_lettere(d, oggi):
+    # la data c'e' sempre: "domenica" da solo non dice se e' fra due giorni o
+    # fra nove, e un calendario che si rilegge tre volte al giorno deve essere
+    # leggibile senza contare sulle dita.
     giorni = (d - oggi).days
+    nome = f"{GIORNI_IT[d.weekday()]} {d.day} {MESI_IT[d.month - 1]}"
     if giorni <= 0:
-        return "oggi"
+        # un promemoria scaduto (la scadenza del Carhartt era il 13) va sotto
+        # OGGI con la data di OGGI, altrimenti l'agenda apre con due
+        # intestazioni "oggi" e due date diverse.
+        return f"oggi, {GIORNI_IT[oggi.weekday()]} {oggi.day} {MESI_IT[oggi.month - 1]}"
     if giorni == 1:
-        return "domani"
+        return f"domani, {nome}"
     if giorni < 7:
-        return GIORNI_IT[d.weekday()]
-    return f"{GIORNI_IT[d.weekday()]} {d.day} {MESI_IT[d.month - 1]}"
+        return f"{nome} (fra {giorni} giorni)"
+    return nome
 
 
 def prezzo_consigliato(info):

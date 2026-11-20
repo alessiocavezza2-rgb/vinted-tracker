@@ -51,8 +51,10 @@ MOLTIPLIC_VALUTA = 1.5
 
 VENDITE_SOLIDE = 20          # da qui in su mi fido della stima
 VENDITE_MINIME = 8           # sotto questo numero non mostro nemmeno il gruppo
-VENDITE_FASCIA = 10
-MAX_OCC_HTML = 60   # quante occasioni stampare nella pagina (le migliori per margine)          # vendite minime perche' una fascia sia consigliabile
+VENDITE_FASCIA = 10          # vendite minime perche' una fascia sia consigliabile
+
+MAX_OCC_HTML = 60            # quante occasioni finiscono nella pagina (le migliori)
+VERIFICA_DEFAULT = 20        # quante verificare davvero su Vinted prima di consigliarle
 
 # Quando il 75o percentile vale piu' di 3 volte il 25o, quel gruppo non ha UN
 # prezzo: ne ha due. E' il caso delle Summit Series, vendute a 29-60 euro quando
@@ -242,6 +244,70 @@ def occasioni(righe, rif, ore):
                         "ricavo_alto": info["ricavo_alto"]})
     trovate.sort(key=lambda x: -x["margine"])
     return trovate
+
+
+def eta_ore(first_seen):
+    """Da quanto il bot vede questo annuncio: le occasioni vecchie sono morte."""
+    try:
+        t = datetime.fromisoformat((first_seen or "").replace("Z", "+00:00"))
+    except ValueError:
+        return "data ignota"
+    ore = (datetime.now(timezone.utc) - t).total_seconds() / 3600
+    return f"{ore:.0f} h fa" if ore >= 1 else "adesso"
+
+
+def ancora_in_vendita(occ, quante):
+    """Apre gli annunci migliori e scarta quelli già spariti.
+
+    Il database dice 'active' perché il bot gira tre volte al giorno, ma
+    un'occasione vera dura minuti: un capo a 9 euro e' venduto prima che il
+    bot torni a guardare. Senza questo controllo la prima scheda della pagina
+    e' quasi sempre un 404, e il radar perde credibilita' sul colpo migliore.
+
+    Gli stessi tempi di attesa del tracker (item_delay_seconds): un annuncio
+    ogni 15-25 secondi, mai in parallelo.
+    """
+    import random
+    import time
+    import urllib.error
+    import urllib.request
+
+    cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
+    lo, hi = cfg.get("item_delay_seconds", [15, 25])
+    ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+          "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
+
+    vivi, morti, fermati = [], 0, False
+    for i, o in enumerate(occ):
+        if fermati or i >= quante:
+            vivi.append(o)          # non verificato: resta, ma senza garanzia
+            continue
+        req = urllib.request.Request(
+            f"https://www.vinted.it/items/{o['id']}",
+            headers={"User-Agent": ua, "Accept": "text/html",
+                     "Accept-Language": "it-IT,it;q=0.9"})
+        try:
+            urllib.request.urlopen(req, timeout=30).read(1)
+            o["verificato"] = True
+            vivi.append(o)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                morti += 1         # venduto o ritirato: fuori dalla pagina
+            elif e.code in (403, 429):
+                # Vinted ci sta dicendo di smettere: smettiamo.
+                print(f"  verifica interrotta: HTTP {e.code} dopo {i} annunci")
+                fermati = True
+                vivi.append(o)
+            else:
+                vivi.append(o)
+        except OSError as e:
+            print(f"  {o['id']}: {type(e).__name__}, lo lascio nella lista")
+            vivi.append(o)
+        if not fermati and i + 1 < min(quante, len(occ)):
+            time.sleep(random.uniform(lo, hi))
+    if morti:
+        print(f"verifica: {morti} occasioni su {min(quante, len(occ))} erano gia' sparite")
+    return vivi
 
 
 def ultimo_fetch(righe):
@@ -525,7 +591,77 @@ justify-content:center;gap:8px;text-decoration:none}
 .btn.block{width:100%}
 .btn.ghost{background:var(--surface-2);color:var(--ink)}
 .vuoto{color:var(--muted);font-size:13px}
-@media(max-width:420px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.azioni{display:flex;gap:8px}
+.azioni .btn{flex:1}
+.occ[hidden]{display:none}
+.scartati{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.scartati .btn{padding:7px 11px;font-size:13px;border-radius:10px}
+.ripristina{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;
+padding:4px 0;cursor:pointer;text-align:left}
+.elenco-scartati{margin-top:8px;font-size:13px}
+.elenco-scartati div{padding:5px 0;border-bottom:1px solid var(--grid);
+display:flex;gap:10px;justify-content:space-between;align-items:center}
+.elenco-scartati div:last-child{border-bottom:0}
+@media(max-width:420px){.kpis{grid-template-columns:repeat(2,1fr)}
+.azioni{flex-direction:column}}
+"""
+
+# Lo scarto vive nel localStorage del telefono: la pagina e' statica su GitHub
+# Pages, non c'e' nessun server a cui dirlo. Quindi la lista resta su quel
+# dispositivo, sopravvive ai tre aggiornamenti al giorno (stessa origine) e il
+# bot non ne sa niente: se cambi telefono, ricomincia da zero.
+JS = """
+(function(){
+  var K='radar-scartati';
+  function leggi(){try{return JSON.parse(localStorage.getItem(K))||{};}catch(e){return {};}}
+  function scrivi(v){try{localStorage.setItem(K,JSON.stringify(v));}catch(e){}}
+  var fuori=leggi();
+
+  var barra=document.getElementById('barra-scartati');
+  var conta=document.getElementById('conta-scartati');
+  var elenco=document.getElementById('elenco-scartati');
+  var bottone=document.getElementById('mostra-scartati');
+
+  function aggiorna(){
+    var schede=document.querySelectorAll('.occ[data-id]');
+    var n=0;
+    elenco.innerHTML='';
+    schede.forEach(function(s){
+      var id=s.dataset.id;
+      if(fuori[id]){
+        s.hidden=true; n++;
+        var r=document.createElement('div');
+        var t=document.createElement('span');
+        t.textContent=(s.querySelector('.t')||{}).textContent ?
+          s.querySelector('.t').childNodes[0].textContent.trim() : id;
+        var b=document.createElement('button');
+        b.className='ripristina'; b.type='button'; b.textContent='rimetti';
+        b.onclick=function(){delete fuori[id];scrivi(fuori);aggiorna();};
+        r.appendChild(t); r.appendChild(b); elenco.appendChild(r);
+      } else { s.hidden=false; }
+    });
+    conta.textContent = n===0 ? 'Nessun capo scartato' :
+      (n===1 ? '1 capo scartato' : n+' capi scartati');
+    bottone.hidden = n===0;
+    if(n===0){elenco.hidden=true;bottone.textContent='mostra';}
+  }
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.scarta');
+    if(b){
+      var id=b.closest('.occ').dataset.id;
+      fuori[id]=Date.now();
+      scrivi(fuori); aggiorna();
+      return;
+    }
+    if(e.target===bottone){
+      elenco.hidden=!elenco.hidden;
+      bottone.textContent=elenco.hidden?'mostra':'nascondi';
+    }
+  });
+
+  aggiorna();
+})();
 """
 
 
@@ -552,10 +688,12 @@ def scrivi_html(rif, occ, box, ore, ultimo):
     if occ:
         pillola = {"COMPRA": "good", "VALUTA": "ok"}
         righe_occ = "".join(
-            f"<div class='occ {o['verdetto'].lower()}'>"
+            f"<div class='occ {o['verdetto'].lower()}' data-id='{o['id']}'>"
             f"<div class=top><div class=t>{(o['title'] or 'senza titolo')[:70]}"
             f"<div class=meta>{o['riferimento']} &middot; {o['condition']} &middot; {o['size']}"
             + ("" if o["solido"] else " &middot; stima incerta")
+            + f" &middot; visto {eta_ore(o['first_seen'])}"
+            + (" &middot; <b>link verificato</b>" if o.get("verificato") else "")
             + "</div></div>"
             f"<span class='verdict {pillola.get(o['verdetto'], 'meh')}'>{o['verdetto']}</span></div>"
             "<div class=kpis>"
@@ -565,8 +703,11 @@ def scrivi_html(rif, occ, box, ore, ultimo):
             f"<div class='kpi hi'><div class=lbl>margine</div>"
             f"<div class=val>{o['margine']:.0f} &euro; <small>{o['moltiplicatore']:.1f}&times;</small></div></div>"
             "</div>"
-            f"<a class='btn block' target=_blank rel=noopener "
-            f"href='https://www.vinted.it/items/{o['id']}'>Apri l'annuncio su Vinted &rarr;</a>"
+            "<div class=azioni>"
+            f"<a class='btn' target=_blank rel=noopener "
+            f"href='https://www.vinted.it/items/{o['id']}'>Apri l'annuncio &rarr;</a>"
+            "<button class='btn ghost scarta' type=button>Scarta</button>"
+            "</div>"
             "</div>"
             for o in occ)
         if resto:
@@ -632,6 +773,13 @@ foto e descrizione.
 <div class="card">
 {righe_occ}
 </div>
+<div class="card">
+  <div class="scartati">
+    <span class="muted" id="conta-scartati"></span>
+    <button class="btn ghost" type="button" id="mostra-scartati" hidden>mostra</button>
+  </div>
+  <div class="elenco-scartati" id="elenco-scartati" hidden></div>
+</div>
 <p class="muted">Il prezzo e' solo il primo filtro. Apri l'annuncio e guarda foto, difetti e
 misure prima di comprare: la taglia stimata ha gia' sbagliato due volte.</p>
 
@@ -663,6 +811,7 @@ stime per tipo di box, non dati misurati: correggile in <code>radar.py</code> qu
 aperto altre box.</p>
 
 </div>
+<script>{JS}</script>
 </body>
 </html>"""
     out = docs / "radar.html"
@@ -681,6 +830,11 @@ def main():
     ap.add_argument("--titolo", default="", help="titolo del capo, per riconoscere il sottogruppo")
     ap.add_argument("--box", action="store_true", help="mostra solo le box dei fornitori")
     ap.add_argument("--html", action="store_true", help="scrive anche docs/radar.html")
+    ap.add_argument("--verifica", type=int, nargs="?", const=VERIFICA_DEFAULT, default=0,
+                    metavar="N",
+                    help=f"apre le prime N occasioni su Vinted e scarta quelle "
+                         f"gia' sparite (default {VERIFICA_DEFAULT}, un annuncio "
+                         f"ogni 15-25 secondi)")
     a = ap.parse_args()
 
     if not DB_PATH.exists():
@@ -724,6 +878,9 @@ def main():
 
     ultimo = ultimo_fetch(righe)
     occ = occasioni(righe, rif, a.ore)
+    if a.verifica:
+        # verifico solo quelle che finiscono nella pagina, non tutte e 244
+        occ = ancora_in_vendita(occ[:MAX_OCC_HTML], a.verifica) + occ[MAX_OCC_HTML:]
     box = giudica_box(rif)
     stampa_standard(rif)
     stampa_occasioni(occ, a.ore, ultimo)

@@ -37,7 +37,7 @@ jobs:
 
       - name: Radar d'acquisto
         if: always()
-        run: python radar.py --html
+        run: python radar.py --html --verifica 20
 
       - name: Commit e push dei dati
         if: always()

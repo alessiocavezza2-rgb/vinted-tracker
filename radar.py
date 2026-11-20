@@ -414,7 +414,162 @@ def esito_box(b):
     return "", "LASCIA"
 
 
+# ---------------------------------------------------------------- calendario
+
+# Quando intervenire su un capo gia' pubblicato. I giorni vengono dalle coorti
+# del tracker: un annuncio fermo da due settimane non si sblocca da solo, e la
+# ripubblicazione (con il prezzo ALZATO nella fascia a resa massima) rende piu'
+# di un taglio di prezzo sullo stesso annuncio.
+GIORNI_CONTROLLO = 7
+GIORNI_RIPUBBLICA = 14
+GIORNI_URGENTE = 21
+
+# marca del guardaroba -> gruppo del mercato. Le marche che non sono qui non
+# sono nel campione del bot: per quelle do i tempi, non i prezzi.
+MARCA_GRUPPO = {
+    "the north face": "tnf_giacche_uomo",
+    "carhartt": "carhartt_giacche_uomo",
+    "nike": "nike_giacche_uomo",
+    "adidas": "adidas_giacche_uomo",
+    "levi's": "levis_giacche_denim_uomo",
+    "levis": "levis_giacche_denim_uomo",
+}
+
+GIORNI_IT = ["lunedi", "martedi", "mercoledi", "giovedi", "venerdi", "sabato", "domenica"]
+MESI_IT = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
+           "agosto", "settembre", "ottobre", "novembre", "dicembre"]
+
+
+def quando_in_lettere(d, oggi):
+    giorni = (d - oggi).days
+    if giorni <= 0:
+        return "oggi"
+    if giorni == 1:
+        return "domani"
+    if giorni < 7:
+        return GIORNI_IT[d.weekday()]
+    return f"{GIORNI_IT[d.weekday()]} {d.day} {MESI_IT[d.month - 1]}"
+
+
+def prezzo_consigliato(info):
+    """Quanto chiedere: la mediana dei venduti, arrotondata a 5 euro.
+
+    NON il centro della fascia a resa massima: quella metrica premia le fasce
+    alte con pochissime vendite (per il Carhartt WIP dava 100 euro contro una
+    mediana reale di 57) ed e' lo stesso errore che aveva gia' fatto saltare
+    la prima versione del radar.
+    """
+    if not info or not info.get("ricavo"):
+        return None, None
+    return round(info["ricavo"] / 5) * 5, info.get("fascia")
+
+
+def calendario(con, rif):
+    """Cosa fare, capo per capo, e in che giorno.
+
+    Legge la tabella 'mine', che il bot riempie a ogni passaggio leggendo il
+    profilo pubblico. Il campo 'sold' resta spesso indietro, quindi uno sparito
+    dall'ultimo giro lo segnalo come da verificare invece di dare consigli.
+    """
+    con.row_factory = sqlite3.Row
+    capi = [dict(r) for r in con.execute("select * from mine")]
+    if not capi:
+        return []
+    ultimo_giro = max((c["last_seen"] or "") for c in capi)
+    oggi = datetime.now().date()
+
+    righe = []
+    for c in capi:
+        if c["sold"]:
+            continue
+        try:
+            nato = datetime.fromisoformat((c["first_seen"] or "").replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        giorni = (datetime.now(timezone.utc) - nato).days
+        gruppo = MARCA_GRUPPO.get((c["brand"] or "").strip().lower())
+        info = riferimento_per({"query_key": gruppo, "title": c["title"]}, rif) if gruppo else None
+        cons, fascia = prezzo_consigliato(info)
+
+        # sparito dall'ultimo passaggio del bot: non e' piu' online.
+        # Solo quelli spariti di recente: i vecchi sono gia' storia nota e
+        # riempirebbero il calendario di promemoria inutili ogni giorno.
+        if (c["last_seen"] or "") < ultimo_giro:
+            giorni_fa = (datetime.now(timezone.utc) - datetime.fromisoformat(
+                (c["last_seen"] or "").replace("Z", "+00:00"))).days
+            if giorni_fa > 7:
+                continue
+            righe.append({"data": oggi, "giorni": giorni, "urgenza": "verifica",
+                          "cosa": "non e' piu' online: venduto o tolto? Controlla e segnalo",
+                          "capo": c["title"], "prezzo": c["price"], "consiglio": None,
+                          "fascia": fascia, "fav": c["favourites"], "id": c["id"]})
+            continue
+
+        if giorni >= GIORNI_URGENTE:
+            data, urgenza = oggi, "subito"
+            cosa = f"fermo da {giorni} giorni: ripubblicalo"
+        elif giorni >= GIORNI_RIPUBBLICA:
+            data, urgenza = nato.date() + timedelta(days=GIORNI_RIPUBBLICA), "ripubblica"
+            cosa = "due settimane online: ripubblica invece di tagliare il prezzo"
+        elif cons and c["price"] and c["price"] < cons * 0.85:
+            data, urgenza = oggi, "alza"
+            cosa = "e' sotto la fascia che rende di piu': alzalo adesso"
+        elif giorni >= GIORNI_CONTROLLO:
+            data, urgenza = nato.date() + timedelta(days=GIORNI_RIPUBBLICA), "aspetta"
+            cosa = "lascialo lavorare, poi ripubblica"
+        else:
+            data, urgenza = nato.date() + timedelta(days=GIORNI_CONTROLLO), "aspetta"
+            cosa = "appena pubblicato: non toccarlo"
+
+        righe.append({"data": data, "giorni": giorni, "urgenza": urgenza, "cosa": cosa,
+                      "capo": c["title"], "prezzo": c["price"], "consiglio": cons,
+                      "fascia": fascia, "fav": c["favourites"], "id": c["id"]})
+
+    # appuntamenti scritti a mano: capi non ancora pubblicati, promemoria
+    f = ROOT / "calendario.json"
+    if f.exists():
+        for v in json.loads(f.read_text(encoding="utf-8")):
+            try:
+                data = datetime.strptime(v["quando"], "%Y-%m-%d").date()
+            except (KeyError, ValueError):
+                continue
+            righe.append({"data": data, "giorni": None, "urgenza": v.get("urgenza", "nota"),
+                          "cosa": v.get("cosa", ""), "capo": v.get("capo", ""),
+                          "prezzo": v.get("prezzo"), "consiglio": v.get("consiglio"),
+                          "fascia": None, "fav": None, "id": None})
+
+    ordine = {"subito": 0, "ripubblica": 1, "alza": 2, "verifica": 3, "nota": 4, "aspetta": 5}
+    righe.sort(key=lambda r: (r["data"], ordine.get(r["urgenza"], 9), -(r["giorni"] or 0)))
+    for r in righe:
+        r["quando"] = quando_in_lettere(r["data"], oggi)
+        r["scaduto"] = r["data"] < oggi
+    return righe
+
+
 # ---------------------------------------------------------------- stampa
+
+def stampa_calendario(cal):
+    print()
+    print("=" * 100)
+    print("CALENDARIO - cosa fare, capo per capo")
+    print("=" * 100)
+    if not cal:
+        print("Niente in agenda: nessun capo nel guardaroba.")
+        return
+    ultimo = None
+    for r in cal:
+        if r["quando"] != ultimo:
+            print()
+            print(r["quando"].upper())
+            ultimo = r["quando"]
+        prezzo = f"{r['prezzo']:.0f} EUR" if r["prezzo"] else "-"
+        cons = f" -> {r['consiglio']:.0f} EUR" if r["consiglio"] else ""
+        eta = f"  [{r['giorni']} gg, {r['fav']} pref.]" if r["giorni"] is not None else ""
+        print(f"  {r['urgenza'].upper():<11} {r['capo'][:50]}")
+        print(f"              {r['cosa']}")
+        if r["prezzo"] or r["consiglio"]:
+            print(f"              ora {prezzo}{cons}{eta}")
+
 
 def stampa_standard(rif):
     print()
@@ -591,6 +746,19 @@ justify-content:center;gap:8px;text-decoration:none}
 .btn.block{width:100%}
 .btn.ghost{background:var(--surface-2);color:var(--ink)}
 .vuoto{color:var(--muted);font-size:13px}
+.giorno{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+margin:14px 0 6px;font-weight:600}
+.giorno:first-child{margin-top:0}
+.task{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--grid);align-items:flex-start}
+.task:last-child{border-bottom:0}
+.task .segno{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+font-weight:800;font-size:12px;flex:0 0 auto;background:var(--surface-2);color:var(--muted)}
+.task.subito .segno,.task.ripubblica .segno,.task.alza .segno{background:var(--accent);color:var(--accent-ink)}
+.task .corpo{min-width:0;flex:1}
+.task .capo{font-size:14px;font-weight:600}
+.task .cosa{font-size:13px;color:var(--ink-2);margin-top:1px}
+.task .numeri{font-size:12px;color:var(--muted);margin-top:3px}
+.task .numeri b{color:var(--accent);font-size:13px}
 .azioni{display:flex;gap:8px}
 .azioni .btn{flex:1}
 .occ[hidden]{display:none}
@@ -665,7 +833,7 @@ JS = """
 """
 
 
-def scrivi_html(rif, occ, box, ore, ultimo):
+def scrivi_html(rif, occ, box, ore, ultimo, cal):
     docs = ROOT / "docs"
     docs.mkdir(exist_ok=True)
     oggi = datetime.now().strftime("%d/%m/%Y alle %H:%M")
@@ -679,6 +847,31 @@ def scrivi_html(rif, occ, box, ore, ultimo):
         + f"</small></td><td class=n>{i['ricavo']:.0f} &euro;</td>"
         f"<td class='n big'>{i['paga_max']:.0f} &euro;</td></tr>"
         for nome, i in sorted(rif.items(), key=lambda kv: -kv[1]["paga_max"]))
+
+    simbolo = {"subito": "!", "ripubblica": "R", "alza": "+", "verifica": "?", "nota": "·",
+               "aspetta": "…"}
+    blocchi, giorno_corrente = [], None
+    for r in cal:
+        if r["quando"] != giorno_corrente:
+            blocchi.append(f"<div class=giorno>{r['quando']}</div>")
+            giorno_corrente = r["quando"]
+        numeri = ""
+        if r["prezzo"]:
+            numeri = f"ora {r['prezzo']:.0f} &euro;"
+            if r["consiglio"]:
+                numeri += f" &rarr; <b>{r['consiglio']:.0f} &euro;</b>"
+            if r["giorni"] is not None:
+                numeri += f" &middot; {r['giorni']} giorni online &middot; {r['fav']} preferiti"
+        link = (f" &middot; <a target=_blank rel=noopener "
+                f"href='https://www.vinted.it/items/{r['id']}'>apri</a>") if r["id"] else ""
+        blocchi.append(
+            f"<div class='task {r['urgenza']}'>"
+            f"<div class=segno>{simbolo.get(r['urgenza'], '&middot;')}</div>"
+            f"<div class=corpo><div class=capo>{r['capo'][:70]}</div>"
+            f"<div class=cosa>{r['cosa']}</div>"
+            + (f"<div class=numeri>{numeri}{link}</div>" if numeri or link else "")
+            + "</div></div>")
+    righe_cal = "".join(blocchi) or "<div class=vuoto>Niente in agenda.</div>"
 
     # sul telefono una lista di 244 schede e' illeggibile: le occasioni sono
     # gia' ordinate per margine, quindi le prime sono quelle che contano.
@@ -768,6 +961,15 @@ magari il capo e' migliore della media.<br>
 <b>LASCIA</b> sotto {MARGINE_VALUTA:.0f} &euro;: non ripaga l'ora che ci metti fra misure,
 foto e descrizione.
 </div>
+
+<h2>Da fare</h2>
+<div class="card">
+{righe_cal}
+</div>
+<p class="muted">I tempi vengono dalle coorti del tracker: un annuncio fermo da due settimane
+non si sblocca da solo, e ripubblicarlo con il prezzo <i>alzato</i> rende piu' di un taglio
+sullo stesso annuncio. Il prezzo consigliato e' la mediana dei venduti di quel gruppo.
+Gli appuntamenti scritti a mano stanno in <code>calendario.json</code>: quello lo modifichi tu.</p>
 
 <h2>Occasioni</h2>
 <div class="card">
@@ -882,12 +1084,14 @@ def main():
         # verifico solo quelle che finiscono nella pagina, non tutte e 244
         occ = ancora_in_vendita(occ[:MAX_OCC_HTML], a.verifica) + occ[MAX_OCC_HTML:]
     box = giudica_box(rif)
+    cal = calendario(con, rif)
+    stampa_calendario(cal)
     stampa_standard(rif)
     stampa_occasioni(occ, a.ore, ultimo)
     stampa_box(box)
     if a.html:
         print()
-        print(f"scritto {scrivi_html(rif, occ, box, a.ore, ultimo)}")
+        print(f"scritto {scrivi_html(rif, occ, box, a.ore, ultimo, cal)}")
 
 
 if __name__ == "__main__":

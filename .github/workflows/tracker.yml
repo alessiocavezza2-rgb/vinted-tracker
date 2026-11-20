@@ -35,6 +35,10 @@ jobs:
           : > last_run.log
           python tracker.py run
 
+      - name: Radar d'acquisto
+        if: always()
+        run: python radar.py --html
+
       - name: Commit e push dei dati
         if: always()
         run: |

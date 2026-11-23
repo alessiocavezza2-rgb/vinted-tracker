@@ -58,7 +58,12 @@ def raccogli():
         righe = radar.calendario(con, rif)
     finally:
         con.close()
-    righe.sort(key=lambda r: (r["data"], ORDINE.get(r["urgenza"], 9), -(r["giorni"] or 0)))
+    # ordino per il giorno in cui la cosa va fatta DAVVERO, non per la data
+    # teorica: un promemoria scaduto il 9 novembre vale oggi, e ordinandolo per
+    # la data vecchia finiva in cima al giorno davanti ai capi urgenti.
+    oggi = date.today()
+    righe.sort(key=lambda r: (max(r["data"], oggi), ORDINE.get(r["urgenza"], 9),
+                              -(r["giorni"] or 0)))
     return righe
 
 
@@ -409,7 +414,9 @@ JS = r"""
   azzera.onclick=function(){
     fatti={}; rinvii={};
     scrivi(K_FATTI,fatti); scrivi(K_RINVII,rinvii);
-    iMese=0; disegna(); apri(selezionato||OGGI);
+    /* torno a oggi: il giorno che stavo guardando potrebbe essere rimasto
+       vuoto proprio perche' ho annullato lo spostamento che lo riempiva */
+    iMese=0; disegna(); apri(OGGI);
   };
 
   disegna();

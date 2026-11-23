@@ -403,7 +403,8 @@ JS = r"""
         }
       }
       var coda=[];
-      if(t.giorni!==null && t.giorni!==undefined) coda.push(t.giorni+' giorni online');
+      /* per una vendita i giorni online li dice gia' la riga sopra */
+      if(!t.p && t.giorni!==null && t.giorni!==undefined) coda.push(t.giorni+' giorni online');
       if(t.fav!==null && t.fav!==undefined) coda.push(t.fav+' preferiti');
       if(coda.length) num.appendChild(document.createTextNode(
         (t.prezzo?' · ':'')+coda.join(' · ')));

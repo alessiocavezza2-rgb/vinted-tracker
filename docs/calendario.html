@@ -178,7 +178,7 @@ font:inherit;font-size:13px;padding:8px 10px;border-radius:10px}
 <header class="top">
   <div class="logo">V</div>
   <div><h1>Calendario</h1>
-    <p class="sub">Aggiornato il 23/11/2026 alle 16:24 &middot; <a href="radar.html">radar</a>
+    <p class="sub">Aggiornato il 23/11/2026 alle 16:26 &middot; <a href="radar.html">radar</a>
     &middot; <a href="index.html">dashboard</a></p></div>
 </header>
 
@@ -427,7 +427,8 @@ nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
         }
       }
       var coda=[];
-      if(t.giorni!==null && t.giorni!==undefined) coda.push(t.giorni+' giorni online');
+      /* per una vendita i giorni online li dice gia' la riga sopra */
+      if(!t.p && t.giorni!==null && t.giorni!==undefined) coda.push(t.giorni+' giorni online');
       if(t.fav!==null && t.fav!==undefined) coda.push(t.fav+' preferiti');
       if(coda.length) num.appendChild(document.createTextNode(
         (t.prezzo?' · ':'')+coda.join(' · ')));

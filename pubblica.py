@@ -168,8 +168,10 @@ def scrivi_html(sch):
 
         corpo.append(
             f"<h3 class=capo-nome>{'' if s['online'] else '<b>da pubblicare</b> &middot; '}"
-            f"{s['marca']} &middot; taglia {s['taglia']} &middot; {s['condizione']}{link}</h3>"
+            f"{s['titolo'][:52]}</h3>"
             "<div class=card>"
+            f"<p class=fonte>{s['marca']} &middot; taglia {s['taglia']} "
+            f"&middot; {s['condizione']}{link}</p>"
             f"<div class=kpis-2>{prezzo}</div>"
             + (f"<p class=fonte>{fonte}</p>" if fonte else "")
             + (f"<p class=nota-capo>{s['nota']}</p>" if s.get("nota") else "")

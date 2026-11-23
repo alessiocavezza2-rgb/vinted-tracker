@@ -39,6 +39,10 @@ jobs:
         if: always()
         run: python radar.py --html --verifica 20
 
+      - name: Schede di pubblicazione
+        if: always()
+        run: python pubblica.py --html
+
       - name: Commit e push dei dati
         if: always()
         run: |

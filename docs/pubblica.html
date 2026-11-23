@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141112">
+<title>Schede di pubblicazione</title>
+<style>
+:root{color-scheme:light;
+--page:#efebe6;--surface:#faf8f5;--surface-2:#ede8e2;--ink:#141112;--ink-2:#4f4845;--muted:#8a817b;
+--grid:#e0dad3;--border:rgba(20,17,18,.09);
+--accent:#7a1c2b;--accent-ink:#fff;--accent-soft:#f1dfe0;--red:#c8102e;
+--good:#0a7a2f;--warn:#a3520b;--bad:#c8102e;
+--shadow:0 1px 2px rgba(20,17,18,.05),0 6px 18px rgba(20,17,18,.07)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+--page:#121011;--surface:#1c1819;--surface-2:#272223;--ink:#f5f1ee;--ink-2:#c9c1bc;--muted:#8f8681;
+--grid:#322c2d;--border:rgba(255,255,255,.08);
+--accent:#e3213f;--accent-ink:#fff;--accent-soft:#3a1a20;--red:#ff3b52;
+--good:#34d399;--warn:#fbbf24;--bad:#ff6b6b;
+--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{color-scheme:dark;
+--page:#121011;--surface:#1c1819;--surface-2:#272223;--ink:#f5f1ee;--ink-2:#c9c1bc;--muted:#8f8681;
+--grid:#322c2d;--border:rgba(255,255,255,.08);
+--accent:#e3213f;--accent-ink:#fff;--accent-soft:#3a1a20;--red:#ff3b52;
+--good:#34d399;--warn:#fbbf24;--bad:#ff6b6b;
+--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);
+font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+padding-block:0 calc(24px + env(safe-area-inset-bottom))}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px}
+header.top{padding:18px 0 8px;display:flex;align-items:center;gap:10px}
+header.top .logo{width:34px;height:34px;border-radius:10px;background:#141112;color:var(--red);
+display:grid;place-items:center;font-weight:800;font-size:16px;flex:0 0 auto}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+h2{font-size:17px;margin:18px 0 8px}
+.sub{color:var(--muted);font-size:12px;margin:0}
+a{color:var(--accent)}
+.card{background:var(--surface);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.notice{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:10px 12px;
+font-size:13px;margin-bottom:12px}
+.muted{color:var(--muted);font-size:13px}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px;border-bottom:1px solid var(--grid);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.n,th.n{text-align:right;white-space:nowrap}
+.big{font-weight:800;font-size:15px}
+small{color:var(--muted);font-size:12px;line-height:1.35;display:inline-block}
+.verdict{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.verdict.good{background:var(--accent);color:var(--accent-ink)}
+.verdict.ok{background:var(--accent-soft);color:var(--accent)}
+.verdict.meh{background:var(--surface-2);color:var(--muted)}
+tr.compra .big{color:var(--accent)}
+tr.valuta .big{color:var(--warn)}
+/* occasioni: una scheda per capo, col link diretto all'annuncio */
+.occ{border-bottom:1px solid var(--grid);padding:12px 0}
+.occ:first-child{padding-top:2px}
+.occ:last-child{border-bottom:0;padding-bottom:2px}
+.occ .top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.occ .t{font-size:14px;font-weight:600;min-width:0}
+.occ .meta{color:var(--muted);font-size:12px;margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.kpi{min-width:0;background:var(--surface-2);border-radius:12px;padding:7px 9px}
+.kpi .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:17px;font-weight:800;line-height:1.2;letter-spacing:-.01em;
+font-variant-numeric:tabular-nums}
+.kpi.hi{background:var(--accent-soft)}
+.kpi.hi .val{color:var(--accent)}
+.kpi .val small{font-size:11px;font-weight:500}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;
+background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;
+justify-content:center;gap:8px;text-decoration:none}
+.btn.block{width:100%}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.vuoto{color:var(--muted);font-size:13px}
+.giorno{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+margin:14px 0 6px;font-weight:600}
+.giorno:first-child{margin-top:0}
+.task{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--grid);align-items:flex-start}
+.task:last-child{border-bottom:0}
+.task .segno{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+font-weight:800;font-size:12px;flex:0 0 auto;background:var(--surface-2);color:var(--muted)}
+.task.subito .segno,.task.ripubblica .segno,.task.alza .segno{background:var(--accent);color:var(--accent-ink)}
+.task .corpo{min-width:0;flex:1}
+.task .capo{font-size:14px;font-weight:600}
+.task .cosa{font-size:13px;color:var(--ink-2);margin-top:1px}
+.task .numeri{font-size:12px;color:var(--muted);margin-top:3px}
+.task .numeri b{color:var(--accent);font-size:13px}
+.fatto{flex:0 0 auto;align-self:center;border:1px solid var(--border);background:var(--surface-2);
+color:var(--ink-2);font:inherit;font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer}
+.task[hidden],.giorno[hidden]{display:none}
+.riga-fatti{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;
+padding-top:10px;border-top:1px solid var(--grid)}
+.rimetti{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;
+padding:4px 0;cursor:pointer}
+.azioni{display:flex;gap:8px}
+.azioni .btn{flex:1}
+.occ[hidden]{display:none}
+.scartati{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.scartati .btn{padding:7px 11px;font-size:13px;border-radius:10px}
+.ripristina{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;
+padding:4px 0;cursor:pointer;text-align:left}
+.elenco-scartati{margin-top:8px;font-size:13px}
+.elenco-scartati div{padding:5px 0;border-bottom:1px solid var(--grid);
+display:flex;gap:10px;justify-content:space-between;align-items:center}
+.elenco-scartati div:last-child{border-bottom:0}
+@media(max-width:420px){.kpis{grid-template-columns:repeat(2,1fr)}
+.azioni{flex-direction:column}}
+
+.capo-nome{font-size:13px;margin:18px 0 6px;color:var(--ink-2);font-weight:600;
+text-transform:none;letter-spacing:0}
+.capo-nome b{color:var(--accent)}
+.kpis-2{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.fonte{font-size:12px;color:var(--muted);margin:0 0 10px}
+.nota-capo{font-size:13px;color:var(--ink);background:var(--accent-soft);
+border-radius:12px;padding:9px 11px;margin:0 0 10px}
+.campo{margin-top:12px}
+.etichetta{font-size:10px;color:var(--muted);text-transform:uppercase;
+letter-spacing:.04em;margin-bottom:4px}
+.testo{width:100%;font:inherit;font-size:14px;padding:10px 12px;border-radius:12px;
+border:1px solid var(--border);background:var(--page);color:var(--ink);resize:vertical}
+textarea.testo{line-height:1.5}
+.copia{margin-top:6px;padding:8px 14px;font-size:13px;border-radius:10px}
+.copia.ok{background:var(--accent);color:var(--accent-ink)}
+.voce{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:13px;
+border-bottom:1px solid var(--grid)}
+.voce:last-child{border-bottom:0}
+.voce input{margin-top:2px;width:18px;height:18px;accent-color:var(--accent);flex:0 0 auto}
+.voce input:checked + span{color:var(--muted);text-decoration:line-through}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="logo">V</div>
+  <div><h1>Pubblicazione</h1>
+    <p class="sub">Aggiornato il 23/11/2026 alle 13:45 &middot; <a href="radar.html">radar</a> &middot;
+    <a href="index.html">dashboard</a></p></div>
+</header>
+
+<div class="notice">
+<b>Cosa e' misurato qui.</b> Solo il prezzo: e' la mediana dei capi di quel
+gruppo che si sono davvero venduti, su centinaia di casi.<br><br>
+<b>Cosa non lo e'.</b> Il titolo e la descrizione. Ho controllato se certe parole
+vendono di piu' e, a parita' di prezzo, non succede: su The North Face fra 20 e 35 &euro;
+i titoli col nome del modello vendono il 9,5 % contro il 13,1 % degli altri. Era il prezzo
+a fare la differenza, non le parole. Quindi qui il testo serve solo ad averlo pronto da
+incollare, non a vendere di piu'.<br><br>
+Quello che scrivi resta su questo telefono e si salva mentre scrivi.
+</div>
+
+<h3 class=capo-nome>The North Face &middot; taglia XL &middot; Ottime &middot; <a target=_blank rel=noopener href='https://www.vinted.it/items/10510050004'>apri l'annuncio</a></h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>50 &euro;</div></div><div class=kpi><div class=lbl>adesso</div><div class=val><small>ora 26 &euro;</small></div></div></div><p class=fonte>mediana di tnf_giacche_uomo / Summit / Gore-Tex / XCR su 12 vendite</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='c10510050004-t' value="The North Face Summit Series Gore-Tex XL giacca gialla Zip-In"><button class='btn ghost copia' type=button data-copia='c10510050004-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='c10510050004-d'>The North Face, taglia XL.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: ottime. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='c10510050004-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='c10510050004-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='c10510050004-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='c10510050004-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='c10510050004-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='c10510050004-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='c10510050004-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='c10510050004-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='c10510050004-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div><h3 class=capo-nome>The North Face &middot; taglia L / IT 44 / EU 40 &middot; Buone &middot; <a target=_blank rel=noopener href='https://www.vinted.it/items/10573492459'>apri l'annuncio</a></h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>35 &euro;</div></div><div class=kpi><div class=lbl>adesso</div><div class=val><small>ora 28 &euro;</small></div></div></div><p class=fonte>mediana di tnf_giacche_uomo su 469 vendite</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='c10573492459-t' value="The North Face giacca impermeabile bianca donna L cappuccio"><button class='btn ghost copia' type=button data-copia='c10573492459-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='c10573492459-d'>The North Face, taglia L / IT 44 / EU 40.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: buone. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='c10573492459-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='c10573492459-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='c10573492459-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='c10573492459-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='c10573492459-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='c10573492459-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='c10573492459-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='c10573492459-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='c10573492459-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div><h3 class=capo-nome>Carhartt &middot; taglia XS &middot; Buone &middot; <a target=_blank rel=noopener href='https://www.vinted.it/items/10582821139'>apri l'annuncio</a></h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>55 &euro;</div></div><div class=kpi><div class=lbl>adesso</div><div class=val><small>ora 38 &euro;</small></div></div></div><p class=fonte>mediana di carhartt_giacche_uomo / WIP su 52 vendite</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='c10582821139-t' value="Carhartt WIP giubbotto nylon imbottito, cappuccio removibile XS vintage"><button class='btn ghost copia' type=button data-copia='c10582821139-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='c10582821139-d'>Carhartt, taglia XS.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: buone. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='c10582821139-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='c10582821139-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='c10582821139-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='c10582821139-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='c10582821139-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='c10582821139-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='c10582821139-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='c10582821139-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='c10582821139-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div><h3 class=capo-nome>Calvin Klein &middot; taglia XL / IT 46 / EU 42 &middot; Ottime &middot; <a target=_blank rel=noopener href='https://www.vinted.it/items/10702700382'>apri l'annuncio</a></h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>&mdash;</div></div></div><p class=fonte>marca fuori dal campione del bot: il prezzo lo decidi tu</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='c10702700382-t' value="Calvin Klein gilet smanicato imbottito bordeaux XL nylon lucido"><button class='btn ghost copia' type=button data-copia='c10702700382-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='c10702700382-d'>Calvin Klein, taglia XL / IT 46 / EU 42.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: ottime. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='c10702700382-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='c10702700382-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='c10702700382-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='c10702700382-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='c10702700382-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='c10702700382-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='c10702700382-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='c10702700382-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='c10702700382-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div><h3 class=capo-nome>Monte Cervino &middot; taglia XL / IT 46 / EU 42 &middot; Ottime &middot; <a target=_blank rel=noopener href='https://www.vinted.it/items/10723034870'>apri l'annuncio</a></h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>&mdash;</div></div></div><p class=fonte>marca fuori dal campione del bot: il prezzo lo decidi tu</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='c10723034870-t' value="Piumino lungo Monte Cervino XL senape cappuccio donna"><button class='btn ghost copia' type=button data-copia='c10723034870-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='c10723034870-d'>Monte Cervino, taglia XL / IT 46 / EU 42.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: ottime. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='c10723034870-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='c10723034870-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='c10723034870-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='c10723034870-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='c10723034870-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='c10723034870-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='c10723034870-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='c10723034870-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='c10723034870-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div><h3 class=capo-nome><b>da pubblicare</b> &middot; Jacare &middot; taglia ? &middot; Buone</h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>&mdash;</div></div></div><p class=fonte>marca fuori dal campione del bot: il prezzo lo decidi tu</p><p class=nota-capo>Prima di tutto stiralo: su un completo le pieghe nelle foto valgono piu' del prezzo. Marca fuori dal campione del bot, quindi il prezzo guardalo a mano fra gli annunci simili.</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='n5-t' value="Completo Jacare giacca e pantalone uomo vintage"><button class='btn ghost copia' type=button data-copia='n5-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='n5-d'>Jacare, taglia ?.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: buone. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='n5-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='n5-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='n5-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='n5-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='n5-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='n5-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='n5-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='n5-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='n5-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div><h3 class=capo-nome><b>da pubblicare</b> &middot; ? &middot; taglia ? &middot; Buone</h3><div class=card><div class=kpis-2><div class=kpi><div class=lbl>pubblica a</div><div class=val>&mdash;</div></div></div><p class=fonte>marca fuori dal campione del bot: il prezzo lo decidi tu</p><p class=nota-capo>Non pubblicarlo adesso: i blazer si vendono in primavera. Tienilo per marzo.</p><div class=campo><div class=etichetta>titolo</div><input class=testo data-salva='n6-t' value="Blazer uomo vintage"><button class='btn ghost copia' type=button data-copia='n6-t'>copia</button></div><div class=campo><div class=etichetta>descrizione &mdash; scrivi le misure e i difetti</div><textarea class=testo rows=11 data-salva='n6-d'>?, taglia ?.
+
+Misure a capo disteso:
+- spalle: ... cm
+- torace: ... cm
+- lunghezza: ... cm
+- manica: ... cm
+
+Condizioni: buone. ...
+
+Spedizione in 24-48 ore. Scrivimi pure per altre foto o misure.</textarea><button class='btn ghost copia' type=button data-copia='n6-d'>copia</button></div><div class=campo><div class=etichetta>foto</div><label class=voce><input type=checkbox data-foto='n6-0'><span>intero davanti, appeso, su parete liscia e senza roba intorno</span></label><label class=voce><input type=checkbox data-foto='n6-1'><span>intero dietro</span></label><label class=voce><input type=checkbox data-foto='n6-2'><span>etichetta della marca</span></label><label class=voce><input type=checkbox data-foto='n6-3'><span>etichetta con taglia e composizione</span></label><label class=voce><input type=checkbox data-foto='n6-4'><span>zip, bottoni e polsini da vicino</span></label><label class=voce><input type=checkbox data-foto='n6-5'><span>interno e fodera</span></label><label class=voce><input type=checkbox data-foto='n6-6'><span>il difetto in primo piano, se c'e'</span></label><label class=voce><input type=checkbox data-foto='n6-7'><span>dettaglio del tessuto a luce naturale</span></label></div></div>
+
+<p class="muted">I capi non ancora online stanno in <code>da_pubblicare.json</code>:
+aggiungine uno con <code>titolo</code>, <code>marca</code>, <code>taglia</code> e
+<code>nota</code>, e compare qui con il suo prezzo calcolato.</p>
+
+</div>
+<script>
+(function(){
+  var K='pubblica-testi', C='pubblica-foto';
+  function leggi(k){try{return JSON.parse(localStorage.getItem(k))||{};}catch(e){return {};}}
+  function scrivi(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  var testi=leggi(K), foto=leggi(C);
+
+  document.querySelectorAll('[data-salva]').forEach(function(el){
+    var id=el.dataset.salva;
+    if(typeof testi[id]==='string') el.value=testi[id];
+    el.addEventListener('input',function(){testi[id]=el.value;scrivi(K,testi);});
+  });
+
+  document.querySelectorAll('[data-foto]').forEach(function(el){
+    var id=el.dataset.foto;
+    el.checked=!!foto[id];
+    el.addEventListener('change',function(){
+      if(el.checked){foto[id]=1;}else{delete foto[id];}
+      scrivi(C,foto);
+    });
+  });
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.copia');
+    if(!b) return;
+    var campo=document.querySelector('[data-salva="'+b.dataset.copia+'"]');
+    if(!campo) return;
+    var finito=function(){
+      b.classList.add('ok'); var prima=b.textContent; b.textContent='copiato';
+      setTimeout(function(){b.classList.remove('ok');b.textContent=prima;},1200);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(campo.value).then(finito,function(){
+        campo.select(); document.execCommand('copy'); finito();
+      });
+    } else { campo.select(); document.execCommand('copy'); finito(); }
+  });
+})();
+</script>
+</body>
+</html>

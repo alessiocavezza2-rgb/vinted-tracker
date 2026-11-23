@@ -127,8 +127,8 @@ align-items:center;gap:2px;cursor:default;overflow:hidden}
 .g.oggi{outline:2px solid var(--accent);outline-offset:-2px}
 .g.oggi .num{color:var(--accent);font-weight:800}
 .g.pieno{cursor:pointer}
-.g .foto{display:flex;gap:1px;align-items:center;justify-content:center;flex-wrap:wrap;
-padding:0 2px 5px}
+.g .foto{display:flex;gap:1px;align-items:center;justify-content:center;flex-wrap:nowrap;
+padding:0 2px 5px;max-width:100%}
 .mini{width:17px;height:22px;border-radius:4px;object-fit:cover;display:block;
 background:var(--grid)}
 .mini.senza{display:grid;place-items:center;font-size:9px;font-weight:800;color:var(--muted)}
@@ -173,7 +173,7 @@ font:inherit;font-size:13px;padding:8px 10px;border-radius:10px}
 <header class="top">
   <div class="logo">V</div>
   <div><h1>Calendario</h1>
-    <p class="sub">Aggiornato il 23/11/2026 alle 15:45 &middot; <a href="radar.html">radar</a>
+    <p class="sub">Aggiornato il 23/11/2026 alle 15:47 &middot; <a href="radar.html">radar</a>
     &middot; <a href="pubblica.html">pubblicazione</a>
     &middot; <a href="index.html">dashboard</a></p></div>
 </header>
@@ -255,6 +255,9 @@ nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
     var d=daIso(s), o=daIso(OGGI);
     var diff=Math.round((d-o)/86400000);
     var nome=GIORNI[(d.getDay()+6)%7]+' '+d.getDate()+' '+MESI[d.getMonth()];
+    /* l'anno solo quando non e' questo: il blazer e' segnato a marzo 2027 e
+       "lunedi 1 marzo" da solo non dice se e' fra tre mesi o fra quindici */
+    if(d.getFullYear()!==o.getFullYear()) nome+=' '+d.getFullYear();
     if(diff===0) return 'oggi, '+nome;
     if(diff===1) return 'domani, '+nome;
     if(diff>1 && diff<7) return nome+' (fra '+diff+' giorni)';
@@ -344,13 +347,18 @@ nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
     if(lista.length){
       var box=document.createElement('span');
       box.className='foto';
-      (vivi.length?vivi:lista).slice(0,3).forEach(function(t){
+      /* In una casella da 39 pixel (telefono stretto, 7 colonne) ci stanno due
+         miniature e basta. Se i capi sono di piu' ne mostro una e il resto in
+         cifre: tre miniature andavano a capo e la riga del mese diventava
+         alta il doppio. */
+      var mostra=(vivi.length?vivi:lista);
+      var quante=(mostra.length>2 ? 1 : mostra.length);
+      mostra.slice(0,quante).forEach(function(t){
         box.appendChild(miniatura(t,'mini'));
       });
-      var resto=(vivi.length?vivi:lista).length-3;
-      if(resto>0){
+      if(mostra.length>quante){
         var piu=document.createElement('span');
-        piu.className='piu'; piu.textContent='+'+resto;
+        piu.className='piu'; piu.textContent='+'+(mostra.length-quante);
         box.appendChild(piu);
       }
       el.appendChild(box);

@@ -143,6 +143,7 @@ background:var(--grid);display:block}
 .task .spostato{font-size:12px;color:var(--warn);margin-top:3px}
 .azioni{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .azioni .btn{padding:9px 13px;font-size:13px;border-radius:10px}
+.sposta{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
 .quando{border:1px solid var(--border);background:var(--surface-2);color:var(--ink);
 font:inherit;font-size:13px;padding:8px 10px;border-radius:10px}
 .legenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
@@ -398,7 +399,13 @@ JS = r"""
       iMese=Math.max(0,mesiElenco.indexOf(vai.slice(0,7)));
       apri(vai);
     };
-    azioni.appendChild(data);
+    /* il campo data da solo non dice a cosa serve: un'etichetta visibile,
+       non solo per il lettore di schermo */
+    var et=document.createElement('label');
+    et.className='sposta';
+    et.appendChild(document.createTextNode('sposta a'));
+    et.appendChild(data);
+    azioni.appendChild(et);
     corpo.appendChild(azioni);
 
     riga.appendChild(corpo);

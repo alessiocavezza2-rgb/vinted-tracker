@@ -1026,7 +1026,7 @@ def scrivi_html(rif, occ, box, ore, ultimo, cal):
 <header class="top">
   <div class="logo">V</div>
   <div><h1>Radar acquisti</h1>
-    <p class="sub">Aggiornato il {oggi} &middot; finestra {ore} ore &middot; <a href="calendario.html">calendario</a> &middot; <a href="pubblica.html">pubblicazione</a> &middot; <a href="index.html">dashboard</a></p></div>
+    <p class="sub">Aggiornato il {oggi} &middot; finestra {ore} ore &middot; <a href="calendario.html">calendario</a> &middot; <a href="index.html">dashboard</a></p></div>
 </header>
 
 <div class="notice">

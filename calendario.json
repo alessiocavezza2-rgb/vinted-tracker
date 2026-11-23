@@ -1,16 +1,31 @@
 [
- {"quando": "2026-11-21",
+ {"quando": "2026-11-28",
+  "urgenza": "nota",
+  "capo": "Carhartt nera M (comprata col radar)",
+  "cosa": "Falla cucire dal parente: la scucitura e' al polsino, due minuti di macchina. Poi misure e foto, con il polsino rifatto in primo piano."},
+
+ {"quando": "2026-11-30",
+  "urgenza": "nota",
+  "capo": "Carhartt nera M (comprata col radar)",
+  "cosa": "Pubblicala a 50 euro: mediana dei venduti di Carhartt giacche uomo su 597 vendite. Se e' una Detroit, una Michigan o una Active la mediana sale a 60 su 152 vendite.",
+  "prezzo": null,
+  "consiglio": 50},
+
+ {"quando": "2026-11-28",
   "urgenza": "nota",
   "capo": "Carhartt WIP XS verde oliva",
-  "cosa": "Chiedi il preventivo alla sartoria per il polsino. Sopra i 15 euro non conviene: ripubblicalo com'e' a 45 euro con la foto del difetto in evidenza."},
- {"quando": "2026-11-21",
+  "cosa": "Niente sartoria: fai cucire il polsino allo stesso parente insieme alla nera. Il preventivo da 15 euro non serve piu'."},
+
+ {"quando": "2026-11-28",
   "urgenza": "nota",
   "capo": "Completo Jacare",
-  "cosa": "Stiralo e fotografalo: senza foto curate non si vende, e finche' resta in armadio non rende niente."},
- {"quando": "2026-11-22",
+  "cosa": "Stiralo e fotografalo: senza foto curate non si vende, e finche' resta in armadio non rende niente. Marca fuori dal campione del bot, il prezzo guardalo a mano fra gli annunci simili."},
+
+ {"quando": "2026-11-28",
   "urgenza": "nota",
   "capo": "Calvin Klein gilet bordeaux",
-  "cosa": "Rifai la foto di copertina prima di toccare il prezzo: 2 preferiti in 13 giorni sono pochi per un capo a 28 euro."},
+  "cosa": "Rifai la foto di copertina prima di toccare il prezzo: 3 preferiti in 16 giorni sono pochi per un capo a 28 euro."},
+
  {"quando": "2027-03-01",
   "urgenza": "nota",
   "capo": "Blazer",

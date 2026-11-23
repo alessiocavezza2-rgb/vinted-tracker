@@ -38,6 +38,7 @@ DOCS = ROOT / "docs"
 
 # cosa vuol dire ogni colore, scritto una volta sola
 LEGENDA = [
+    ("venduto", "€", "venduto: giorno gia' passato"),
     ("subito", "!", "oggi, senza rinviare"),
     ("ripubblica", "R", "due settimane online: ripubblica"),
     ("alza", "+", "prezzo sotto la fascia che rende"),
@@ -49,6 +50,35 @@ ORDINE = {u: i for i, (u, _, _) in enumerate(LEGENDA)}
 SIMBOLO = {u: s for u, s, _ in LEGENDA}
 
 
+def vendite(con):
+    """I capi gia' venduti, nel giorno in cui sono spariti dal guardaroba.
+
+    Il campo 'sold' di Vinted resta spesso indietro, quindi la data vera e'
+    l'ultima volta che il bot ha visto l'annuncio online: puo' sbagliare di
+    qualche ora, non di giorni. Sono righe di sola lettura: non si spostano,
+    non si spuntano, servono a vedere il ritmo con cui vendi.
+    """
+    con.row_factory = sqlite3.Row
+    fuori = []
+    for c in con.execute("select * from mine where sold=1 and sold_at is not null"):
+        try:
+            giorno = datetime.fromisoformat(c["sold_at"].replace("Z", "+00:00")).date()
+            nato = datetime.fromisoformat((c["first_seen"] or "").replace("Z", "+00:00")).date()
+        except (ValueError, AttributeError):
+            continue
+        prezzo = c["sold_price"] or c["price"]
+        giorni = (giorno - nato).days
+        fuori.append({
+            "data": giorno, "urgenza": "venduto", "giorni": giorni,
+            "cosa": ("venduto il giorno stesso che l'hai pubblicato" if giorni <= 0
+                     else f"venduto dopo {giorni} giorno online" if giorni == 1
+                     else f"venduto dopo {giorni} giorni online"),
+            "capo": c["title"], "prezzo": prezzo, "consiglio": None, "fascia": None,
+            "fav": c["favourites"], "id": c["id"], "foto": c["photo"], "passato": True,
+        })
+    return fuori
+
+
 def raccogli():
     """Le righe del calendario del radar, in ordine di giorno e urgenza."""
     con = sqlite3.connect(radar.DB_PATH)
@@ -56,22 +86,28 @@ def raccogli():
         righe_db = radar.carica(con)
         rif = radar.riferimenti(righe_db)
         righe = radar.calendario(con, rif)
+        righe += vendite(con)
     finally:
         con.close()
-    # ordino per il giorno in cui la cosa va fatta DAVVERO, non per la data
-    # teorica: un promemoria scaduto il 9 novembre vale oggi, e ordinandolo per
-    # la data vecchia finiva in cima al giorno davanti ai capi urgenti.
-    oggi = date.today()
-    righe.sort(key=lambda r: (max(r["data"], oggi), ORDINE.get(r["urgenza"], 9),
+    righe.sort(key=lambda r: (giorno_vero(r), ORDINE.get(r["urgenza"], 9),
                               -(r["giorni"] or 0)))
     return righe
 
 
+def giorno_vero(r):
+    """Il giorno in cui la riga va messa nel mese.
+
+    Un promemoria scaduto il 9 novembre vale OGGI: ordinarlo per la data
+    vecchia lo faceva finire in cima al giorno davanti ai capi urgenti. Una
+    vendita invece resta dov'e' successa: e' storia, non una cosa da fare.
+    """
+    return r["data"] if r.get("passato") else max(r["data"], date.today())
+
+
 def per_giorno(righe):
-    """Raggruppa per giorno, con gli scaduti su oggi (come fa il radar)."""
     giorni = {}
     for r in righe:
-        giorni.setdefault(max(r["data"], date.today()), []).append(r)
+        giorni.setdefault(giorno_vero(r), []).append(r)
     return giorni
 
 
@@ -81,8 +117,9 @@ def dati(righe):
     for r in righe:
         fuori.append({
             "k": radar.chiave_task(r),
-            "g": max(r["data"], date.today()).isoformat(),
+            "g": giorno_vero(r).isoformat(),
             "u": r["urgenza"],
+            "p": 1 if r.get("passato") else 0,
             "capo": (r["capo"] or "")[:80],
             "cosa": r["cosa"],
             "prezzo": round(r["prezzo"]) if r["prezzo"] else None,
@@ -124,6 +161,7 @@ background:var(--grid)}
 background:var(--muted)}
 .g.u-subito::after,.g.u-ripubblica::after,.g.u-alza::after{background:var(--accent)}
 .g.u-verifica::after{background:var(--warn)}
+.g.u-venduto::after{background:var(--good)}
 .g.u-aspetta::after{background:var(--grid)}
 .g.spento .foto{opacity:.28}
 .g.spento::after{background:var(--grid)}
@@ -140,6 +178,8 @@ background:var(--grid);display:block}
 .task .cosa{font-size:13px;color:var(--ink-2);margin-top:2px}
 .task .numeri{font-size:12px;color:var(--muted);margin-top:4px}
 .task .numeri b{color:var(--accent);font-size:13px}
+.task.venduto .capo{color:var(--ink-2)}
+.task.venduto .numeri{color:var(--good)}
 .task .spostato{font-size:12px;color:var(--warn);margin-top:3px}
 .azioni{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .azioni .btn{padding:9px 13px;font-size:13px;border-radius:10px}
@@ -151,6 +191,7 @@ font:inherit;font-size:13px;padding:8px 10px;border-radius:10px}
 .legenda i{width:10px;height:10px;border-radius:3px;background:var(--muted);display:inline-block}
 .legenda i.subito,.legenda i.ripubblica,.legenda i.alza{background:var(--accent)}
 .legenda i.verifica{background:var(--warn)}
+.legenda i.venduto{background:var(--good)}
 .legenda i.aspetta{background:var(--grid)}
 @media(max-width:360px){.g{min-height:50px}.mini{width:14px;height:19px}}
 """
@@ -184,10 +225,11 @@ JS = r"""
      altrimenti quello calcolato dal radar. Mai nel passato: un arretrato e'
      roba di oggi. */
   function giornoDi(t){
+    if(t.p) return t.g;            /* una vendita resta nel giorno in cui e' successa */
     var g = rinvii[t.k] || t.g;
     return g < OGGI ? OGGI : g;
   }
-  function fatto(t){ return fatti[t.k]===oggiChiave(); }
+  function fatto(t){ return !t.p && fatti[t.k]===oggiChiave(); }
 
   function inLettere(s){
     var d=daIso(s), o=daIso(OGGI);
@@ -215,7 +257,7 @@ JS = r"""
   }
 
   /* ---- griglia ---- */
-  var mesiElenco=[], selezionato=null, iMese=0;
+  var mesiElenco=[], selezionato=null, iMese=null;
   var celle=document.getElementById('celle');
   var titolo=document.getElementById('titolo-mese');
   var prec=document.getElementById('mese-prec');
@@ -231,19 +273,27 @@ JS = r"""
     return m;
   }
 
+  /* I mesi in ordine di calendario, passato compreso: le vendite stanno
+     indietro e un mese che non si puo' sfogliare all'indietro non e' un
+     calendario. Parto da quello di oggi. */
   function calcolaMesi(mappa){
     var o=daIso(OGGI);
-    var set=[o.getFullYear()+'-'+p2(o.getMonth()+1)];
-    Object.keys(mappa).sort().forEach(function(g){
+    var mio=o.getFullYear()+'-'+p2(o.getMonth()+1);
+    var set=[mio];
+    Object.keys(mappa).forEach(function(g){
       var k=g.slice(0,7);
       if(set.indexOf(k)<0) set.push(k);
     });
-    return set.slice(0,6);
+    set.sort();
+    return set;
   }
 
   function disegna(){
     var mappa=raggruppa();
     mesiElenco=calcolaMesi(mappa);
+    if(iMese===null){          /* la prima volta apro sul mese di oggi */
+      iMese=Math.max(0, mesiElenco.indexOf(OGGI.slice(0,7)));
+    }
     if(iMese>=mesiElenco.length) iMese=mesiElenco.length-1;
     var parti=mesiElenco[iMese].split('-');
     var anno=+parti[0], mese=+parti[1];
@@ -344,7 +394,8 @@ JS = r"""
       var num=document.createElement('div');
       num.className='numeri';
       if(t.prezzo){
-        num.appendChild(document.createTextNode('ora '+t.prezzo+' €'));
+        num.appendChild(document.createTextNode(
+          (t.p?'venduto a ':'ora ')+t.prezzo+' €'));
         if(t.consiglio){
           num.appendChild(document.createTextNode(' → '));
           var b=document.createElement('b'); b.textContent=t.consiglio+' €';
@@ -363,6 +414,12 @@ JS = r"""
         +inLettere(t.g<OGGI?OGGI:t.g)));
     }
 
+    /* Una vendita e' storia: niente pulsanti, non si sposta e non si spunta. */
+    if(t.p){
+      riga.appendChild(corpo);
+      return riga;
+    }
+
     var azioni=document.createElement('div');
     azioni.className='azioni';
     if(t.id){
@@ -371,11 +428,6 @@ JS = r"""
       a.href='https://www.vinted.it/items/'+t.id;
       a.textContent="Apri l'annuncio →";
       azioni.appendChild(a);
-    } else {
-      var p=document.createElement('a');
-      p.className='btn'; p.href='pubblica.html';
-      p.textContent='Scheda di pubblicazione →';
-      azioni.appendChild(p);
     }
     if(t.u!=='aspetta'){
       var f=document.createElement('button');
@@ -431,7 +483,7 @@ JS = r"""
     scrivi(K_FATTI,fatti); scrivi(K_RINVII,rinvii);
     /* torno a oggi: il giorno che stavo guardando potrebbe essere rimasto
        vuoto proprio perche' ho annullato lo spostamento che lo riempiva */
-    iMese=0; disegna(); apri(OGGI);
+    iMese=null; disegna(); apri(OGGI);
   };
 
   disegna();
@@ -447,6 +499,8 @@ def scrivi_html(righe):
     quando = datetime.now().strftime("%d/%m/%Y alle %H:%M")
     giorni = per_giorno(righe)
     legenda = "".join(f"<span><i class='{u}'></i>{t}</span>" for u, _, t in LEGENDA)
+    quante_vendite = sum(1 for r in righe if r.get("passato"))
+    da_fare = len(righe) - quante_vendite
     # "</" dentro un JSON chiuderebbe il tag script prima del tempo
     payload = json.dumps(dati(righe), ensure_ascii=False).replace("</", "<\\/")
 
@@ -465,7 +519,6 @@ def scrivi_html(righe):
   <div class="logo">V</div>
   <div><h1>Calendario</h1>
     <p class="sub">Aggiornato il {quando} &middot; <a href="radar.html">radar</a>
-    &middot; <a href="pubblica.html">pubblicazione</a>
     &middot; <a href="index.html">dashboard</a></p></div>
 </header>
 
@@ -499,8 +552,7 @@ Le spunte sono le stesse del radar: quello che segni qui risulta segnato anche l
 </div>
 </div>
 
-<p class="muted">{sum(len(v) for v in giorni.values())} promemoria in
-{len(giorni)} giorni. I tempi vengono dalle coorti del tracker: sette giorni di pazienza,
+<p class="muted">{da_fare} cose da fare e {quante_vendite} vendite segnate. I tempi vengono dalle coorti del tracker: sette giorni di pazienza,
 quattordici per ripubblicare, ventuno e la cosa diventa urgente. Il prezzo consigliato
 &egrave; la mediana dei venduti di quel gruppo; per le marche che il bot non segue non c'&egrave;
 nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
@@ -516,6 +568,19 @@ nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
     return out
 
 
+def in_lettere(g, oggi):
+    """Come radar.quando_in_lettere, ma il passato resta passato.
+
+    Quella del radar schiaccia su "oggi" tutto cio' che e' scaduto: giusto per
+    una lista di cose da fare, sbagliato qui, dove le vendite di ottobre
+    uscivano tutte sotto l'intestazione "oggi, lunedi 23 novembre".
+    """
+    if g >= oggi:
+        return radar.quando_in_lettere(g, oggi)
+    return (f"{radar.GIORNI_IT[g.weekday()]} {g.day} {radar.MESI_IT[g.month - 1]}"
+            + (f" {g.year}" if g.year != oggi.year else ""))
+
+
 def stampa(righe):
     oggi = date.today()
     giorni = per_giorno(righe)
@@ -528,7 +593,7 @@ def stampa(righe):
         return
     for g in sorted(giorni):
         print()
-        print(f"-- {radar.quando_in_lettere(g, oggi)}")
+        print(f"-- {in_lettere(g, oggi)}")
         for r in giorni[g]:
             prezzo = ""
             if r["prezzo"]:
@@ -538,7 +603,9 @@ def stampa(righe):
             print(f"   {SIMBOLO.get(r['urgenza'], '.')} {foto} {(r['capo'] or '')[:40]:<40}"
                   f" {r['cosa'][:38]}{prezzo}")
     print()
-    print(f"{sum(len(v) for v in giorni.values())} promemoria in {len(giorni)} giorni. "
+    vendute = sum(1 for r in righe if r.get("passato"))
+    print(f"{len(righe) - vendute} cose da fare in {len(giorni)} giorni, "
+          f"{vendute} vendite segnate. "
           f"Con foto: {sum(1 for r in righe if r.get('foto'))} su {len(righe)}.")
 
 

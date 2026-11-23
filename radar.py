@@ -509,7 +509,8 @@ def calendario(con, rif):
             righe.append({"data": oggi, "giorni": giorni, "urgenza": "verifica",
                           "cosa": "non e' piu' online: venduto o tolto? Controlla e segnalo",
                           "capo": c["title"], "prezzo": c["price"], "consiglio": None,
-                          "fascia": fascia, "fav": c["favourites"], "id": c["id"]})
+                          "fascia": fascia, "fav": c["favourites"], "id": c["id"],
+                          "foto": c.get("photo")})
             continue
 
         if giorni >= GIORNI_URGENTE:
@@ -530,7 +531,8 @@ def calendario(con, rif):
 
         righe.append({"data": data, "giorni": giorni, "urgenza": urgenza, "cosa": cosa,
                       "capo": c["title"], "prezzo": c["price"], "consiglio": cons,
-                      "fascia": fascia, "fav": c["favourites"], "id": c["id"]})
+                      "fascia": fascia, "fav": c["favourites"], "id": c["id"],
+                      "foto": c.get("photo")})
 
     # appuntamenti scritti a mano: capi non ancora pubblicati, promemoria
     f = ROOT / "calendario.json"
@@ -543,7 +545,8 @@ def calendario(con, rif):
             righe.append({"data": data, "giorni": None, "urgenza": v.get("urgenza", "nota"),
                           "cosa": v.get("cosa", ""), "capo": v.get("capo", ""),
                           "prezzo": v.get("prezzo"), "consiglio": v.get("consiglio"),
-                          "fascia": None, "fav": None, "id": None})
+                          "fascia": None, "fav": None, "id": None,
+                          "foto": v.get("foto")})
 
     ordine = {"subito": 0, "ripubblica": 1, "alza": 2, "verifica": 3, "nota": 4, "aspetta": 5}
     righe.sort(key=lambda r: (r["data"], ordine.get(r["urgenza"], 9), -(r["giorni"] or 0)))
@@ -1023,7 +1026,7 @@ def scrivi_html(rif, occ, box, ore, ultimo, cal):
 <header class="top">
   <div class="logo">V</div>
   <div><h1>Radar acquisti</h1>
-    <p class="sub">Aggiornato il {oggi} &middot; finestra {ore} ore &middot; <a href="pubblica.html">pubblicazione</a> &middot; <a href="index.html">dashboard</a></p></div>
+    <p class="sub">Aggiornato il {oggi} &middot; finestra {ore} ore &middot; <a href="calendario.html">calendario</a> &middot; <a href="pubblica.html">pubblicazione</a> &middot; <a href="index.html">dashboard</a></p></div>
 </header>
 
 <div class="notice">

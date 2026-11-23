@@ -22,3 +22,5 @@
 [2026-11-23 11:30:03] check: esiti {'active': 244, 'deleted': 35, 'sold': 41}
 [2026-11-23 11:30:03] pulizia database: 79303 -> 71395 righe
 [2026-11-23 11:30:03] dashboard generata: 16 ricerche, 71395 annunci, 21156 seguiti, 6991 venduti, 31 giorni di dati
+[2026-11-23 15:34:51] i miei annunci: 5 totali, 5 attivi, 31 preferiti
+[2026-11-23 15:40:54] dashboard generata: 16 ricerche, 71395 annunci, 21156 seguiti, 6991 venduti, 31 giorni di dati

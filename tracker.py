@@ -130,6 +130,12 @@ def db():
             con.execute(f"ALTER TABLE items ADD COLUMN {col}")
         except sqlite3.OperationalError:
             pass          # colonna gia' presente
+    # la miniatura dei miei capi, per il calendario: e' un indirizzo del CDN di
+    # Vinted, non scarico nessuna immagine.
+    try:
+        con.execute("ALTER TABLE mine ADD COLUMN photo TEXT")
+    except sqlite3.OperationalError:
+        pass
     return con
 
 
@@ -373,17 +379,20 @@ def fetch_mine():
         prezzo = float((it.get("price") or {}).get("amount") or 0)
         fav = int(it.get("favourite_count") or 0)
         venduto = 1 if it.get("is_closed") else 0
+        foto = ((it.get("photo") or {}).get("url")
+                or ((it.get("photos") or [{}])[0] or {}).get("url") or "")
         riga = con.execute("SELECT sold, first_price FROM mine WHERE id=?", (iid,)).fetchone()
         if riga is None:
             con.execute("INSERT INTO mine(id, title, brand, size, condition, price, first_price, favourites, "
-                        "sold, first_seen, last_seen) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                        "sold, first_seen, last_seen, photo) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                         (iid, (it.get("title") or "")[:200], (it.get("brand") or ""), (it.get("size") or ""),
-                         (it.get("status") or ""), prezzo, prezzo, fav, venduto, ts, ts))
+                         (it.get("status") or ""), prezzo, prezzo, fav, venduto, ts, ts, foto))
         else:
             con.execute("UPDATE mine SET title=?, price=?, favourites=?, sold=?, last_seen=?, "
+                        "photo=CASE WHEN ?<>'' THEN ? ELSE photo END, "
                         "sold_at=CASE WHEN ?=1 AND sold=0 THEN ? ELSE sold_at END, "
                         "sold_price=CASE WHEN ?=1 AND sold=0 THEN ? ELSE sold_price END WHERE id=?",
-                        ((it.get("title") or "")[:200], prezzo, fav, venduto, ts,
+                        ((it.get("title") or "")[:200], prezzo, fav, venduto, ts, foto, foto,
                          venduto, ts, venduto, prezzo, iid))
         con.execute("INSERT OR REPLACE INTO mine_history(id, ts, price, favourites) VALUES (?,?,?,?)",
                     (iid, ts, prezzo, fav))

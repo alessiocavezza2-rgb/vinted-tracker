@@ -43,6 +43,10 @@ jobs:
         if: always()
         run: python pubblica.py --html
 
+      - name: Calendario dei capi
+        if: always()
+        run: python calendario.py --html
+
       - name: Commit e push dei dati
         if: always()
         run: |

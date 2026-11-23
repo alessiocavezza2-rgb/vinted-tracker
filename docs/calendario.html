@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141112">
+<title>Calendario dei capi</title>
+<style>
+:root{color-scheme:light;
+--page:#efebe6;--surface:#faf8f5;--surface-2:#ede8e2;--ink:#141112;--ink-2:#4f4845;--muted:#8a817b;
+--grid:#e0dad3;--border:rgba(20,17,18,.09);
+--accent:#7a1c2b;--accent-ink:#fff;--accent-soft:#f1dfe0;--red:#c8102e;
+--good:#0a7a2f;--warn:#a3520b;--bad:#c8102e;
+--shadow:0 1px 2px rgba(20,17,18,.05),0 6px 18px rgba(20,17,18,.07)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+--page:#121011;--surface:#1c1819;--surface-2:#272223;--ink:#f5f1ee;--ink-2:#c9c1bc;--muted:#8f8681;
+--grid:#322c2d;--border:rgba(255,255,255,.08);
+--accent:#e3213f;--accent-ink:#fff;--accent-soft:#3a1a20;--red:#ff3b52;
+--good:#34d399;--warn:#fbbf24;--bad:#ff6b6b;
+--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{color-scheme:dark;
+--page:#121011;--surface:#1c1819;--surface-2:#272223;--ink:#f5f1ee;--ink-2:#c9c1bc;--muted:#8f8681;
+--grid:#322c2d;--border:rgba(255,255,255,.08);
+--accent:#e3213f;--accent-ink:#fff;--accent-soft:#3a1a20;--red:#ff3b52;
+--good:#34d399;--warn:#fbbf24;--bad:#ff6b6b;
+--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);
+font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+padding-block:0 calc(24px + env(safe-area-inset-bottom))}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px}
+header.top{padding:18px 0 8px;display:flex;align-items:center;gap:10px}
+header.top .logo{width:34px;height:34px;border-radius:10px;background:#141112;color:var(--red);
+display:grid;place-items:center;font-weight:800;font-size:16px;flex:0 0 auto}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+h2{font-size:17px;margin:18px 0 8px}
+.sub{color:var(--muted);font-size:12px;margin:0}
+a{color:var(--accent)}
+.card{background:var(--surface);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.notice{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:10px 12px;
+font-size:13px;margin-bottom:12px}
+.muted{color:var(--muted);font-size:13px}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px;border-bottom:1px solid var(--grid);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.n,th.n{text-align:right;white-space:nowrap}
+.big{font-weight:800;font-size:15px}
+small{color:var(--muted);font-size:12px;line-height:1.35;display:inline-block}
+.verdict{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.verdict.good{background:var(--accent);color:var(--accent-ink)}
+.verdict.ok{background:var(--accent-soft);color:var(--accent)}
+.verdict.meh{background:var(--surface-2);color:var(--muted)}
+tr.compra .big{color:var(--accent)}
+tr.valuta .big{color:var(--warn)}
+/* occasioni: una scheda per capo, col link diretto all'annuncio */
+.occ{border-bottom:1px solid var(--grid);padding:12px 0}
+.occ:first-child{padding-top:2px}
+.occ:last-child{border-bottom:0;padding-bottom:2px}
+.occ .top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.occ .t{font-size:14px;font-weight:600;min-width:0}
+.occ .meta{color:var(--muted);font-size:12px;margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.kpi{min-width:0;background:var(--surface-2);border-radius:12px;padding:7px 9px}
+.kpi .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:17px;font-weight:800;line-height:1.2;letter-spacing:-.01em;
+font-variant-numeric:tabular-nums}
+.kpi.hi{background:var(--accent-soft)}
+.kpi.hi .val{color:var(--accent)}
+.kpi .val small{font-size:11px;font-weight:500}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;
+background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;
+justify-content:center;gap:8px;text-decoration:none}
+.btn.block{width:100%}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.vuoto{color:var(--muted);font-size:13px}
+.giorno{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+margin:14px 0 6px;font-weight:600}
+.giorno:first-child{margin-top:0}
+.task{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--grid);align-items:flex-start}
+.task:last-child{border-bottom:0}
+.task .segno{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+font-weight:800;font-size:12px;flex:0 0 auto;background:var(--surface-2);color:var(--muted)}
+.task.subito .segno,.task.ripubblica .segno,.task.alza .segno{background:var(--accent);color:var(--accent-ink)}
+.task .corpo{min-width:0;flex:1}
+.task .capo{font-size:14px;font-weight:600}
+.task .cosa{font-size:13px;color:var(--ink-2);margin-top:1px}
+.task .numeri{font-size:12px;color:var(--muted);margin-top:3px}
+.task .numeri b{color:var(--accent);font-size:13px}
+.fatto{flex:0 0 auto;align-self:center;border:1px solid var(--border);background:var(--surface-2);
+color:var(--ink-2);font:inherit;font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer}
+.task[hidden],.giorno[hidden]{display:none}
+.riga-fatti{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;
+padding-top:10px;border-top:1px solid var(--grid)}
+.rimetti{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;
+padding:4px 0;cursor:pointer}
+.azioni{display:flex;gap:8px}
+.azioni .btn{flex:1}
+.occ[hidden]{display:none}
+.scartati{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.scartati .btn{padding:7px 11px;font-size:13px;border-radius:10px}
+.ripristina{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;
+padding:4px 0;cursor:pointer;text-align:left}
+.elenco-scartati{margin-top:8px;font-size:13px}
+.elenco-scartati div{padding:5px 0;border-bottom:1px solid var(--grid);
+display:flex;gap:10px;justify-content:space-between;align-items:center}
+.elenco-scartati div:last-child{border-bottom:0}
+@media(max-width:420px){.kpis{grid-template-columns:repeat(2,1fr)}
+.azioni{flex-direction:column}}
+
+.navmese{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.navmese .titolo{font-size:16px;font-weight:700;text-transform:capitalize}
+.navmese button{border:1px solid var(--border);background:var(--surface-2);color:var(--ink);
+font:inherit;font-size:17px;line-height:1;width:38px;height:38px;border-radius:12px;cursor:pointer}
+.navmese button[disabled]{opacity:.35}
+.dows,.celle{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:10px;color:var(--muted);text-transform:uppercase;
+letter-spacing:.06em;padding-bottom:4px}
+.g{position:relative;min-height:56px;border:0;padding:3px 0 0;border-radius:10px;
+background:var(--surface-2);font:inherit;color:var(--ink);display:flex;flex-direction:column;
+align-items:center;gap:2px;cursor:default;overflow:hidden}
+.g.fuori{background:transparent}
+.g.libero{background:transparent;border:1px solid var(--grid)}
+.g .num{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1}
+.g.oggi{outline:2px solid var(--accent);outline-offset:-2px}
+.g.oggi .num{color:var(--accent);font-weight:800}
+.g.pieno{cursor:pointer}
+.g .foto{display:flex;gap:1px;align-items:center;justify-content:center;flex-wrap:wrap;
+padding:0 2px 5px}
+.mini{width:17px;height:22px;border-radius:4px;object-fit:cover;display:block;
+background:var(--grid)}
+.mini.senza{display:grid;place-items:center;font-size:9px;font-weight:800;color:var(--muted)}
+.piu{font-size:9px;color:var(--muted);font-weight:700;padding-left:1px}
+/* la striscia in basso dice l'urgenza senza bisogno di aprire il giorno */
+.g.pieno::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
+background:var(--muted)}
+.g.u-subito::after,.g.u-ripubblica::after,.g.u-alza::after{background:var(--accent)}
+.g.u-verifica::after{background:var(--warn)}
+.g.u-aspetta::after{background:var(--grid)}
+.g.spento .foto{opacity:.28}
+.g.spento::after{background:var(--grid)}
+.g.selezionato{background:var(--accent-soft)}
+.g.selezionato .num{color:var(--accent)}
+.task{display:flex;gap:10px;padding:12px 0;align-items:flex-start;
+border-bottom:1px solid var(--grid)}
+.task:last-of-type{border-bottom:0}
+.grande{width:58px;height:76px;border-radius:10px;object-fit:cover;flex:0 0 auto;
+background:var(--grid);display:block}
+.grande.senza{display:grid;place-items:center;font-size:22px;font-weight:800;color:var(--muted)}
+.task .corpo{min-width:0;flex:1}
+.task .capo{font-size:14px;font-weight:600}
+.task .cosa{font-size:13px;color:var(--ink-2);margin-top:2px}
+.task .numeri{font-size:12px;color:var(--muted);margin-top:4px}
+.task .numeri b{color:var(--accent);font-size:13px}
+.task .spostato{font-size:12px;color:var(--warn);margin-top:3px}
+.azioni{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.azioni .btn{padding:9px 13px;font-size:13px;border-radius:10px}
+.quando{border:1px solid var(--border);background:var(--surface-2);color:var(--ink);
+font:inherit;font-size:13px;padding:8px 10px;border-radius:10px}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legenda span{display:inline-flex;align-items:center;gap:5px}
+.legenda i{width:10px;height:10px;border-radius:3px;background:var(--muted);display:inline-block}
+.legenda i.subito,.legenda i.ripubblica,.legenda i.alza{background:var(--accent)}
+.legenda i.verifica{background:var(--warn)}
+.legenda i.aspetta{background:var(--grid)}
+@media(max-width:360px){.g{min-height:50px}.mini{width:14px;height:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="logo">V</div>
+  <div><h1>Calendario</h1>
+    <p class="sub">Aggiornato il 23/11/2026 alle 15:40 &middot; <a href="radar.html">radar</a>
+    &middot; <a href="pubblica.html">pubblicazione</a>
+    &middot; <a href="index.html">dashboard</a></p></div>
+</header>
+
+<div class="notice">
+Tocca un giorno con la foto: sotto esce cosa fare con quel capo. La striscia di
+colore sotto il riquadro dice quanto &egrave; urgente senza bisogno di aprirlo.<br><br>
+Se un giorno non ti va bene, cambia la data nella scheda e la foto si sposta
+nella casella nuova. Gli arretrati restano su oggi finch&eacute; non li sposti tu.
+Le spunte sono le stesse del radar: quello che segni qui risulta segnato anche l&agrave;.
+</div>
+
+<div class="card">
+<div class="navmese">
+  <button type="button" id="mese-prec" aria-label="mese precedente">&lsaquo;</button>
+  <div class="titolo" id="titolo-mese"></div>
+  <button type="button" id="mese-succ" aria-label="mese successivo">&rsaquo;</button>
+</div>
+<div class="dows"><span class="dow">L</span><span class="dow">M</span><span class="dow">M</span>
+<span class="dow">G</span><span class="dow">V</span><span class="dow">S</span>
+<span class="dow">D</span></div>
+<div class="celle" id="celle"></div>
+</div>
+
+<div class="card" id="pannello"></div>
+
+<div class="card">
+<div class="legenda"><span><i class='subito'></i>oggi, senza rinviare</span><span><i class='ripubblica'></i>due settimane online: ripubblica</span><span><i class='alza'></i>prezzo sotto la fascia che rende</span><span><i class='verifica'></i>non e' piu' online: controlla</span><span><i class='nota'></i>appuntamento scritto a mano</span><span><i class='aspetta'></i>non toccarlo, lavora da solo</span></div>
+<div class="riga-fatti">
+  <span class="muted">Spunte e spostamenti stanno solo in questo telefono.</span>
+  <button class="rimetti" type="button" id="azzera">rimetti tutto come dice il bot</button>
+</div>
+</div>
+
+<p class="muted">12 promemoria in
+2 giorni. I tempi vengono dalle coorti del tracker: sette giorni di pazienza,
+quattordici per ripubblicare, ventuno e la cosa diventa urgente. Il prezzo consigliato
+&egrave; la mediana dei venduti di quel gruppo; per le marche che il bot non segue non c'&egrave;
+nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
+<code>calendario.json</code>, e l&igrave; puoi mettere anche una tua <code>foto</code>.</p>
+
+</div>
+<script type="application/json" id="dati">[{"k": "m10702700382-ripubblica", "g": "2026-11-23", "u": "ripubblica", "capo": "Calvin Klein gilet smanicato imbottito bordeaux XL nylon lucido", "cosa": "due settimane online: ripubblica invece di tagliare il prezzo", "prezzo": 28, "consiglio": null, "giorni": 15, "fav": 3, "id": 10702700382, "foto": "https://images1.vinted.net/t/02_01818_GLoN7rELyfMg6ju8RkmSmmgz/f800/b493d314.jpeg?s=99855666ea4da82e86c4cf70549acbb8bde23e2a"}, {"k": "nCarharttWIPXSverd-nota", "g": "2026-11-23", "u": "nota", "capo": "Carhartt WIP XS verde oliva", "cosa": "Chiedi il preventivo alla sartoria per il polsino. Sopra i 15 euro non conviene: ripubblicalo com'e' a 45 euro con la foto del difetto in evidenza.", "prezzo": null, "consiglio": null, "giorni": null, "fav": null, "id": null, "foto": null}, {"k": "nCompletoJacare-nota", "g": "2026-11-23", "u": "nota", "capo": "Completo Jacare", "cosa": "Stiralo e fotografalo: senza foto curate non si vende, e finche' resta in armadio non rende niente.", "prezzo": null, "consiglio": null, "giorni": null, "fav": null, "id": null, "foto": null}, {"k": "m10723034870-ripubblica", "g": "2026-11-23", "u": "ripubblica", "capo": "Piumino lungo Monte Cervino XL senape cappuccio donna", "cosa": "due settimane online: ripubblica invece di tagliare il prezzo", "prezzo": 26, "consiglio": null, "giorni": 14, "fav": 12, "id": 10723034870, "foto": "https://images1.vinted.net/t/05_0109b_a46xHdAHjya5E7xF5p61c9YY/f800/a559bcb4.jpeg?s=ac800df539c67cc30bf0044f9308e2290bfc9f51"}, {"k": "nCalvinKleingiletb-nota", "g": "2026-11-23", "u": "nota", "capo": "Calvin Klein gilet bordeaux", "cosa": "Rifai la foto di copertina prima di toccare il prezzo: 2 preferiti in 13 giorni sono pochi per un capo a 28 euro.", "prezzo": null, "consiglio": null, "giorni": null, "fav": null, "id": null, "foto": null}, {"k": "m10510050004-subito", "g": "2026-11-23", "u": "subito", "capo": "The North Face Summit Series Gore-Tex XL giacca gialla Zip-In", "cosa": "fermo da 29 giorni: ripubblicalo", "prezzo": 26, "consiglio": 50, "giorni": 29, "fav": 9, "id": 10510050004, "foto": "https://images1.vinted.net/t/01_0225e_dGtAY3WqQD8T4t4JGzMVtY1J/f800/a163280a.jpeg?s=37ee22e9238d7ff45bb7b004dfb5782c8dca037f"}, {"k": "m10573492459-subito", "g": "2026-11-23", "u": "subito", "capo": "The North Face giacca impermeabile bianca donna L cappuccio", "cosa": "fermo da 25 giorni: ripubblicalo", "prezzo": 28, "consiglio": 35, "giorni": 25, "fav": 4, "id": 10573492459, "foto": "https://images1.vinted.net/t/01_00496_sJpYPgXPdhjs27NAM11ekuq6/f800/383359bf.jpeg?s=9859cfccb6bf2b894aec06af1e1ff3fc32e4c832"}, {"k": "m10582821139-subito", "g": "2026-11-23", "u": "subito", "capo": "Carhartt WIP giubotto nylon imbottito, cappuccio removibile XS vintage", "cosa": "fermo da 23 giorni: ripubblicalo", "prezzo": 38, "consiglio": 55, "giorni": 23, "fav": 3, "id": 10582821139, "foto": "https://images1.vinted.net/t/05_0264a_11JuGNJ7NDWAQtvvyJV7C7Jm/f800/e20147f3.jpeg?s=909aba94c08a1faa974bc02699441be48c5997df"}, {"k": "m10360315679-verifica", "g": "2026-11-23", "u": "verifica", "capo": "Marlboro Classics cappotto lana nero XXL vintage uomo", "cosa": "non e' piu' online: venduto o tolto? Controlla e segnalo", "prezzo": 25, "consiglio": null, "giorni": 40, "fav": 16, "id": 10360315679, "foto": null}, {"k": "m10808819056-verifica", "g": "2026-11-23", "u": "verifica", "capo": "The North Face Summit Series Gore-Tex Zip-In navy S vintage", "cosa": "non e' piu' online: venduto o tolto? Controlla e segnalo", "prezzo": 35, "consiglio": null, "giorni": 8, "fav": 13, "id": 10808819056, "foto": null}, {"k": "m10808963211-verifica", "g": "2026-11-23", "u": "verifica", "capo": "Marlboro Classics MCS cappotto lana nero XXL vintage uomo", "cosa": "non e' piu' online: venduto o tolto? Controlla e segnalo", "prezzo": 35, "consiglio": null, "giorni": 8, "fav": 19, "id": 10808963211, "foto": null}, {"k": "nBlazer-nota", "g": "2027-03-01", "u": "nota", "capo": "Blazer", "cosa": "Da pubblicare adesso: i blazer si vendono in primavera, a dicembre dormono.", "prezzo": null, "consiglio": null, "giorni": null, "fav": null, "id": null, "foto": null}]</script>
+<script>
+(function(){
+  var DATI = JSON.parse(document.getElementById('dati').textContent);
+  var GIORNI = ["lunedi","martedi","mercoledi","giovedi","venerdi","sabato","domenica"];
+  var MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto",
+              "settembre","ottobre","novembre","dicembre"];
+
+  /* Due cose vivono nel telefono, non nel database: le spunte "fatto" (chiave
+     condivisa col radar) e gli spostamenti di giorno. La pagina e' statica su
+     GitHub Pages: non c'e' nessun server a cui raccontarlo. Se cambi telefono,
+     ricomincia da zero. */
+  var K_FATTI='radar-fatti', K_RINVII='radar-rinvii';
+  function leggi(k){try{return JSON.parse(localStorage.getItem(k))||{};}catch(e){return {};}}
+  function scrivi(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  var fatti=leggi(K_FATTI), rinvii=leggi(K_RINVII);
+
+  var ora=new Date();
+  var OGGI=iso(ora);
+  function iso(d){
+    return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+  }
+  function p2(n){return (n<10?'0':'')+n;}
+  function daIso(s){var a=s.split('-');return new Date(+a[0],+a[1]-1,+a[2]);}
+  function oggiChiave(){return ora.getFullYear()+'-'+(ora.getMonth()+1)+'-'+ora.getDate();}
+
+  /* il giorno in cui un promemoria sta davvero: quello spostato a mano se c'e',
+     altrimenti quello calcolato dal radar. Mai nel passato: un arretrato e'
+     roba di oggi. */
+  function giornoDi(t){
+    var g = rinvii[t.k] || t.g;
+    return g < OGGI ? OGGI : g;
+  }
+  function fatto(t){ return fatti[t.k]===oggiChiave(); }
+
+  function inLettere(s){
+    var d=daIso(s), o=daIso(OGGI);
+    var diff=Math.round((d-o)/86400000);
+    var nome=GIORNI[(d.getDay()+6)%7]+' '+d.getDate()+' '+MESI[d.getMonth()];
+    if(diff===0) return 'oggi, '+nome;
+    if(diff===1) return 'domani, '+nome;
+    if(diff>1 && diff<7) return nome+' (fra '+diff+' giorni)';
+    return nome;
+  }
+
+  function miniatura(t,cls){
+    if(t.foto){
+      var i=document.createElement('img');
+      i.className=cls; i.loading='lazy'; i.alt=t.capo; i.src=t.foto;
+      return i;
+    }
+    var s=document.createElement('span');
+    s.className=cls+' senza'; s.setAttribute('aria-hidden','true');
+    s.textContent=(t.capo.match(/[A-Za-z0-9]/)||['?'])[0].toUpperCase();
+    return s;
+  }
+
+  /* ---- griglia ---- */
+  var mesiElenco=[], selezionato=null, iMese=0;
+  var celle=document.getElementById('celle');
+  var titolo=document.getElementById('titolo-mese');
+  var prec=document.getElementById('mese-prec');
+  var succ=document.getElementById('mese-succ');
+  var pannello=document.getElementById('pannello');
+
+  function raggruppa(){
+    var m={};
+    DATI.forEach(function(t){
+      var g=giornoDi(t);
+      (m[g]=m[g]||[]).push(t);
+    });
+    return m;
+  }
+
+  function calcolaMesi(mappa){
+    var o=daIso(OGGI);
+    var set=[o.getFullYear()+'-'+p2(o.getMonth()+1)];
+    Object.keys(mappa).sort().forEach(function(g){
+      var k=g.slice(0,7);
+      if(set.indexOf(k)<0) set.push(k);
+    });
+    return set.slice(0,6);
+  }
+
+  function disegna(){
+    var mappa=raggruppa();
+    mesiElenco=calcolaMesi(mappa);
+    if(iMese>=mesiElenco.length) iMese=mesiElenco.length-1;
+    var parti=mesiElenco[iMese].split('-');
+    var anno=+parti[0], mese=+parti[1];
+    titolo.textContent=MESI[mese-1]+' '+anno;
+    prec.disabled = iMese===0;
+    succ.disabled = iMese===mesiElenco.length-1;
+
+    celle.innerHTML='';
+    var primo=new Date(anno,mese-1,1);
+    var vuoti=(primo.getDay()+6)%7;
+    for(var v=0;v<vuoti;v++) celle.appendChild(cella(null));
+    var ultimo=new Date(anno,mese,0).getDate();
+    for(var n=1;n<=ultimo;n++){
+      var g=anno+'-'+p2(mese)+'-'+p2(n);
+      celle.appendChild(cella(g,n,mappa[g]||[]));
+    }
+  }
+
+  function cella(g,n,lista){
+    if(g===null){
+      var fuori=document.createElement('span');
+      fuori.className='g fuori';
+      return fuori;
+    }
+    var vivi=lista.filter(function(t){return !fatto(t);});
+    var el=document.createElement(lista.length?'button':'span');
+    el.className='g'+(g===OGGI?' oggi':'')+(lista.length?' pieno':' libero');
+    if(lista.length){
+      el.type='button';
+      el.dataset.giorno=g;
+      el.className+=' u-'+(vivi.length?vivi[0].u:lista[0].u);
+      if(!vivi.length) el.className+=' spento';
+      if(g===selezionato) el.className+=' selezionato';
+      el.setAttribute('aria-label',inLettere(g)+': '+lista.length+' da fare');
+    }
+    var num=document.createElement('span');
+    num.className='num'; num.textContent=n;
+    el.appendChild(num);
+    if(lista.length){
+      var box=document.createElement('span');
+      box.className='foto';
+      (vivi.length?vivi:lista).slice(0,3).forEach(function(t){
+        box.appendChild(miniatura(t,'mini'));
+      });
+      var resto=(vivi.length?vivi:lista).length-3;
+      if(resto>0){
+        var piu=document.createElement('span');
+        piu.className='piu'; piu.textContent='+'+resto;
+        box.appendChild(piu);
+      }
+      el.appendChild(box);
+    }
+    return el;
+  }
+
+  /* ---- il giorno aperto ---- */
+  function apri(g){
+    selezionato=g;
+    var mappa=raggruppa();
+    var lista=(mappa[g]||[]).slice();
+    pannello.innerHTML='';
+    var testa=document.createElement('div');
+    testa.className='giorno'; testa.textContent=inLettere(g);
+    pannello.appendChild(testa);
+
+    var vivi=lista.filter(function(t){return !fatto(t);});
+    if(!lista.length || !vivi.length){
+      var nota=document.createElement('div');
+      nota.className='vuoto';
+      nota.textContent = lista.length ? 'Tutto fatto per questo giorno.'
+                                      : 'Niente da fare in questo giorno.';
+      pannello.appendChild(nota);
+      disegna();
+      return;
+    }
+    vivi.forEach(function(t){ pannello.appendChild(scheda(t,g)); });
+    disegna();
+  }
+
+  function scheda(t,g){
+    var riga=document.createElement('div');
+    riga.className='task '+t.u;
+    riga.appendChild(miniatura(t,'grande'));
+
+    var corpo=document.createElement('div');
+    corpo.className='corpo';
+    corpo.appendChild(testo('capo',t.capo));
+    corpo.appendChild(testo('cosa',t.cosa));
+
+    var qualcosa = t.prezzo || t.giorni!==null && t.giorni!==undefined
+                   || t.fav!==null && t.fav!==undefined;
+    if(qualcosa){
+      var num=document.createElement('div');
+      num.className='numeri';
+      if(t.prezzo){
+        num.appendChild(document.createTextNode('ora '+t.prezzo+' €'));
+        if(t.consiglio){
+          num.appendChild(document.createTextNode(' → '));
+          var b=document.createElement('b'); b.textContent=t.consiglio+' €';
+          num.appendChild(b);
+        }
+      }
+      var coda=[];
+      if(t.giorni!==null && t.giorni!==undefined) coda.push(t.giorni+' giorni online');
+      if(t.fav!==null && t.fav!==undefined) coda.push(t.fav+' preferiti');
+      if(coda.length) num.appendChild(document.createTextNode(
+        (t.prezzo?' · ':'')+coda.join(' · ')));
+      corpo.appendChild(num);
+    }
+    if(rinvii[t.k] && rinvii[t.k]!==t.g){
+      corpo.appendChild(testo('spostato','spostato a mano: il radar lo metteva '
+        +inLettere(t.g<OGGI?OGGI:t.g)));
+    }
+
+    var azioni=document.createElement('div');
+    azioni.className='azioni';
+    if(t.id){
+      var a=document.createElement('a');
+      a.className='btn'; a.target='_blank'; a.rel='noopener';
+      a.href='https://www.vinted.it/items/'+t.id;
+      a.textContent="Apri l'annuncio →";
+      azioni.appendChild(a);
+    } else {
+      var p=document.createElement('a');
+      p.className='btn'; p.href='pubblica.html';
+      p.textContent='Scheda di pubblicazione →';
+      azioni.appendChild(p);
+    }
+    if(t.u!=='aspetta'){
+      var f=document.createElement('button');
+      f.className='btn ghost'; f.type='button'; f.textContent='Fatto';
+      f.onclick=function(){
+        fatti[t.k]=oggiChiave(); scrivi(K_FATTI,fatti); apri(g);
+      };
+      azioni.appendChild(f);
+    }
+    var data=document.createElement('input');
+    data.className='quando'; data.type='date'; data.value=g;
+    data.min=OGGI;
+    data.setAttribute('aria-label','spostalo a un altro giorno');
+    data.onchange=function(){
+      if(!data.value) return;
+      if(data.value===t.g) delete rinvii[t.k]; else rinvii[t.k]=data.value;
+      scrivi(K_RINVII,rinvii);
+      var vai=data.value;
+      iMese=Math.max(0,mesiElenco.indexOf(vai.slice(0,7)));
+      disegna();
+      iMese=Math.max(0,mesiElenco.indexOf(vai.slice(0,7)));
+      apri(vai);
+    };
+    azioni.appendChild(data);
+    corpo.appendChild(azioni);
+
+    riga.appendChild(corpo);
+    return riga;
+  }
+
+  function testo(cls,s){
+    var d=document.createElement('div');
+    d.className=cls; d.textContent=s;
+    return d;
+  }
+
+  celle.addEventListener('click',function(e){
+    var c=e.target.closest('.g.pieno');
+    if(c) apri(c.dataset.giorno);
+  });
+  prec.onclick=function(){ if(iMese>0){ iMese--; disegna(); } };
+  succ.onclick=function(){ if(iMese<mesiElenco.length-1){ iMese++; disegna(); } };
+
+  var azzera=document.getElementById('azzera');
+  azzera.onclick=function(){
+    fatti={}; rinvii={};
+    scrivi(K_FATTI,fatti); scrivi(K_RINVII,rinvii);
+    iMese=0; disegna(); apri(selezionato||OGGI);
+  };
+
+  disegna();
+  var mappa=raggruppa();
+  var primo=mappa[OGGI] ? OGGI : Object.keys(mappa).sort()[0];
+  if(primo) apri(primo);
+})();
+</script>
+</body>
+</html>

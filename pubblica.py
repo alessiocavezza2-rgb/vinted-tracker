@@ -200,7 +200,7 @@ def scrivi_html(sch):
 <header class="top">
   <div class="logo">V</div>
   <div><h1>Pubblicazione</h1>
-    <p class="sub">Aggiornato il {oggi} &middot; <a href="radar.html">radar</a> &middot;
+    <p class="sub">Aggiornato il {oggi} &middot; <a href="calendario.html">calendario</a> &middot; <a href="radar.html">radar</a> &middot;
     <a href="index.html">dashboard</a></p></div>
 </header>
 

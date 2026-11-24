@@ -471,6 +471,18 @@ def prezzo_consigliato(info):
     return round(info["ricavo"] / 5) * 5, info.get("fascia")
 
 
+def appunti_a_mano():
+    """calendario.json: gli appuntamenti che scrive Alessio, non il bot."""
+    f = ROOT / "calendario.json"
+    if not f.exists():
+        return []
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"ATTENZIONE: calendario.json non si legge ({e}): lo salto.")
+        return []
+
+
 def calendario(con, rif):
     """Cosa fare, capo per capo, e in che giorno.
 
@@ -484,6 +496,14 @@ def calendario(con, rif):
         return []
     ultimo_giro = max((c["last_seen"] or "") for c in capi)
     oggi = datetime.now().date()
+
+    appunti = appunti_a_mano()
+    # un appunto con "copre_id" PRENDE IL POSTO del promemoria automatico di
+    # quel capo: stessa scheda (foto, prezzo, link), ma nel giorno e con le
+    # parole che ho deciso io. Senza questo, programmare una cosa per sabato
+    # lasciava due schede per lo stesso capo, una oggi e una sabato.
+    coperti = {v["copre_id"]: v for v in appunti if v.get("copre_id")}
+    usati = set()
 
     righe = []
     for c in capi:
@@ -529,24 +549,41 @@ def calendario(con, rif):
             data, urgenza = nato.date() + timedelta(days=GIORNI_CONTROLLO), "aspetta"
             cosa = "appena pubblicato: non toccarlo"
 
+        nota = coperti.get(c["id"])
+        if nota:
+            usati.add(c["id"])
+            try:
+                data = datetime.strptime(nota["quando"], "%Y-%m-%d").date()
+            except (KeyError, ValueError):
+                pass
+            cosa = nota.get("cosa") or cosa
+            urgenza = nota.get("urgenza", urgenza)
+            if nota.get("consiglio"):
+                cons = nota["consiglio"]
+
         righe.append({"data": data, "giorni": giorni, "urgenza": urgenza, "cosa": cosa,
-                      "capo": c["title"], "prezzo": c["price"], "consiglio": cons,
+                      "capo": nota.get("capo") if nota and nota.get("capo") else c["title"],
+                      "prezzo": c["price"], "consiglio": cons,
                       "fascia": fascia, "fav": c["favourites"], "id": c["id"],
                       "foto": c.get("photo")})
 
-    # appuntamenti scritti a mano: capi non ancora pubblicati, promemoria
-    f = ROOT / "calendario.json"
-    if f.exists():
-        for v in json.loads(f.read_text(encoding="utf-8")):
-            try:
-                data = datetime.strptime(v["quando"], "%Y-%m-%d").date()
-            except (KeyError, ValueError):
-                continue
-            righe.append({"data": data, "giorni": None, "urgenza": v.get("urgenza", "nota"),
-                          "cosa": v.get("cosa", ""), "capo": v.get("capo", ""),
-                          "prezzo": v.get("prezzo"), "consiglio": v.get("consiglio"),
-                          "fascia": None, "fav": None, "id": None,
-                          "foto": v.get("foto")})
+    # appuntamenti scritti a mano: capi non ancora pubblicati, promemoria.
+    # Quelli con "copre_id" sono gia' finiti dentro la riga del capo.
+    for v in appunti:
+        # se "copre_id" ha trovato il suo capo l'appunto e' gia' dentro quella
+        # riga; se il capo e' sparito o venduto l'appunto NON deve svanire in
+        # silenzio, quindi finisce qui come promemoria normale.
+        if v.get("copre_id") and v["copre_id"] in usati:
+            continue
+        try:
+            data = datetime.strptime(v["quando"], "%Y-%m-%d").date()
+        except (KeyError, ValueError):
+            continue
+        righe.append({"data": data, "giorni": None, "urgenza": v.get("urgenza", "nota"),
+                      "cosa": v.get("cosa", ""), "capo": v.get("capo", ""),
+                      "prezzo": v.get("prezzo"), "consiglio": v.get("consiglio"),
+                      "fascia": None, "fav": None, "id": None,
+                      "foto": v.get("foto")})
 
     ordine = {"subito": 0, "ripubblica": 1, "alza": 2, "verifica": 3, "nota": 4, "aspetta": 5}
     righe.sort(key=lambda r: (r["data"], ordine.get(r["urgenza"], 9), -(r["giorni"] or 0)))

@@ -1,4 +1,28 @@
 [
+ {"quando": "2026-11-25",
+  "urgenza": "subito",
+  "copre_id": 10510050004,
+  "cosa": "Ripubblicala stamattina, fra le 8 e le 10: cancella l'annuncio e rifallo a 50 euro. Testo e foto identici, non toccare niente. Ferma da 30 giorni, 5 preferiti nei primi due: la gente la guarda, non e' il titolo il problema.",
+  "consiglio": 50},
+
+ {"quando": "2026-11-25",
+  "urgenza": "subito",
+  "copre_id": 10573492459,
+  "cosa": "Ripubblicala stamattina insieme all'altra: cancella e rifai a 35 euro, stesso testo e stesse foto. Ferma da 26 giorni, 3 preferiti nei primi due.",
+  "consiglio": 35},
+
+ {"quando": "2026-11-25",
+  "urgenza": "subito",
+  "copre_id": 10723034870,
+  "cosa": "Ripubblicalo con le altre due, stesso prezzo di adesso. Caso strano: 13 preferiti nei primi due giorni, il massimo di tutto il guardaroba, e chi ne prende 8 o piu' vende nel 63 % dei casi. Qui non ha venduto. Marca fuori dal campione del bot, quindi un prezzo non te lo do; ma con tutto quell'interesse a 26 euro il problema non e' che costa troppo. Guarda le foto e la descrizione con occhi nuovi prima di rifarlo."},
+
+ {"quando": "2026-11-28",
+  "urgenza": "nota",
+  "copre_id": 10582821139,
+  "capo": "Carhartt WIP XS verde oliva (quella online a 38)",
+  "cosa": "NON ripubblicarla prima della cucitura. Falla cucire dal parente insieme alla nera, rifai le foto col polsino sistemato, e solo allora rimettila a 55. E' gia' stata ripubblicata due volte senza vendere (45 il 14/10, 38 il 17/10, 38 il 30/10) e nei primi due giorni ha preso 2 preferiti: ripubblicarla com'e' sarebbe il terzo giro uguale.",
+  "consiglio": 55},
+
  {"quando": "2026-11-28",
   "urgenza": "nota",
   "capo": "Carhartt nera M (comprata col radar)",
@@ -7,15 +31,8 @@
  {"quando": "2026-11-30",
   "urgenza": "nota",
   "capo": "Carhartt nera M (comprata col radar)",
-  "cosa": "Pubblicala a 50 euro: mediana dei venduti di Carhartt giacche uomo su 597 vendite, ed e' dentro la fascia 45-60 che rende di piu'. Pagata 18, ti e' costata 24,10 col 5% + protezione + spedizione: a 50 guadagni 26 euro netti. Se e' una Detroit, una Michigan o una Active la mediana sale a 60 (152 vendite) e il margine a 36.",
-  "prezzo": null,
+  "cosa": "Pubblicala fra le 8 e le 10 a 50 euro: mediana dei venduti di Carhartt giacche uomo su 597 vendite, ed e' dentro la fascia 45-60 che rende di piu'. Pagata 18, ti e' costata 24,10 col 5% + protezione + spedizione: a 50 guadagni 26 euro netti. Se e' una Detroit, una Michigan o una Active la mediana sale a 60 (152 vendite) e il margine a 36.",
   "consiglio": 50},
-
- {"quando": "2026-11-28",
-  "urgenza": "nota",
-  "capo": "Carhartt WIP XS verde oliva (e' quella online a 38)",
-  "cosa": "Falla cucire dal parente insieme alla nera, poi rifai le foto e SOLO allora ripubblicala a 55. E' gia' stata ripubblicata due volte senza venderla (45 il 14/10, 38 il 17/10, 38 il 30/10) e in due giorni aveva preso 2 preferiti: la ripubblicazione da sola non basta, stavolta deve cambiare il capo. Niente sartoria a pagamento, il preventivo da 15 euro non serve piu'.",
-  "consiglio": 55},
 
  {"quando": "2026-11-28",
   "urgenza": "nota",
@@ -24,8 +41,9 @@
 
  {"quando": "2026-11-28",
   "urgenza": "nota",
+  "copre_id": 10702700382,
   "capo": "Calvin Klein gilet bordeaux",
-  "cosa": "Rifai la foto di copertina prima di toccare il prezzo: 3 preferiti in 16 giorni sono pochi per un capo a 28 euro."},
+  "cosa": "Rifai la foto di copertina prima di toccare il prezzo: 1 solo preferito nei primi due giorni, e chi ne prende 1 o nessuno vende nel 25-30 % dei casi contro il 57 % di chi ne prende 4. Qui il problema e' che non si ferma nessuno a guardarlo."},
 
  {"quando": "2027-03-01",
   "urgenza": "nota",

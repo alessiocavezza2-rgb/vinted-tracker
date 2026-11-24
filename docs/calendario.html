@@ -178,7 +178,7 @@ font:inherit;font-size:13px;padding:8px 10px;border-radius:10px}
 <header class="top">
   <div class="logo">V</div>
   <div><h1>Calendario</h1>
-    <p class="sub">Aggiornato il 24/11/2026 alle 12:32 &middot; <a href="radar.html">radar</a>
+    <p class="sub">Aggiornato il 24/11/2026 alle 12:34 &middot; <a href="radar.html">radar</a>
     &middot; <a href="index.html">dashboard</a></p></div>
 </header>
 
@@ -512,8 +512,12 @@ nessun prezzo, e non lo invento. Gli appuntamenti scritti a mano stanno in
   };
 
   disegna();
-  var mappa=raggruppa();
-  var primo=mappa[OGGI] ? OGGI : Object.keys(mappa).sort()[0];
+  /* Apro su oggi. Se oggi e' libero vado al PROSSIMO giorno con qualcosa, non
+     al primo in assoluto: con le vendite in archivio quello sarebbe un giorno
+     di ottobre, e la pagina si aprirebbe sul passato. */
+  var chiavi=Object.keys(raggruppa()).sort();
+  var primo=chiavi.indexOf(OGGI)>=0 ? OGGI
+            : (chiavi.filter(function(g){return g>OGGI;})[0] || chiavi[chiavi.length-1]);
   if(primo) apri(primo);
 })();
 </script>

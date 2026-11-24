@@ -488,8 +488,12 @@ JS = r"""
   };
 
   disegna();
-  var mappa=raggruppa();
-  var primo=mappa[OGGI] ? OGGI : Object.keys(mappa).sort()[0];
+  /* Apro su oggi. Se oggi e' libero vado al PROSSIMO giorno con qualcosa, non
+     al primo in assoluto: con le vendite in archivio quello sarebbe un giorno
+     di ottobre, e la pagina si aprirebbe sul passato. */
+  var chiavi=Object.keys(raggruppa()).sort();
+  var primo=chiavi.indexOf(OGGI)>=0 ? OGGI
+            : (chiavi.filter(function(g){return g>OGGI;})[0] || chiavi[chiavi.length-1]);
   if(primo) apri(primo);
 })();
 """

@@ -471,6 +471,62 @@ def prezzo_consigliato(info):
     return round(info["ricavo"] / 5) * 5, info.get("fascia")
 
 
+def ripubblicati(capi):
+    """Gli id spariti perche' il capo e' stato RIPUBBLICATO, non venduto.
+
+    Quando ripubblichi, Vinted cancella l'annuncio e ne crea uno nuovo con un
+    altro id: per il bot il vecchio "sparisce". Senza questo controllo ogni
+    ripubblicazione lasciava per una settimana un promemoria "venduto o
+    tolto? Controlla" su un capo che e' li' davanti, appena rifatto.
+
+    Il riconoscimento e' sul titolo: stesso titolo normalizzato e annuncio
+    nuovo nato entro due giorni dalla sparizione del vecchio.
+    """
+    def chiave(t):
+        return re.sub(r"\W+", "", (t or "").lower())[:40]
+
+    def quando(s):
+        try:
+            return datetime.fromisoformat((s or "").replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    per_titolo = {}
+    for c in capi:
+        per_titolo.setdefault(chiave(c["title"]), []).append(c)
+
+    fuori = set()
+    for gemelli in per_titolo.values():
+        if len(gemelli) < 2:
+            continue
+        for vecchio in gemelli:
+            sparito = quando(vecchio["last_seen"])
+            if not sparito:
+                continue
+            for nuovo in gemelli:
+                nato = quando(nuovo["first_seen"])
+                if nuovo["id"] == vecchio["id"] or not nato:
+                    continue
+                if timedelta(0) <= nato - sparito <= timedelta(days=2):
+                    fuori.add(vecchio["id"])
+    return fuori
+
+
+def preferiti_fermi(con, iid):
+    """Da quanti giorni il numero dei preferiti non sale. None se non lo so."""
+    righe = con.execute("select ts, favourites from mine_history where id=? order by ts",
+                        (iid,)).fetchall()
+    if len(righe) < 2:
+        return None
+    massimo = max(r[1] or 0 for r in righe)
+    ultimo_salto = next(r[0] for r in righe if (r[1] or 0) >= massimo)
+    try:
+        quando = datetime.fromisoformat(ultimo_salto.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+    return (datetime.now(timezone.utc) - quando).days
+
+
 def appunti_a_mano():
     """calendario.json: gli appuntamenti che scrive Alessio, non il bot."""
     f = ROOT / "calendario.json"
@@ -497,6 +553,7 @@ def calendario(con, rif):
     ultimo_giro = max((c["last_seen"] or "") for c in capi)
     oggi = datetime.now().date()
 
+    rifatti = ripubblicati(capi)
     appunti = appunti_a_mano()
     # un appunto con "copre_id" PRENDE IL POSTO del promemoria automatico di
     # quel capo: stessa scheda (foto, prezzo, link), ma nel giorno e con le
@@ -507,7 +564,7 @@ def calendario(con, rif):
 
     righe = []
     for c in capi:
-        if c["sold"]:
+        if c["sold"] or c["id"] in rifatti:
             continue
         try:
             nato = datetime.fromisoformat((c["first_seen"] or "").replace("Z", "+00:00"))
@@ -533,7 +590,30 @@ def calendario(con, rif):
                           "foto": c.get("photo")})
             continue
 
-        if giorni >= GIORNI_URGENTE:
+        # ATTENZIONE. Le regole qui sotto (sette giorni, quattordici, ventuno)
+        # vengono dalle coorti del tracker, che seguono SOLO le marche in
+        # MARCA_GRUPPO. Per una marca fuori campione non so ne' a che prezzo
+        # si vende, ne' quanti annunci concorrenti ci sono, ne' se vale la pena
+        # ripubblicare: dirlo lo stesso e' come dare un numero inventato.
+        # Il 24/11 il consiglio "ripubblicalo" e' finito su un Monte Cervino,
+        # marca fuori campione: Alessio lo ha ripubblicato e il giorno dopo si
+        # e' scoperto che 26 euro erano sopra il 70 % del mercato di quella
+        # marca e che ripubblicando buttava via 13 preferiti. Non deve
+        # ricapitare: senza dati, la pagina chiede di guardare, non di agire.
+        senza_dati = info is None
+        fermi = preferiti_fermi(con, c["id"])
+
+        if senza_dati:
+            data, urgenza = oggi, "verifica"
+            cosa = (f"fermo da {giorni} giorni, ma su {c['brand'] or 'questa marca'} "
+                    "il bot non ha dati: NON ripubblicare e non toccare il prezzo "
+                    "prima di aver guardato quanto chiedono gli altri per un capo "
+                    "simile. Ripubblicare azzera i preferiti.")
+            if giorni < GIORNI_CONTROLLO:
+                data, urgenza = nato.date() + timedelta(days=GIORNI_CONTROLLO), "aspetta"
+                cosa = ("appena pubblicato: non toccarlo. Marca fuori dal campione "
+                        "del bot, quando sara' il momento il mercato guardalo a mano.")
+        elif giorni >= GIORNI_URGENTE:
             data, urgenza = oggi, "subito"
             cosa = f"fermo da {giorni} giorni: ripubblicalo"
         elif giorni >= GIORNI_RIPUBBLICA:
@@ -548,6 +628,12 @@ def calendario(con, rif):
         else:
             data, urgenza = nato.date() + timedelta(days=GIORNI_CONTROLLO), "aspetta"
             cosa = "appena pubblicato: non toccarlo"
+
+        # i preferiti fermi da una settimana dicono che gente nuova non ne
+        # arriva piu': e' il segnale che avrebbe salvato il Monte Cervino.
+        if fermi is not None and fermi >= 7 and giorni > fermi:
+            cosa += (f" I preferiti sono fermi da {fermi} giorni: chi doveva vederlo "
+                     "l'ha gia' visto, e chi l'ha salvato non ha comprato.")
 
         nota = coperti.get(c["id"])
         if nota:

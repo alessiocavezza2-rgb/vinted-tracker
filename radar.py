@@ -67,6 +67,17 @@ DISPERSIONE_MAX = 3.0
 # capi da collezione a tre cifre falsano qualunque media
 FASCE = [(0, 30), (30, 45), (45, 60), (60, 80), (80, 120)]
 
+# La taglia conta, e conta a parita' di prezzo: nella fascia 15-40 euro le XS
+# si vendono nel 27,0 % dei casi contro il 36,2 % di M e L (4,3 sigma), e
+# l'ordine XS < S < M < L e' lo stesso in tutte e quattro le fasce di prezzo.
+# Anche il PREZZO cambia, ma molto meno (fattori 0,92-1,10 sul totale); dentro
+# un singolo gruppo pero' il divario e' grosso: le Carhartt XS vendute hanno
+# mediana 35 euro contro i 50 delle M. Quindi: se di quella taglia in quel
+# gruppo ho abbastanza vendite uso la sua mediana, altrimenti correggo quella
+# del gruppo col fattore generale della taglia.
+VENDITE_TAGLIA = 20          # da qui in su mi fido della mediana di quella taglia
+TAGLIE = ("XXS", "XS", "XXL", "XL", "S", "M", "L")   # XXL prima di XL, XS prima di S
+
 # Dentro un gruppo ci sono mondi diversi: un guscio Summit Series Gore-Tex non
 # vale come un pile generico. Questi sottogruppi hanno riferimenti propri.
 SOTTOGRUPPI = {
@@ -118,6 +129,15 @@ def verdetto(ricavo, prezzo):
     if margine >= MARGINE_VALUTA and molt >= MOLTIPLIC_VALUTA:
         return "VALUTA", margine, molt
     return "LASCIA", margine, molt
+
+
+def taglia(testo):
+    """La taglia in lettere, da un campo che su Vinted fa 'XL / IT 46 / EU 42'."""
+    t = (testo or "").strip().upper()
+    for et in TAGLIE:
+        if re.match(r"^" + et + r"\b", t):
+            return et
+    return None
 
 
 def percentile(valori, p):
@@ -172,9 +192,22 @@ def scheda(rs, nome, padre=None):
         ricavo = mediana
         ricavo_alto = p75
 
+    # quanto incassa e quanto vende ogni taglia dentro QUESTO gruppo
+    per_taglia = {}
+    for et in TAGLIE:
+        in_taglia = [r for r in rs if taglia(r["size"]) == et]
+        vend = [float(r["sold_price"] or r["price"]) for r in in_taglia
+                if r["status"] == "sold"]
+        if not in_taglia:
+            continue
+        per_taglia[et] = {"n_annunci": len(in_taglia), "n_venduti": len(vend),
+                          "ricavo": st.median(vend) if vend else None,
+                          "quota": len(vend) / len(in_taglia)}
+
     return {
         "nome": nome,
         "padre": padre,
+        "per_taglia": per_taglia,
         "n_annunci": len(rs),
         "n_venduti": len(venduti),
         "solido": len(venduti) >= VENDITE_SOLIDE,
@@ -208,6 +241,48 @@ def riferimenti(righe):
     return out
 
 
+def fattori_taglia(righe):
+    """Quanto vale e quanto vende ogni taglia, su tutto il campione.
+
+    Serve da ripiego quando dentro un gruppo le vendite di quella taglia sono
+    poche: meglio correggere la mediana del gruppo di un 8 % che fingere che
+    una XS valga come una L.
+    """
+    venduti = [(taglia(r["size"]), float(r["sold_price"] or r["price"]))
+               for r in righe if r["status"] == "sold"]
+    base = st.median([p for _, p in venduti]) if venduti else 0
+    fuori = {}
+    for et in TAGLIE:
+        prezzi = [p for t, p in venduti if t == et]
+        tutti = [r for r in righe if taglia(r["size"]) == et]
+        if len(prezzi) < 30 or not tutti or not base:
+            continue
+        fuori[et] = {"fattore": st.median(prezzi) / base,
+                     "quota": len(prezzi) / len(tutti),
+                     "n": len(prezzi)}
+    quote = [v["quota"] for v in fuori.values()]
+    media_quota = sum(quote) / len(quote) if quote else 0
+    for v in fuori.values():
+        v["quota_relativa"] = (v["quota"] / media_quota) if media_quota else 1
+    return fuori
+
+
+def ricavo_taglia(info, misura, fattori):
+    """Quanto rivendi un capo di QUELLA taglia, e da dove viene il numero."""
+    et = taglia(misura)
+    if not et:
+        return info["ricavo"], None, None
+    sua = (info.get("per_taglia") or {}).get(et)
+    if sua and sua["n_venduti"] >= VENDITE_TAGLIA and sua["ricavo"]:
+        return sua["ricavo"], et, f"mediana delle {et} del gruppo, {sua['n_venduti']} vendite"
+    f = fattori.get(et)
+    if f:
+        return (info["ricavo"] * f["fattore"], et,
+                f"mediana del gruppo corretta per la taglia {et} "
+                f"(x{f['fattore']:.2f}, {f['n']} vendite)")
+    return info["ricavo"], et, None
+
+
 def riferimento_per(r, rif):
     """La scheda piu' specifica che si applica a un annuncio."""
     migliore = rif.get(r["query_key"])
@@ -221,6 +296,7 @@ def riferimento_per(r, rif):
 def occasioni(righe, rif, ore):
     """Annunci ancora in vendita, comparsi di recente, che passano gli standard."""
     limite = datetime.now(timezone.utc) - timedelta(hours=ore)
+    fattori = fattori_taglia(righe)
     trovate = []
     for r in righe:
         if r["status"] != "active":
@@ -235,13 +311,21 @@ def occasioni(righe, rif, ore):
         if visto < limite:
             continue
         prezzo = float(r["price"])
-        v, margine, molt = verdetto(info["ricavo"], prezzo)
+        # il ricavo della SUA taglia, non la media di tutte: una XS e una L
+        # dello stesso gruppo non valgono lo stesso, e pagarle uguale significa
+        # strapagare le piccole.
+        ricavo, et, fonte = ricavo_taglia(info, r["size"], fattori)
+        v, margine, molt = verdetto(ricavo, prezzo)
         if v == "LASCIA":
             continue
+        lenta = fattori.get(et, {}).get("quota_relativa")
         trovate.append({**r, "verdetto": v, "margine": margine, "moltiplicatore": molt,
-                        "ricavo": info["ricavo"], "riferimento": info["nome"],
+                        "ricavo": ricavo, "riferimento": info["nome"],
                         "solido": info["solido"], "spaccato": info["spaccato"],
-                        "ricavo_alto": info["ricavo_alto"]})
+                        "ricavo_alto": info["ricavo_alto"],
+                        "taglia": et, "fonte_prezzo": fonte,
+                        "ricavo_gruppo": info["ricavo"],
+                        "taglia_lenta": bool(lenta and lenta < 0.9)})
     trovate.sort(key=lambda x: -x["margine"])
     return trovate
 
@@ -1088,6 +1172,10 @@ def scrivi_html(rif, occ, box, ore, ultimo, cal):
             f"<div class=meta>{o['riferimento']} &middot; {o['condition']} &middot; {o['size']}"
             + ("" if o["solido"] else " &middot; stima incerta")
             + f" &middot; visto {eta_ore(o['first_seen'])}"
+            + (f"<br>{o['fonte_prezzo']}" if o.get("fonte_prezzo") else "")
+            + ("<br><b>taglia che vende poco:</b> le " + str(o.get("taglia"))
+               + " si vendono meno delle altre a parita' di prezzo"
+               if o.get("taglia_lenta") else "")
             + (" &middot; <b>link verificato</b>" if o.get("verificato") else "")
             + "</div></div>"
             f"<span class='verdict {pillola.get(o['verdetto'], 'meh')}'>{o['verdetto']}</span></div>"

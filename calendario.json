@@ -1,41 +1,50 @@
 [
- {"quando": "2026-11-25",
+ {
+  "quando": "2026-11-25",
   "urgenza": "subito",
   "copre_id": 10965628241,
   "cosa": "Abbassalo a 21 euro ADESSO, finche' l'annuncio ha poche ore e zero preferiti: cosi' non butti via niente e la prima settimana, quella in cui si vende, la fai al prezzo giusto. A 26 stavi sopra il 70 % dei 381 Monte Cervino in vendita (mediana 18, terzo quartile 30). Il vecchio annuncio a 26 aveva preso 13 preferiti in 3 giorni e poi nessuno aveva comprato.",
-  "consiglio": 21},
-
- {"quando": "2026-11-28",
+  "consiglio": 21
+ },
+ {
+  "quando": "2026-11-28",
   "urgenza": "nota",
   "copre_id": 10582821139,
   "capo": "Carhartt WIP XS verde oliva (quella online a 38)",
-  "cosa": "NON ripubblicarla prima della cucitura. Falla cucire dal parente insieme alla nera, rifai le foto col polsino sistemato, e solo allora rimettila a 55. E' gia' stata ripubblicata due volte senza vendere (45 il 14/10, 38 il 17/10, 38 il 30/10) e nei primi due giorni ha preso 2 preferiti: ripubblicarla com'e' sarebbe il terzo giro uguale.",
-  "consiglio": 55},
-
- {"quando": "2026-11-28",
+  "cosa": "Falla cucire dal parente insieme alla nera, rifai le foto col polsino sistemato, e ripubblicala a 38-40. NON a 55: le Carhartt XS vendute hanno mediana 35 (25 vendite), il premio del marchio WIP si vede nelle taglie grandi e in XS ho solo 2 vendite, che non sono un dato. A 38 il prezzo e' gia' giusto: e' il terzo giro di questo capo, quindi stavolta devono cambiare il polsino e le foto, non il numero.",
+  "consiglio": 40
+ },
+ {
+  "quando": "2026-11-28",
   "urgenza": "nota",
   "capo": "Carhartt nera M (comprata col radar)",
-  "cosa": "Falla cucire dal parente: la scucitura e' al polsino, due minuti di macchina. Poi misure e foto, con il polsino rifatto in primo piano."},
-
- {"quando": "2026-11-30",
+  "cosa": "Falla cucire dal parente: la scucitura e' al polsino, due minuti di macchina. Poi misure e foto, con il polsino rifatto in primo piano."
+ },
+ {
+  "quando": "2026-11-30",
   "urgenza": "nota",
   "capo": "Carhartt nera M (comprata col radar)",
   "cosa": "Pubblicala fra le 8 e le 10 a 50 euro: mediana dei venduti di Carhartt giacche uomo su 597 vendite, ed e' dentro la fascia 45-60 che rende di piu'. Pagata 18, ti e' costata 24,10 col 5% + protezione + spedizione: a 50 guadagni 26 euro netti. Se e' una Detroit, una Michigan o una Active la mediana sale a 60 (152 vendite) e il margine a 36.",
-  "consiglio": 50},
-
- {"quando": "2026-11-28",
+  "consiglio": 50
+ },
+ {
+  "quando": "2026-11-28",
   "urgenza": "nota",
   "capo": "Completo Jacare",
-  "cosa": "Stiralo e fotografalo: senza foto curate non si vende, e finche' resta in armadio non rende niente. Marca fuori dal campione del bot, il prezzo guardalo a mano fra gli annunci simili."},
-
- {"quando": "2026-11-28",
+  "cosa": "Stiralo e fotografalo: senza foto curate non si vende. Sul prezzo non ho una misura, il mercato Jacare e' minuscolo: 14 annunci in tutto, i due completi confrontabili chiedono 40 e 85 euro, quasi tutto il resto e' donna. Parti da 45 e guarda cosa succede nella prima settimana.",
+  "consiglio": 45
+ },
+ {
+  "quando": "2026-11-28",
   "urgenza": "nota",
   "copre_id": 10702700382,
   "capo": "Calvin Klein gilet bordeaux",
-  "cosa": "Rifai la foto di copertina prima di toccare il prezzo: 1 solo preferito nei primi due giorni, e chi ne prende 1 o nessuno vende nel 25-30 % dei casi contro il 57 % di chi ne prende 4. Qui il problema e' che non si ferma nessuno a guardarlo."},
-
- {"quando": "2027-03-01",
+  "cosa": "Rifai la foto di copertina, il prezzo lascialo a 28. Misurato oggi: 192 gilet Calvin Klein in vendita, mediana 21 e terzo quartile 39, quindi 28 e' dentro il mercato. Il problema non e' il prezzo ma che non si ferma nessuno: 1 solo preferito nei primi due giorni, e chi ne prende 1 o zero vende nel 25-30 % dei casi contro il 57 % di chi ne prende 4."
+ },
+ {
+  "quando": "2027-03-01",
   "urgenza": "nota",
   "capo": "Blazer",
-  "cosa": "Da pubblicare adesso: i blazer si vendono in primavera, a dicembre dormono."}
+  "cosa": "Da pubblicare adesso: i blazer si vendono in primavera, a dicembre dormono."
+ }
 ]

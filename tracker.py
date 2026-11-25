@@ -70,7 +70,15 @@ LAST_RUN = ROOT / "last_run.log"     # log dell'ultima esecuzione, committato da
 
 def log(msg):
     line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
-    print(line, flush=True)
+    try:
+        print(line, flush=True)
+    except UnicodeEncodeError:
+        # il terminale di Windows non e' UTF-8: un carattere invisibile dentro
+        # un pezzo di pagina di Vinted (uno zero-width joiner) faceva saltare
+        # tutta la raccolta mentre scriveva una riga di log. Il file e' sempre
+        # in UTF-8, qui ripiego su quello che il terminale sa stampare.
+        codifica = sys.stdout.encoding or "ascii"
+        print(line.encode(codifica, "replace").decode(codifica), flush=True)
     (ROOT / "logs").mkdir(exist_ok=True)
     for path in (ROOT / "logs" / "tracker.log", LAST_RUN):
         with open(path, "a", encoding="utf-8") as f:

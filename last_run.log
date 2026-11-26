@@ -1,24 +1,20 @@
-[2026-11-26 09:56:36] === fetch ===
-[2026-11-26 09:56:49]   carhartt_giacche_uomo: 384 annunci su 4 pagine, nuovi 154, campionati 6
-[2026-11-26 09:57:05]   carhartt_felpe_uomo: 384 annunci su 4 pagine, nuovi 59, campionati 6
-[2026-11-26 09:57:19]   carhartt_jeans_uomo: 384 annunci su 4 pagine, nuovi 47, campionati 6
-[2026-11-26 09:57:34]   nike_giacche_uomo: 384 annunci su 4 pagine, nuovi 330, campionati 6
-[2026-11-26 09:57:48]   nike_felpe_uomo: 384 annunci su 4 pagine, nuovi 330, campionati 6
-[2026-11-26 09:58:06]   nike_tshirt_uomo: 384 annunci su 4 pagine, nuovi 213, campionati 6
-[2026-11-26 09:58:18]   adidas_giacche_uomo: 384 annunci su 4 pagine, nuovi 213, campionati 6
-[2026-11-26 09:58:31]   adidas_felpe_uomo: 384 annunci su 4 pagine, nuovi 172, campionati 6
-[2026-11-26 09:58:46]   adidas_tshirt_uomo: 384 annunci su 4 pagine, nuovi 173, campionati 6
-[2026-11-26 09:58:58]   levis_jeans_uomo: 384 annunci su 4 pagine, nuovi 364, campionati 6
-[2026-11-26 09:59:13]   levis_jeans_donna: 384 annunci su 4 pagine, nuovi 378, campionati 6
-[2026-11-26 09:59:27]   levis_giacche_denim_uomo: 384 annunci su 4 pagine, nuovi 85, campionati 6
-[2026-11-26 09:59:44]   tnf_giacche_uomo: 384 annunci su 4 pagine, nuovi 298, campionati 6
-[2026-11-26 09:59:59]   wrangler_jeans_uomo: 384 annunci su 4 pagine, nuovi 93, campionati 6
-[2026-11-26 10:00:14]   wrangler_jeans_donna: 384 annunci su 4 pagine, nuovi 16, campionati 6
-[2026-11-26 10:00:29]   wrangler_giacche_denim_uomo: 384 annunci su 4 pagine, nuovi 4, campionati 4
-[2026-11-26 10:00:30] i miei annunci: 5 totali, 5 attivi, 12 preferiti
-[2026-11-26 10:00:54] fornitori: 6/7 box disponibili
-[2026-11-26 10:00:54] === check ===
-[2026-11-26 10:00:54] check: 320 annunci da verificare
-[2026-11-26 11:49:31] check: esiti {'active': 251, 'deleted': 39, 'sold': 30}
-[2026-11-26 11:49:31] pulizia database: 72899 -> 67566 righe
-[2026-11-26 11:49:32] dashboard generata: 16 ricerche, 67566 annunci, 21914 seguiti, 7264 venduti, 31 giorni di dati
+[2026-11-26 19:13:04] === fetch ===
+[2026-11-26 19:13:05]   carhartt_giacche_uomo pagina 1 vuota (HTTP 200, 3828687 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Abbigliamento da esterno Giacche Giacche Categoria Taglia Bra
+[2026-11-26 19:13:05]   carhartt_giacche_uomo: nessun annuncio (tentativo 1), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:14:36]   carhartt_giacche_uomo pagina 1 vuota (HTTP 200, 3829024 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Abbigliamento da esterno Giacche Giacche Categoria Taglia Bra
+[2026-11-26 19:14:36]   carhartt_giacche_uomo: nessun annuncio (tentativo 2), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:16:07]   carhartt_giacche_uomo pagina 1 vuota (HTTP 200, 3828569 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Abbigliamento da esterno Giacche Giacche Categoria Taglia Bra
+[2026-11-26 19:16:07]   carhartt_giacche_uomo: nessun annuncio (tentativo 3), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:17:38]   carhartt_felpe_uomo pagina 1 vuota (HTTP 200, 3822530 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Maglioni e pullover Felpe e felpe con cappuccio Felpe e felpe
+[2026-11-26 19:17:38]   carhartt_felpe_uomo: nessun annuncio (tentativo 1), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:19:09]   carhartt_felpe_uomo pagina 1 vuota (HTTP 200, 3823183 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Maglioni e pullover Felpe e felpe con cappuccio Felpe e felpe
+[2026-11-26 19:19:09]   carhartt_felpe_uomo: nessun annuncio (tentativo 2), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:20:41]   carhartt_felpe_uomo pagina 1 vuota (HTTP 200, 3823301 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Maglioni e pullover Felpe e felpe con cappuccio Felpe e felpe
+[2026-11-26 19:20:41]   carhartt_felpe_uomo: nessun annuncio (tentativo 3), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:22:12]   carhartt_jeans_uomo pagina 1 vuota (HTTP 200, 3821894 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Jeans Jeans Categoria Taglia Brand Condizioni Colore Motivo P
+[2026-11-26 19:22:12]   carhartt_jeans_uomo: nessun annuncio (tentativo 1), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:23:43]   carhartt_jeans_uomo pagina 1 vuota (HTTP 200, 3822337 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Jeans Jeans Categoria Taglia Brand Condizioni Colore Motivo P
+[2026-11-26 19:23:43]   carhartt_jeans_uomo: nessun annuncio (tentativo 2), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:25:14]   carhartt_jeans_uomo pagina 1 vuota (HTTP 200, 3823206 byte) |  Articoli | Vinted Passa al contenuto Catalogo Iscriviti | Accedi Vendi subito Lingua Italiano (Italian) IT Donna Uomo Articoli griffati Bambini Casa Elettronica Libri e media Hobby e collezionismo Sport Catalogo Pubblicità ‌ Uomo Vestiti Jeans Jeans Categoria Taglia Brand Condizioni Colore Motivo P
+[2026-11-26 19:25:14]   carhartt_jeans_uomo: nessun annuncio (tentativo 3), attendo 90 s e rinnovo la sessione
+[2026-11-26 19:26:45] fetch: Vinted non risponde con dati, interrompo (probabile blocco dell'IP)
